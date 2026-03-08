@@ -1,5 +1,8 @@
+"use client";
+
 import { Folder, FileText, Image as ImageIcon, Video, MoreVertical, Plus, HardDrive, Share2 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const categories = [
     { title: "Tài liệu", icon: FileText, files: 120, size: "1.2 GB", color: "text-blue-500", bg: "bg-blue-500/10" },
@@ -9,13 +12,23 @@ const categories = [
 ];
 
 const recentFiles = [
-    { name: "Ban_ke_hoach_kinh_doanh_2024.pdf", size: "2.4 MB", type: "Tài liệu", date: "Hôm nay, 14:30", icon: FileText, color: "text-blue-500" },
-    { name: "Logo_FileFlow_Final.png", size: "840 KB", type: "Hình ảnh", date: "Hôm qua, 09:12", icon: ImageIcon, color: "text-emerald-500" },
-    { name: "Video_gioi_thieu_san_pham.mp4", size: "124 MB", type: "Video", date: "10 T2, 2024", icon: Video, color: "text-rose-500" },
-    { name: "Source_Code_Backup.zip", size: "2.1 GB", type: "Khác", date: "08 T2, 2024", icon: Folder, color: "text-amber-500" },
+    { id: "doc-1", name: "Ban_ke_hoach_kinh_doanh_2024.pdf", size: "2.4 MB", type: "Tài liệu", date: "Hôm nay, 14:30", icon: FileText, color: "text-blue-500" },
+    { id: "img-1", name: "Logo_FileFlow_Final.png", size: "840 KB", type: "Hình ảnh", date: "Hôm qua, 09:12", icon: ImageIcon, color: "text-emerald-500" },
+    { id: "vid-1", name: "Video_gioi_thieu_san_pham.mp4", size: "124 MB", type: "Video", date: "10 T2, 2024", icon: Video, color: "text-rose-500" },
+    { id: "folder-1", name: "Source_Code_Backup.zip", size: "2.1 GB", type: "Thư mục", date: "08 T2, 2024", icon: Folder, color: "text-amber-500" },
 ];
 
 export default function DashboardPage() {
+    const router = useRouter();
+
+    const handleFileClick = (fileId: string, type: string) => {
+        if (type === "Thư mục") {
+            router.push(`/dashboard/files/${fileId}`);
+        } else {
+            // Usually opens file preview modal or details view
+            alert(`Mở tệp: ${fileId}`);
+        }
+    };
     return (
         <div className="p-8 pb-32">
             <h1 className="text-3xl font-bold mb-8">Tổng quan lưu trữ</h1>
@@ -59,7 +72,11 @@ export default function DashboardPage() {
 
                 <div className="divide-y divide-border/50">
                     {recentFiles.map((file, i) => (
-                        <div key={i} className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-muted/20 transition-colors group cursor-pointer">
+                        <div
+                            key={i}
+                            onClick={() => handleFileClick(file.id, file.type)}
+                            className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-muted/20 transition-colors group cursor-pointer"
+                        >
                             <div className="col-span-6 flex items-center gap-4 pl-4">
                                 <div className={`p-2.5 rounded-xl bg-background border border-border/50 shadow-sm ${file.color}`}>
                                     <file.icon className="w-5 h-5" />
@@ -73,10 +90,10 @@ export default function DashboardPage() {
                                 {file.date}
                             </div>
                             <div className="col-span-1 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity gap-2">
-                                <button className="p-2 text-muted-foreground hover:text-primary bg-background rounded-lg border border-border shadow-sm transition-colors">
+                                <button className="p-2 text-muted-foreground hover:text-primary bg-background rounded-lg border border-border shadow-sm transition-colors cursor-pointer" onClick={(e) => { e.stopPropagation(); }}>
                                     <Share2 className="w-4 h-4" />
                                 </button>
-                                <button className="p-2 text-muted-foreground hover:text-primary bg-background rounded-lg border border-border shadow-sm transition-colors">
+                                <button className="p-2 text-muted-foreground hover:text-primary bg-background rounded-lg border border-border shadow-sm transition-colors cursor-pointer" onClick={(e) => { e.stopPropagation(); }}>
                                     <MoreVertical className="w-4 h-4" />
                                 </button>
                             </div>

@@ -41,8 +41,8 @@ export function DashboardSidebar() {
                             key={item.name}
                             href={item.href}
                             className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all ${isActive
-                                    ? "bg-primary/10 text-primary"
-                                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                                ? "bg-primary/10 text-primary"
+                                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                                 }`}
                         >
                             <item.icon className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
@@ -62,7 +62,7 @@ export function DashboardSidebar() {
                     <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden mb-3">
                         <div className="h-full bg-gradient-to-r from-primary to-violet-500 w-[48%]" />
                     </div>
-                    <Link href="/pricing" className="text-xs text-primary font-bold hover:underline">
+                    <Link href="/dashboard/upgrade" className="text-xs text-primary font-bold hover:underline">
                         Nâng cấp gói tài khoản
                     </Link>
                 </div>

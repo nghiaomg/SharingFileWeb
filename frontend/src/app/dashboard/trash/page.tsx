@@ -12,7 +12,7 @@ export default function TrashPage() {
                 <p className="text-sm">
                     Các tệp và thư mục trong thùng rác sẽ bị tự động xóa hoàn toàn sau <span className="font-bold">30 ngày</span>.
                 </p>
-                <button className="ml-auto text-sm font-bold bg-background/50 hover:bg-background px-3 py-1.5 rounded-lg border border-rose-500/30 transition-colors">
+                <button className="ml-auto text-sm font-bold bg-background/50 hover:bg-background px-3 py-1.5 rounded-lg border border-rose-500/30 transition-colors cursor-pointer">
                     Dọn sạch ngay
                 </button>
             </div>
@@ -37,10 +37,10 @@ export default function TrashPage() {
                             Hôm qua, 11:20
                         </div>
                         <div className="col-span-2 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity gap-2">
-                            <button className="p-2 text-emerald-500 hover:bg-emerald-500/10 rounded-lg border border-transparent hover:border-emerald-500/30 transition-colors tooltip-trigger" title="Khôi phục">
+                            <button className="p-2 text-emerald-500 hover:bg-emerald-500/10 rounded-lg border border-transparent hover:border-emerald-500/30 transition-colors tooltip-trigger cursor-pointer" title="Khôi phục">
                                 <RotateCcw className="w-4 h-4" />
                             </button>
-                            <button className="p-2 text-rose-500 hover:bg-rose-500/10 rounded-lg border border-transparent hover:border-rose-500/30 transition-colors tooltip-trigger" title="Xóa vĩnh viễn">
+                            <button className="p-2 text-rose-500 hover:bg-rose-500/10 rounded-lg border border-transparent hover:border-rose-500/30 transition-colors tooltip-trigger cursor-pointer" title="Xóa vĩnh viễn">
                                 <XCircle className="w-4 h-4" />
                             </button>
                         </div>
