@@ -30,7 +30,7 @@ export function Navbar() {
                             </NavigationMenu.Trigger>
                             <NavigationMenu.Content className="absolute top-full left-0 mt-2 p-4 glass rounded-2xl w-48 shadow-xl animate-in fade-in slide-in-from-top-2">
                                 <ul className="flex flex-col gap-2">
-                                    <li><Link href="#" className="block p-2 text-sm hover:bg-primary/10 rounded-lg">Chia sẻ file</Link></li>
+                                    <li><Link href="/products/file-sharing" className="block p-2 text-sm hover:bg-primary/10 rounded-lg">Chia sẻ file</Link></li>
                                     <li><Link href="#" className="block p-2 text-sm hover:bg-primary/10 rounded-lg">Quản lý phiên bản</Link></li>
                                     <li><Link href="#" className="block p-2 text-sm hover:bg-primary/10 rounded-lg">Bảo mật</Link></li>
                                 </ul>
@@ -63,13 +63,13 @@ export function Navbar() {
                         </NavigationMenu.Item>
 
                         <NavigationMenu.Item className="flex items-center">
-                            <Link href="#" className="px-4 py-2 text-sm font-medium hover:text-primary transition-colors flex items-center h-full">
+                            <Link href="/docs" className="px-4 py-2 text-sm font-medium hover:text-primary transition-colors flex items-center h-full">
                                 Tài liệu
                             </Link>
                         </NavigationMenu.Item>
 
                         <NavigationMenu.Item className="flex items-center">
-                            <Link href="#" className="px-4 py-2 text-sm font-medium hover:text-primary transition-colors flex items-center h-full">
+                            <Link href="/contact" className="px-4 py-2 text-sm font-medium hover:text-primary transition-colors flex items-center h-full">
                                 Liên hệ
                             </Link>
                         </NavigationMenu.Item>
@@ -102,8 +102,8 @@ export function Navbar() {
                     <Link href="#" className="py-2 border-b border-border">Giải pháp</Link>
                     <Link href="#features" className="py-2 border-b border-border">Tính năng</Link>
                     <Link href="#pricing" className="py-2 border-b border-border">Bảng giá</Link>
-                    <Link href="#" className="py-2 border-b border-border">Tài liệu</Link>
-                    <Link href="#" className="py-2 border-b border-border">Liên hệ</Link>
+                    <Link href="/docs" className="py-2 border-b border-border">Tài liệu</Link>
+                    <Link href="/contact" className="py-2 border-b border-border">Liên hệ</Link>
                     <div className="flex flex-col gap-2 pt-2">
                         <Link href="/login" className="w-full text-center py-2 rounded-lg border border-border">Đăng nhập</Link>
                         <Link href="/signup" className="w-full text-center py-2 rounded-lg bg-primary text-white">Đăng ký</Link>
