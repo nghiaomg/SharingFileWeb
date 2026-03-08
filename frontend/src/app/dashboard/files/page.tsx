@@ -32,6 +32,25 @@ export default function MyFilesPage() {
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
     const [activeTab, setActiveTab] = useState("Tất cả");
     const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
+    const [isDragging, setIsDragging] = useState(false);
+
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            alert(`Đã thả ${e.dataTransfer.files.length} tệp. Chờ tải lên!`);
+        }
+    };
 
     const toggleSelection = (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
@@ -67,7 +86,23 @@ export default function MyFilesPage() {
     });
 
     return (
-        <div className="p-8 pb-32 h-full flex flex-col">
+        <div
+            className={`p-4 md:p-8 pb-32 h-full flex flex-col relative transition-colors ${isDragging ? "bg-primary/5" : ""}`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+        >
+            {/* Drag & Drop Overlay */}
+            {isDragging && (
+                <div className="absolute inset-4 z-50 bg-background/80 backdrop-blur-sm border-2 border-primary border-dashed rounded-3xl flex flex-col items-center justify-center">
+                    <div className="p-6 bg-primary/20 rounded-full mb-6 pointer-events-none">
+                        <Upload className="w-16 h-16 text-primary animate-bounce shadow-primary/30 drop-shadow-lg" />
+                    </div>
+                    <h2 className="text-3xl font-black mb-2 text-foreground pointer-events-none">Thả tệp để tải lên</h2>
+                    <p className="text-muted-foreground font-medium pointer-events-none">Tất cả tệp sẽ được tải vào bộ nhớ của bạn ngay lập tức.</p>
+                </div>
+            )}
+
             {/* Header Area */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                 <div>

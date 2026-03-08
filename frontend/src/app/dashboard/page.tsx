@@ -1,8 +1,8 @@
-"use client";
-
 import { Folder, FileText, Image as ImageIcon, Video, MoreVertical, Plus, HardDrive, Share2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { UploadModal } from "@/features/dashboard/components/UploadModal";
 
 const categories = [
     { title: "Tài liệu", icon: FileText, files: 120, size: "1.2 GB", color: "text-blue-500", bg: "bg-blue-500/10" },
@@ -20,6 +20,7 @@ const recentFiles = [
 
 export default function DashboardPage() {
     const router = useRouter();
+    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
     const handleFileClick = (fileId: string, type: string) => {
         if (type === "Thư mục") {
@@ -111,11 +112,19 @@ export default function DashboardPage() {
                 <p className="text-muted-foreground mb-6 max-w-lg">
                     Kéo và thả tệp của bạn vào khu vực này để tải lên tức thì, hoặc chia sẻ tệp mã hóa qua liên kết bảo mật ngay lập tức.
                 </p>
-                <button className="flex items-center gap-2 px-8 py-4 bg-primary text-white font-bold rounded-2xl shadow-lg hover:shadow-primary/40 hover:-translate-y-1 transition-all">
+                <button
+                    onClick={() => setIsUploadModalOpen(true)}
+                    className="flex items-center gap-2 px-8 py-4 bg-primary text-white font-bold rounded-2xl shadow-lg hover:shadow-primary/40 hover:-translate-y-1 transition-all cursor-pointer"
+                >
                     <Plus className="w-5 h-5" />
                     Tải lên hoặc Tạo thư mục
                 </button>
             </div>
+
+            <UploadModal
+                isOpen={isUploadModalOpen}
+                onClose={() => setIsUploadModalOpen(false)}
+            />
         </div>
     );
 }

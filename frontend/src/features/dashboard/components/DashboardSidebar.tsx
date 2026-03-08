@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { LayoutDashboard, Folder, Clock, Share2, Trash2, Settings, FileUp, Sparkles } from "lucide-react";
 
 const navigation = [
@@ -14,6 +14,7 @@ const navigation = [
 
 export function DashboardSidebar() {
     const pathname = usePathname();
+    const router = useRouter();
 
     return (
         <aside className="w-64 border-r border-border bg-card/30 flex flex-col h-full overflow-y-auto">
@@ -27,7 +28,10 @@ export function DashboardSidebar() {
             </div>
 
             <div className="px-4 pb-6 border-b border-border/50">
-                <button className="w-full bg-primary text-white flex items-center justify-center gap-2 py-3 rounded-xl font-bold shadow-lg hover:shadow-primary/30 transition-all hover:bg-primary/90 hover:-translate-y-0.5 group">
+                <button
+                    onClick={() => router.push('/dashboard/files')}
+                    className="w-full bg-primary text-white flex items-center justify-center gap-2 py-3 rounded-xl font-bold shadow-lg hover:shadow-primary/30 transition-all hover:bg-primary/90 hover:-translate-y-0.5 group cursor-pointer"
+                >
                     <FileUp className="w-5 h-5 group-hover:animate-bounce-subtle" />
                     Tải lên tệp mới
                 </button>
