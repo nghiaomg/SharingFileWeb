@@ -1,13 +1,26 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Mail, Lock, ArrowRight } from "lucide-react";
+import { Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGoogle, faGithub } from "@fortawesome/free-brands-svg-icons";
 
 export function LoginForm() {
+    const [isLoading, setIsLoading] = useState(false);
+    const router = useRouter();
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+        // Giả lập thời gian đăng nhập
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        router.push("/dashboard");
+    };
+
     return (
-        <form className="w-full space-y-6 flex flex-col items-center max-w-sm mx-auto">
+        <form onSubmit={handleSubmit} className="w-full space-y-6 flex flex-col items-center max-w-sm mx-auto">
             <div className="w-full space-y-4">
                 <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
@@ -46,10 +59,20 @@ export function LoginForm() {
 
             <button
                 type="submit"
-                className="w-full flex items-center justify-center gap-2 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-all shadow-lg hover:shadow-primary/30 group disabled:opacity-50"
+                disabled={isLoading}
+                className="w-full flex items-center justify-center gap-2 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-all shadow-lg hover:shadow-primary/30 group disabled:opacity-50 disabled:cursor-not-allowed"
             >
-                Đăng nhập
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                {isLoading ? (
+                    <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Đang đăng nhập...
+                    </>
+                ) : (
+                    <>
+                        Đăng nhập
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </>
+                )}
             </button>
 
             <div className="relative flex items-center w-full py-4 text-sm text-muted-foreground">
