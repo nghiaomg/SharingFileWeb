@@ -33,19 +33,36 @@ export default function MyFilesPage() {
     const [activeTab, setActiveTab] = useState("Tất cả");
     const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
     const [isDragging, setIsDragging] = useState(false);
+    const [dragCounter, setDragCounter] = useState(0);
 
-    const handleDragOver = (e: React.DragEvent) => {
+    const handleDragEnter = (e: React.DragEvent) => {
         e.preventDefault();
+        e.stopPropagation();
+        setDragCounter((prev) => prev + 1);
         setIsDragging(true);
     };
 
     const handleDragLeave = (e: React.DragEvent) => {
         e.preventDefault();
-        setIsDragging(false);
+        e.stopPropagation();
+        setDragCounter((prev) => {
+            const newCount = prev - 1;
+            if (newCount === 0) {
+                setIsDragging(false);
+            }
+            return newCount;
+        });
+    };
+
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
     };
 
     const handleDrop = (e: React.DragEvent) => {
         e.preventDefault();
+        e.stopPropagation();
+        setDragCounter(0);
         setIsDragging(false);
         if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
             alert(`Đã thả ${e.dataTransfer.files.length} tệp. Chờ tải lên!`);
@@ -88,8 +105,9 @@ export default function MyFilesPage() {
     return (
         <div
             className={`p-4 md:p-8 pb-32 h-full flex flex-col relative transition-colors ${isDragging ? "bg-primary/5" : ""}`}
-            onDragOver={handleDragOver}
+            onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
+            onDragOver={handleDragOver}
             onDrop={handleDrop}
         >
             {/* Drag & Drop Overlay */}
