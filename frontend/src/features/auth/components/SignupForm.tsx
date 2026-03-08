@@ -1,0 +1,82 @@
+"use client";
+
+import Link from "next/link";
+import { User, Mail, Lock, ArrowRight } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGoogle, faGithub } from "@fortawesome/free-brands-svg-icons";
+
+export function SignupForm() {
+    return (
+        <form className="w-full space-y-6 flex flex-col items-center max-w-sm mx-auto">
+            <div className="w-full space-y-4">
+                <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
+                        <User className="w-5 h-5" />
+                    </div>
+                    <input
+                        type="text"
+                        placeholder="Họ và tên"
+                        className="w-full pl-10 pr-4 py-3 bg-secondary/50 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-muted-foreground"
+                        required
+                    />
+                </div>
+
+                <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
+                        <Mail className="w-5 h-5" />
+                    </div>
+                    <input
+                        type="email"
+                        placeholder="Email của bạn"
+                        className="w-full pl-10 pr-4 py-3 bg-secondary/50 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-muted-foreground"
+                        required
+                    />
+                </div>
+
+                <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
+                        <Lock className="w-5 h-5" />
+                    </div>
+                    <input
+                        type="password"
+                        placeholder="Mật khẩu"
+                        className="w-full pl-10 pr-4 py-3 bg-secondary/50 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-muted-foreground"
+                        required
+                    />
+                </div>
+            </div>
+
+            <button
+                type="submit"
+                className="w-full flex items-center justify-center gap-2 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-all shadow-lg hover:shadow-primary/30 group disabled:opacity-50 mt-2"
+            >
+                Tạo tài khoản
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </button>
+
+            <div className="relative flex items-center w-full py-4 text-sm text-muted-foreground">
+                <div className="flex-1 border-t border-border"></div>
+                <span className="px-4">Hoặc đăng ký bằng</span>
+                <div className="flex-1 border-t border-border"></div>
+            </div>
+
+            <div className="flex w-full gap-4">
+                <button type="button" className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-border hover:bg-secondary transition-colors font-medium">
+                    <FontAwesomeIcon icon={faGoogle} className="w-5 h-5" />
+                    Google
+                </button>
+                <button type="button" className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-border hover:bg-secondary transition-colors font-medium">
+                    <FontAwesomeIcon icon={faGithub} className="w-5 h-5" />
+                    GitHub
+                </button>
+            </div>
+
+            <p className="text-sm text-muted-foreground mt-8 text-center w-full">
+                Đã có tài khoản?{" "}
+                <Link href="/login" className="text-primary font-bold hover:underline">
+                    Đăng nhập
+                </Link>
+            </p>
+        </form>
+    );
+}
