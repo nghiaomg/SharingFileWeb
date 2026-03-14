@@ -1,8 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { Folder, FileText, Image as ImageIcon, Video, Music, MoreVertical, Plus, Grid, List as ListIcon, Filter, Upload, Download, Trash2, Share2, FileArchive, LucideIcon } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Folder, FileText, Image as ImageIcon, Video, Music, MoreVertical, Plus, Grid, List as ListIcon, Filter, Upload, Download, Trash2, Share2, FileArchive, Edit2, Loader2, LucideIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { folderService, FolderResponse } from "@/services/folderService";
+import { fileStoreService, FileResponse } from "@/services/fileStoreService";
+import { FolderModal } from "@/features/dashboard/components/FolderModal";
+import { DeleteConfirmModal } from "@/features/dashboard/components/DeleteConfirmModal";
 
 interface FileItem {
     id: string;
@@ -15,16 +19,6 @@ interface FileItem {
     bg: string;
 }
 
-const dbFiles: FileItem[] = [
-    { id: "1", name: "Công việc", type: "Thư mục", size: "--", date: "12 Th03, 2024", icon: Folder, color: "text-amber-500", bg: "bg-amber-500/10" },
-    { id: "2", name: "Thiết kế UI-UX", type: "Thư mục", size: "--", date: "05 Th03, 2024", icon: Folder, color: "text-amber-500", bg: "bg-amber-500/10" },
-    { id: "3", name: "Tai_Lieu_Huong_Dan.pdf", type: "Tài liệu", size: "4.5 MB", date: "Hôm qua", icon: FileText, color: "text-blue-500", bg: "bg-blue-500/10" },
-    { id: "4", name: "Banner_Trang_chu.jpg", type: "Hình ảnh", size: "1.2 MB", date: "22 Th02, 2024", icon: ImageIcon, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-    { id: "5", name: "Video_QC_Thang_4.mp4", type: "Video", size: "245 MB", date: "15 Th02, 2024", icon: Video, color: "text-rose-500", bg: "bg-rose-500/10" },
-    { id: "6", name: "Nhac_Nen_Podcast.mp3", type: "Âm thanh", size: "8.4 MB", date: "01 Th02, 2024", icon: Music, color: "text-violet-500", bg: "bg-violet-500/10" },
-    { id: "7", name: "Backup_Database.zip", type: "Lưu trữ", size: "1.2 GB", date: "10 Th01, 2024", icon: FileArchive, color: "text-orange-500", bg: "bg-orange-500/10" },
-];
-
 const categories = ["Tất cả", "Thư mục", "Hình ảnh", "Tài liệu", "Media"];
 
 export default function MyFilesPage() {
@@ -34,6 +28,171 @@ export default function MyFilesPage() {
     const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
     const [isDragging, setIsDragging] = useState(false);
     const [dragCounter, setDragCounter] = useState(0);
+
+    const [folders, setFolders] = useState<FolderResponse[]>([]);
+    const [files, setFiles] = useState<FileResponse[]>([]);
+
+    const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Modal States
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [folderToEdit, setFolderToEdit] = useState<{ id: string, name: string } | null>(null);
+    
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [folderToDelete, setFolderToDelete] = useState<{ id: string, name: string } | null>(null);
+    
+    // Quick action menu state (for mobile & desktop)
+    const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+
+    const loadData = async () => {
+        try {
+            const [folderData, fileData] = await Promise.all([
+                folderService.getRootFolders(),
+                fileStoreService.getFiles(null)
+            ]);
+            setFolders(folderData);
+            setFiles(fileData);
+        } catch (error) {
+            console.error("Failed to load data:", error);
+        }
+    };
+
+    useEffect(() => {
+        loadData();
+        
+        // Hide popup menus when scrolling or clicking outside
+        const handleClickOutside = () => setActiveMenuId(null);
+        window.addEventListener("click", handleClickOutside);
+        return () => window.removeEventListener("click", handleClickOutside);
+    }, []);
+
+    // Format Date string
+    const formatDate = (isoString: string) => {
+        const date = new Date(isoString);
+        return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    };
+
+    // Transform API Folders to FileItem structure
+    const mappedFolders: FileItem[] = folders.map(f => ({
+        id: f.id,
+        name: f.name,
+        type: "Thư mục",
+        size: "--",
+        date: formatDate(f.createdAt),
+        icon: Folder,
+        color: "text-amber-500",
+        bg: "bg-amber-500/10"
+    }));
+
+    const getFormatSize = (bytes: number) => {
+        if (bytes === 0) return "0 Bytes";
+        const k = 1024;
+        const sizes = ["Bytes", "KB", "MB", "GB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    };
+
+    const determineFileType = (mimeType: string) => {
+        if (mimeType.startsWith('image/')) return { type: "Hình ảnh", icon: ImageIcon, color: "text-emerald-500", bg: "bg-emerald-500/10" };
+        if (mimeType.startsWith('video/')) return { type: "Video", icon: Video, color: "text-rose-500", bg: "bg-rose-500/10" };
+        if (mimeType.startsWith('audio/')) return { type: "Audio", icon: Music, color: "text-purple-500", bg: "bg-purple-500/10" };
+        if (mimeType.includes('zip') || mimeType.includes('tar') || mimeType.includes('rar')) return { type: "Lưu trữ", icon: FileArchive, color: "text-gray-500", bg: "bg-gray-500/10" };
+        return { type: "Tài liệu", icon: FileText, color: "text-blue-500", bg: "bg-blue-500/10" };
+    };
+
+    const mappedFiles: FileItem[] = files.map(f => {
+        const meta = determineFileType(f.type);
+        return {
+            id: f.id,
+            name: f.name,
+            type: meta.type as "Thư mục" | "Tài liệu" | "Hình ảnh" | "Video" | "Âm thanh" | "Lưu trữ",
+            size: getFormatSize(f.size),
+            date: formatDate(f.createdAt),
+            icon: meta.icon,
+            color: meta.color,
+            bg: meta.bg
+        };
+    });
+
+    // Combine folders and files
+    const allItemsMerged: FileItem[] = [...mappedFolders, ...mappedFiles];
+
+    // CRUD Handlers
+    const handleCreateFolder = async (name: string) => {
+        await folderService.createFolder(name, null);
+        await loadData();
+    };
+
+    const handleEditFolder = async (name: string) => {
+        if (!folderToEdit) return;
+        await folderService.updateFolder(folderToEdit.id, name);
+        await loadData();
+    };
+
+    const handleDeleteFolder = async () => {
+        if (!folderToDelete) return;
+        await folderService.deleteFolder(folderToDelete.id);
+        await loadData();
+    };
+
+    const handleDeleteFile = async (id: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        if(confirm("Bạn có chắc muốn xóa file này không?")) {
+            await fileStoreService.deleteFile(id);
+            await loadData();
+        }
+    };
+
+    const handleUploadClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        try {
+            setIsUploading(true);
+            setUploadProgress(0);
+
+            await fileStoreService.uploadFileChunked(file, null, (prog) => {
+                setUploadProgress(prog);
+            });
+
+            await loadData();
+        } catch (error: unknown) {
+            alert((error as any).message || "Lỗi tải tệp lên.");
+        } finally {
+            setIsUploading(false);
+            setUploadProgress(null);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
+        }
+    };
+
+    const toggleMenu = (id: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        setActiveMenuId(prev => prev === id ? null : id);
+    };
+
+    const openEditModal = (id: string, name: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        setFolderToEdit({ id, name });
+        setIsEditModalOpen(true);
+        setActiveMenuId(null);
+    };
+
+    const openDeleteModal = (id: string, name: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        setFolderToDelete({ id, name });
+        setIsDeleteModalOpen(true);
+        setActiveMenuId(null);
+    };
 
     const handleDragEnter = (e: React.DragEvent) => {
         e.preventDefault();
@@ -93,7 +252,7 @@ export default function MyFilesPage() {
         }
     };
 
-    const filteredFiles = dbFiles.filter(file => {
+    const filteredFiles = allItemsMerged.filter(file => {
         if (activeTab === "Tất cả") return true;
         if (activeTab === "Thư mục" && file.type === "Thư mục") return true;
         if (activeTab === "Hình ảnh" && file.type === "Hình ảnh") return true;
@@ -134,11 +293,20 @@ export default function MyFilesPage() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <button className="flex items-center gap-2 px-4 py-2.5 bg-background border border-border text-foreground font-medium rounded-xl hover:bg-secondary/80 transition-colors shadow-sm">
+                    <button 
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="flex items-center gap-2 px-4 py-2.5 bg-background border border-border text-foreground font-medium rounded-xl hover:bg-secondary/80 transition-colors shadow-sm"
+                    >
                         <Plus className="w-4 h-4" /> Thư mục mới
                     </button>
-                    <button className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white font-medium rounded-xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20">
-                        <Upload className="w-4 h-4" /> Tải lên
+                    <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
+                    <button 
+                        onClick={handleUploadClick}
+                        disabled={isUploading}
+                        className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-primary text-white font-medium rounded-xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                        {isUploading ? `Đang tải... ${uploadProgress}%` : "Tải lên"}
                     </button>
                 </div>
             </div>
@@ -227,9 +395,34 @@ export default function MyFilesPage() {
 
                                 {/* Quick actions on hover */}
                                 <div className="absolute bottom-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button className="p-2 text-muted-foreground hover:text-primary bg-background rounded-lg shadow-sm border border-border" onClick={(e) => e.stopPropagation()}>
-                                        <MoreVertical className="w-4 h-4" />
-                                    </button>
+                                    <div className="relative">
+                                        <button className="p-2 text-muted-foreground hover:text-primary bg-background rounded-lg shadow-sm border border-border" onClick={(e) => toggleMenu(file.id, e)}>
+                                            <MoreVertical className="w-4 h-4" />
+                                        </button>
+                                        
+                                        
+                                        {/* Dropdown Menu */}
+                                        {activeMenuId === file.id && (
+                                            <div className="absolute bottom-full right-0 mb-2 w-36 bg-card border border-border rounded-xl shadow-lg overflow-hidden z-20 animate-in fade-in slide-in-from-bottom-2">
+                                                {file.type === "Thư mục" ? (
+                                                    <>
+                                                        <button onClick={(e) => openEditModal(file.id, file.name, e)} className="w-full text-left px-4 py-2.5 text-sm hover:bg-secondary transition-colors font-medium flex items-center gap-2 cursor-pointer">
+                                                            <Edit2 className="w-4 h-4 text-primary" /> Đổi tên
+                                                        </button>
+                                                        <button onClick={(e) => openDeleteModal(file.id, file.name, e)} className="w-full text-left px-4 py-2.5 text-sm hover:bg-rose-500/10 text-rose-500 transition-colors font-medium flex items-center gap-2 cursor-pointer">
+                                                            <Trash2 className="w-4 h-4" /> Xóa
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <button onClick={(e) => handleDeleteFile(file.id, e)} className="w-full text-left px-4 py-2.5 text-sm hover:bg-rose-500/10 text-rose-500 transition-colors font-medium flex items-center gap-2 cursor-pointer">
+                                                            <Trash2 className="w-4 h-4" /> Xóa File
+                                                        </button>
+                                                    </>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         ))}
@@ -279,9 +472,32 @@ export default function MyFilesPage() {
                                         <button className="p-2 text-muted-foreground hover:text-primary bg-background rounded-lg border border-border shadow-sm transition-colors" onClick={(e) => e.stopPropagation()}>
                                             <Share2 className="w-4 h-4" />
                                         </button>
-                                        <button className="p-2 text-muted-foreground hover:text-primary bg-background rounded-lg border border-border shadow-sm transition-colors" onClick={(e) => e.stopPropagation()}>
-                                            <MoreVertical className="w-4 h-4" />
-                                        </button>
+                                        <div className="relative">
+                                            <button className="p-2 text-muted-foreground hover:text-primary bg-background rounded-lg border border-border shadow-sm transition-colors" onClick={(e) => toggleMenu(file.id, e)}>
+                                                <MoreVertical className="w-4 h-4" />
+                                            </button>
+                                            {/* Dropdown Menu for List view */}
+                                        {activeMenuId === file.id && (
+                                            <div className="absolute bottom-full right-0 mb-2 w-36 bg-card border border-border rounded-xl shadow-lg overflow-hidden z-20 animate-in fade-in slide-in-from-bottom-2">
+                                                {file.type === "Thư mục" ? (
+                                                    <>
+                                                        <button onClick={(e) => openEditModal(file.id, file.name, e)} className="w-full text-left px-4 py-2.5 text-sm hover:bg-secondary transition-colors font-medium flex items-center gap-2 cursor-pointer">
+                                                            <Edit2 className="w-4 h-4 text-primary" /> Đổi tên
+                                                        </button>
+                                                        <button onClick={(e) => openDeleteModal(file.id, file.name, e)} className="w-full text-left px-4 py-2.5 text-sm hover:bg-rose-500/10 text-rose-500 transition-colors font-medium flex items-center gap-2 cursor-pointer">
+                                                            <Trash2 className="w-4 h-4" /> Xóa
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <button onClick={(e) => handleDeleteFile(file.id, e)} className="w-full text-left px-4 py-2.5 text-sm hover:bg-rose-500/10 text-rose-500 transition-colors font-medium flex items-center gap-2 cursor-pointer">
+                                                            <Trash2 className="w-4 h-4" /> Xóa File
+                                                        </button>
+                                                    </>
+                                                )}
+                                            </div>
+                                        )}
+                                        </div>
                                     </div>
                                 </div>
                             ))}
@@ -297,6 +513,30 @@ export default function MyFilesPage() {
                     </div>
                 )}
             </div>
+                {/* Modals */}
+                <FolderModal
+                    isOpen={isCreateModalOpen}
+                    onClose={() => setIsCreateModalOpen(false)}
+                    onSubmit={handleCreateFolder}
+                    title="Tạo thư mục mới"
+                    submitText="Tạo mới"
+                />
+
+                <FolderModal
+                    isOpen={isEditModalOpen}
+                    onClose={() => setIsEditModalOpen(false)}
+                    onSubmit={handleEditFolder}
+                    initialName={folderToEdit?.name}
+                    title="Đổi tên thư mục"
+                    submitText="Lưu thay đổi"
+                />
+
+                <DeleteConfirmModal
+                    isOpen={isDeleteModalOpen}
+                    onClose={() => setIsDeleteModalOpen(false)}
+                    onConfirm={handleDeleteFolder}
+                    itemName={folderToDelete?.name || ""}
+                />
         </div>
     );
 }

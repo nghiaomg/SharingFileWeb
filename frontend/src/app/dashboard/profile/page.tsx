@@ -1,16 +1,59 @@
-import { User, Mail, Calendar, MapPin, HardDrive, ShieldCheck, Activity, Star, Clock, Crown, Zap, Shield, FileText } from "lucide-react";
+import { User, Mail, Calendar, MapPin, HardDrive, ShieldCheck, Activity, Star, Clock, Crown, Zap, Shield, FileText, Loader2, Save, X, Edit2 } from "lucide-react";
 import Link from "next/link";
+import { useAuthStore } from "@/features/auth/hooks/useAuthStore";
+import { useState } from "react";
+import { authService } from "@/services/authService";
 
 export default function ProfilePage() {
+    const { user, fetchUser } = useAuthStore();
+    const [isEditing, setIsEditing] = useState(false);
+    const [editEmail, setEditEmail] = useState(user?.email || "");
+    const [isSaving, setIsSaving] = useState(false);
+    const [errorMsg, setErrorMsg] = useState("");
+    const [successMsg, setSuccessMsg] = useState("");
+
+    const handleSaveProfile = async () => {
+        try {
+            setErrorMsg("");
+            setSuccessMsg("");
+            setIsSaving(true);
+            await authService.updateProfile({ email: editEmail });
+            await fetchUser(); // Reload data from server
+            setSuccessMsg("Cập nhật thông tin thành công!");
+            setIsEditing(false);
+        } catch (error) {
+            const err = error as { response?: { data?: { message?: string } } };
+            setErrorMsg(err.response?.data?.message || "Đã xảy ra lỗi khi cập nhật.");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    if (!user) {
+        return (
+            <div className="p-8 flex items-center justify-center w-full h-full">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+        );
+    }
+
+    const isAdmin = user.roles?.includes("ROLE_ADMIN");
+
     return (
         <div className="p-8 pb-32 w-full h-full overflow-y-auto">
             {/* Header Profile Banner */}
             <div className="relative rounded-3xl overflow-hidden mb-8 border border-border/50 shadow-sm bg-card">
                 <div className="h-48 w-full bg-gradient-to-r from-violet-600 via-primary to-indigo-600 relative overflow-hidden">
                     <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] mix-blend-overlay opacity-30"></div>
-                    <div className="absolute top-4 right-4 bg-background/20 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 text-white text-xs font-bold flex items-center gap-2">
-                        <Crown className="w-4 h-4 text-amber-300" /> Thành viên FileFlow Pro
-                    </div>
+                    {isAdmin ? (
+                        <div className="absolute top-4 right-4 bg-background/20 backdrop-blur-md px-3 py-1.5 rounded-full border border-rose-500/50 text-white text-xs font-bold flex items-center gap-2">
+                            <Crown className="w-4 h-4 text-rose-400" /> Quản trị viên
+                        </div>
+                    ) : (
+                        <div className="absolute top-4 right-4 bg-background/20 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 text-white text-xs font-bold flex items-center gap-2">
+                             Thành viên Tiêu chuẩn
+                        </div>
+                    )}
                 </div>
 
                 <div className="px-8 pb-8 relative flex flex-col sm:flex-row items-center sm:items-end gap-6 -mt-16 sm:-mt-20">
@@ -24,20 +67,42 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="flex-1 text-center sm:text-left mb-2">
-                        <h1 className="text-3xl font-bold mb-1">Trung Nghĩa</h1>
-                        <p className="text-muted-foreground font-medium flex items-center justify-center sm:justify-start gap-4">
-                            <span className="flex items-center gap-1"><Mail className="w-4 h-4" /> trungnghia@example.com</span>
-                            <span className="hidden sm:flex items-center gap-1"><MapPin className="w-4 h-4" /> TP. Hồ Chí Minh</span>
-                        </p>
+                        <h1 className="text-3xl font-bold mb-1">{user.username}</h1>
+                        <div className="text-muted-foreground font-medium flex items-center justify-center sm:justify-start gap-4">
+                            <span className="flex items-center gap-2">
+                                <Mail className="w-4 h-4" /> 
+                                {isEditing ? (
+                                    <input 
+                                        type="email" 
+                                        value={editEmail} 
+                                        onChange={(e) => setEditEmail(e.target.value)}
+                                        className="bg-background border border-border rounded-md px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary w-64"
+                                    />
+                                ) : (
+                                    <span>{user.email}</span>
+                                )}
+                            </span>
+                            {!isEditing && <span className="hidden sm:flex items-center gap-1"><MapPin className="w-4 h-4" /> Vietnam</span>}
+                        </div>
+                        {errorMsg && <p className="text-rose-500 text-sm mt-2">{errorMsg}</p>}
+                        {successMsg && <p className="text-emerald-500 text-sm mt-2">{successMsg}</p>}
                     </div>
 
                     <div className="flex gap-3 mb-2">
-                        <Link href="/dashboard/settings" className="px-6 py-2.5 bg-secondary text-foreground font-bold rounded-xl hover:bg-secondary/80 transition-colors shadow-sm text-sm">
-                            Chỉnh sửa hồ sơ
-                        </Link>
-                        <button className="px-6 py-2.5 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors shadow-lg hover:shadow-primary/30 text-sm flex items-center gap-2">
-                            <Zap className="w-4 h-4" /> Nâng cấp
-                        </button>
+                        {isEditing ? (
+                            <>
+                                <button onClick={() => setIsEditing(false)} disabled={isSaving} className="px-4 py-2 bg-secondary text-foreground font-bold rounded-xl hover:bg-secondary/80 transition-colors shadow-sm text-sm whitespace-nowrap">
+                                    <X className="w-4 h-4 inline mr-1" /> Hủy
+                                </button>
+                                <button onClick={handleSaveProfile} disabled={isSaving} className="px-6 py-2 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors shadow-lg hover:shadow-primary/30 text-sm flex items-center gap-2 whitespace-nowrap">
+                                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Lưu
+                                </button>
+                            </>
+                        ) : (
+                            <button onClick={() => setIsEditing(true)} className="px-6 py-2.5 bg-secondary text-foreground font-bold rounded-xl hover:bg-secondary/80 transition-colors shadow-sm text-sm flex items-center gap-2">
+                                <Edit2 className="w-4 h-4 inline" /> Chỉnh sửa hồ sơ
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>

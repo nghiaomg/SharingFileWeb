@@ -1,0 +1,34 @@
+
+> frontend@0.1.0 lint
+> eslint
+
+
+C:\WorkSpace\Hutech\SharingFileWeb\frontend\src\app\dashboard\files\[folderId]\page.tsx
+  4:48   warning  'Video' is defined but never used        @typescript-eslint/no-unused-vars
+  4:55   warning  'Music' is defined but never used        @typescript-eslint/no-unused-vars
+  4:148  warning  'FileArchive' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\WorkSpace\Hutech\SharingFileWeb\frontend\src\app\dashboard\files\page.tsx
+  36:12  warning  'dragCounter' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\WorkSpace\Hutech\SharingFileWeb\frontend\src\app\dashboard\page.tsx
+  6:10  warning  'useState' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\WorkSpace\Hutech\SharingFileWeb\frontend\src\app\dashboard\recent\page.tsx
+  1:52  warning  'Calendar' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\WorkSpace\Hutech\SharingFileWeb\frontend\src\app\dashboard\shared\page.tsx
+  1:46  warning  'Search' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\WorkSpace\Hutech\SharingFileWeb\frontend\src\features\auth\components\LoginForm.tsx
+   6:10  warning  'Mail' is defined but never used          @typescript-eslint/no-unused-vars
+  40:25  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\WorkSpace\Hutech\SharingFileWeb\frontend\src\features\auth\components\SignupForm.tsx
+  46:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\WorkSpace\Hutech\SharingFileWeb\frontend\src\features\landing-page\components\Pricing.tsx
+  135:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+Γ£û 11 problems (3 errors, 8 warnings)
+

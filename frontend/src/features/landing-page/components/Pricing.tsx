@@ -132,7 +132,7 @@ export function Pricing() {
     );
 }
 
-function PricingCard({ plan }: { plan: any }) {
+function PricingCard({ plan }: { plan: { name: string, price: string, desc: string, features: string[], btn: string, popular: boolean, period?: string } }) {
     return (
         <div
             className={`relative p-8 rounded-[2rem] border transition-all duration-300 flex flex-col h-full bg-card hover:shadow-2xl hover:shadow-primary/10 ${plan.popular ? "border-primary shadow-xl scale-105" : "border-border"

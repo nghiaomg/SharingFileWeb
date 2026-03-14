@@ -3,32 +3,66 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
+import { Lock, ArrowRight, Loader2, User } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGoogle, faGithub } from "@fortawesome/free-brands-svg-icons";
+import { authService } from "@/services/authService";
 
 export function LoginForm() {
     const [isLoading, setIsLoading] = useState(false);
+    const [errorMsg, setErrorMsg] = useState("");
+    
+    const [formData, setFormData] = useState({
+        username: "",
+        password: "",
+    });
+
     const router = useRouter();
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-        // Giả lập thời gian đăng nhập
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        router.push("/dashboard");
+        setErrorMsg("");
+
+        try {
+            await authService.login({
+                username: formData.username,
+                password: formData.password
+            });
+            router.push("/dashboard");
+        } catch (error) {
+            const err = error as { response?: { data?: { message?: string } } };
+            setErrorMsg(err.response?.data?.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
         <form onSubmit={handleSubmit} className="w-full space-y-6 flex flex-col items-center max-w-sm mx-auto">
             <div className="w-full space-y-4">
+                {errorMsg && (
+                    <div className="bg-red-50 text-red-500 p-3 rounded-md text-sm text-center">
+                        {errorMsg}
+                    </div>
+                )}
                 <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
-                        <Mail className="w-5 h-5" />
+                        <User className="w-5 h-5" />
                     </div>
                     <input
-                        type="email"
-                        placeholder="Email của bạn"
+                        type="text"
+                        name="username"
+                        value={formData.username}
+                        onChange={handleChange}
+                        placeholder="Tên đăng nhập"
                         className="w-full pl-10 pr-4 py-3 bg-secondary/50 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-muted-foreground"
                         required
                     />
@@ -40,6 +74,9 @@ export function LoginForm() {
                     </div>
                     <input
                         type="password"
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
                         placeholder="Mật khẩu"
                         className="w-full pl-10 pr-4 py-3 bg-secondary/50 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-muted-foreground"
                         required
