@@ -19,7 +19,6 @@ public class FileStorageService {
   private final String UPLOAD_DIR = "uploads";
   private final String TEMP_DIR = UPLOAD_DIR + File.separator + "temp";
   private final String FILES_DIR = UPLOAD_DIR + File.separator + "files";
-  private final long MAX_FILE_SIZE = 1L * 1024 * 1024 * 1024; // 1GB
 
   public FileStorageService() {
     createDirectory(TEMP_DIR);
@@ -91,14 +90,6 @@ public class FileStorageService {
         }
         Files.copy(chunkPath, outputStream);
       }
-    }
-
-    // Check size limit after merging
-    long finalSize = Files.size(mergedFilePath);
-    if (finalSize > MAX_FILE_SIZE) {
-        Files.deleteIfExists(mergedFilePath);
-        deleteDirectoryRecursively(chunkDir);
-        throw new RuntimeException("File exceeds maximum allowed size of 1GB.");
     }
 
     // Clean up temporary chunks

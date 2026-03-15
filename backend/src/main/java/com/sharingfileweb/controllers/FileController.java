@@ -9,13 +9,18 @@ import org.springframework.web.multipart.MultipartFile;
 import com.sharingfileweb.models.StorageFile;
 import com.sharingfileweb.payload.response.FileResponse;
 import com.sharingfileweb.payload.response.MessageResponse;
+import com.sharingfileweb.payload.response.StandardResponse;
 import com.sharingfileweb.repository.FileRepository;
+import com.sharingfileweb.repository.UserRepository;
 import com.sharingfileweb.security.services.FileStorageService;
+import com.sharingfileweb.models.User;
 import com.sharingfileweb.security.services.UserDetailsImpl;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import com.sharingfileweb.services.FileService;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -23,62 +28,24 @@ import java.util.stream.Collectors;
 public class FileController {
 
   @Autowired
-  FileStorageService fileStorageService;
-
-  @Autowired
-  FileRepository fileRepository;
-
-  private String getCurrentUserId() {
-    UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    return userDetails.getId();
-  }
-
-  private FileResponse mapToResponse(StorageFile file) {
-    return new FileResponse(
-        file.getId(),
-        file.getName(),
-        file.getType(),
-        file.getSize(),
-        file.getFolderId(),
-        file.getCreatedAt(),
-        file.isPublic()
-    );
-  }
+  FileService fileService;
 
   @GetMapping
   public ResponseEntity<?> getFiles(@RequestParam(required = false) String folderId) {
-    String userId = getCurrentUserId();
-    List<StorageFile> files;
-
-    if (folderId == null || folderId.trim().isEmpty()) {
-      files = fileRepository.findByOwnerIdAndIsDeletedFalse(userId).stream()
-          .filter(f -> f.getFolderId() == null || f.getFolderId().isEmpty())
-          .collect(Collectors.toList());
-    } else {
-      files = fileRepository.findByOwnerIdAndFolderIdAndIsDeletedFalse(userId, folderId);
-    }
-
-    List<FileResponse> response = files.stream().map(this::mapToResponse).collect(Collectors.toList());
-    return ResponseEntity.ok(response);
+    List<FileResponse> response = fileService.getFiles(folderId);
+    return ResponseEntity.ok(StandardResponse.success("Fetched files successfully", response));
   }
 
   @GetMapping("/recent")
   public ResponseEntity<?> getRecentFiles() {
-    String userId = getCurrentUserId();
-    org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, 50);
-    List<StorageFile> recentFiles = fileRepository.findByOwnerIdAndIsDeletedFalseOrderByCreatedAtDesc(userId, pageable).getContent();
-    
-    List<FileResponse> response = recentFiles.stream().map(this::mapToResponse).collect(Collectors.toList());
-    return ResponseEntity.ok(response);
+    List<FileResponse> response = fileService.getRecentFiles();
+    return ResponseEntity.ok(StandardResponse.success("Fetched recent files successfully", response));
   }
 
   @GetMapping("/shared")
   public ResponseEntity<?> getSharedFiles() {
-    String userId = getCurrentUserId();
-    List<StorageFile> sharedFiles = fileRepository.findByOwnerIdAndIsPublicTrueAndIsDeletedFalse(userId);
-    
-    List<FileResponse> response = sharedFiles.stream().map(this::mapToResponse).collect(Collectors.toList());
-    return ResponseEntity.ok(response);
+    List<FileResponse> response = fileService.getSharedFiles();
+    return ResponseEntity.ok(StandardResponse.success("Fetched shared files successfully", response));
   }
 
   // Expect FormData: file (blob), chunkIndex, uploadId
@@ -86,21 +53,22 @@ public class FileController {
   public ResponseEntity<?> uploadChunk(
       @RequestParam("file") MultipartFile file,
       @RequestParam("chunkIndex") int chunkIndex,
-      @RequestParam("uploadId") String uploadId) {
+      @RequestParam("uploadId") String uploadId,
+      @RequestParam(value = "totalFileSize", required = false) Long totalFileSize) {
           
     try {
-      fileStorageService.storeChunk(uploadId, chunkIndex, file);
-      return ResponseEntity.ok(new MessageResponse("Chunk " + chunkIndex + " uploaded successfully"));
+      fileService.storeChunk(file, chunkIndex, uploadId, totalFileSize);
+      return ResponseEntity.ok(StandardResponse.success("Chunk " + chunkIndex + " uploaded successfully", null));
     } catch (Exception e) {
-      return ResponseEntity.badRequest().body(new MessageResponse("Error uploading chunk: " + e.getMessage()));
+      return ResponseEntity.badRequest().body(StandardResponse.error("Error uploading chunk: " + e.getMessage(), null));
     }
   }
 
   // Get uploaded chunks status to support resumption
   @GetMapping("/upload/status")
-  public ResponseEntity<List<Integer>> getUploadStatus(@RequestParam("uploadId") String uploadId) {
-    List<Integer> uploadedChunks = fileStorageService.getUploadedChunks(uploadId);
-    return ResponseEntity.ok(uploadedChunks);
+  public ResponseEntity<?> getUploadStatus(@RequestParam("uploadId") String uploadId) {
+    List<Integer> uploadedChunks = fileService.getUploadedChunks(uploadId);
+    return ResponseEntity.ok(StandardResponse.success("Fetched upload status successfully", uploadedChunks));
   }
 
   // Complete upload request
@@ -113,38 +81,20 @@ public class FileController {
       @RequestParam("fileSize") long fileSize,
       @RequestParam(value = "folderId", required = false) String folderId) {
 
-    String userId = getCurrentUserId();
-    String normalizedFolderId = (folderId != null && folderId.trim().isEmpty()) ? null : folderId;
-
     try {
-      // Check if file already exists
-      if (fileRepository.existsByNameAndOwnerIdAndFolderIdAndIsDeletedFalse(fileName, userId, normalizedFolderId)) {
-        return ResponseEntity.badRequest().body(new MessageResponse("Lỗi: Đã tồn tại tệp có cùng tên trong thư mục này."));
-      }
-
-      String storedPath = fileStorageService.mergeChunks(uploadId, fileName, totalChunks, userId);
-      
-      StorageFile storageFile = new StorageFile(fileName, fileType, fileSize, userId, normalizedFolderId, storedPath);
-      StorageFile savedFile = fileRepository.save(storageFile);
-      
-      return ResponseEntity.ok(mapToResponse(savedFile));
+      FileResponse response = fileService.completeUpload(uploadId, fileName, totalChunks, fileType, fileSize, folderId);
+      return ResponseEntity.ok(StandardResponse.success("File uploaded successfully", response));
     } catch (Exception e) {
-       return ResponseEntity.badRequest().body(new MessageResponse("Lỗi gộp file (merge): " + e.getMessage()));
+       return ResponseEntity.badRequest().body(StandardResponse.error("Lỗi gộp file (merge): " + e.getMessage(), null));
     }
   }
 
   @DeleteMapping("/{id}")
   public ResponseEntity<?> deleteFile(@PathVariable String id) {
-    String userId = getCurrentUserId();
-    Optional<StorageFile> fileData = fileRepository.findByIdAndOwnerIdAndIsDeletedFalse(id, userId);
-
-    if (fileData.isPresent()) {
-      StorageFile file = fileData.get();
-      file.setDeleted(true);
-      file.setDeletedAt(new java.util.Date());
-      fileRepository.save(file);
-      return ResponseEntity.ok(new MessageResponse("Đã chuyển tệp vào thùng rác!"));
-    } else {
+    try {
+      fileService.deleteFile(id);
+      return ResponseEntity.ok(StandardResponse.success("Đã chuyển tệp vào thùng rác!", null));
+    } catch (RuntimeException e) {
       return ResponseEntity.notFound().build();
     }
   }
@@ -152,37 +102,23 @@ public class FileController {
   // Đổi trạng thái Public của File
   @PutMapping("/{id}/share")
   public ResponseEntity<?> toggleShareFile(@PathVariable String id, @RequestBody java.util.Map<String, Boolean> payload) {
-    UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    StorageFile file = fileRepository.findByIdAndOwnerIdAndIsDeletedFalse(id, userDetails.getId()).orElse(null);
-
-    if (file == null) {
-      return ResponseEntity.notFound().build();
+    try {
+        FileResponse response = fileService.toggleShareFile(id, payload);
+        return ResponseEntity.ok(StandardResponse.success("File share status updated successfully", response));
+    } catch (RuntimeException e) {
+        if (e.getMessage().equals("File not found or unauthorized")) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.status(403).body(StandardResponse.error("You are not authorized to update this file.", null));
     }
-
-    if (!file.getOwnerId().equals(userDetails.getId())) {
-      return ResponseEntity.status(403).body(new MessageResponse("You are not authorized to update this file."));
-    }
-
-    boolean isPublic = payload.getOrDefault("isPublic", false);
-    file.setPublic(isPublic);
-    fileRepository.save(file);
-
-    return ResponseEntity.ok(mapToResponse(file));
   }
 
   // API download file nội bộ (Cần Auth)
   @GetMapping("/download/{id}")
   public ResponseEntity<org.springframework.core.io.Resource> downloadPrivateFile(@PathVariable String id) {
-    UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     try {
-      StorageFile file = fileRepository.findByIdAndOwnerIdAndIsDeletedFalse(id, userDetails.getId())
-          .orElseThrow(() -> new Exception("File not found or deleted"));
-
-      if (!file.getOwnerId().equals(userDetails.getId())) {
-          return ResponseEntity.status(403).build();
-      }
-
-      org.springframework.core.io.Resource resource = fileStorageService.loadFileAsResource(file);
+      StorageFile file = fileService.getFileEntity(id);
+      org.springframework.core.io.Resource resource = fileService.downloadPrivateFile(id);
 
       String contentDisposition = "attachment; filename=\"" + file.getName() + "\"";
       return ResponseEntity.ok()
@@ -198,27 +134,20 @@ public class FileController {
   // API lấy Metadata public (Không cần Auth)
   @GetMapping("/public/{id}")
   public ResponseEntity<?> getPublicFileMetadata(@PathVariable String id) {
-     StorageFile file = fileRepository.findById(id).orElse(null);
-     
-     if (file == null || !file.isPublic() || file.isDeleted()) {
-        return ResponseEntity.notFound().build();
-     }
-
-     return ResponseEntity.ok(mapToResponse(file));
+      try {
+          FileResponse response = fileService.getPublicFileMetadata(id);
+          return ResponseEntity.ok(StandardResponse.success("Fetched public file info", response));
+      } catch (RuntimeException e) {
+          return ResponseEntity.notFound().build();
+      }
   }
 
   // API tải xuống Public (Không cần Auth)
   @GetMapping("/public/download/{id}")
   public ResponseEntity<org.springframework.core.io.Resource> downloadPublicFile(@PathVariable String id) {
     try {
-      StorageFile file = fileRepository.findById(id)
-          .orElseThrow(() -> new Exception("File not found"));
-
-      if (!file.isPublic() || file.isDeleted()) {
-          return ResponseEntity.status(403).build();
-      }
-
-      org.springframework.core.io.Resource resource = fileStorageService.loadFileAsResource(file);
+      StorageFile file = fileService.getPublicFileEntity(id);
+      org.springframework.core.io.Resource resource = fileService.downloadPublicFile(file);
 
       String contentDisposition = "attachment; filename=\"" + file.getName() + "\"";
       return ResponseEntity.ok()

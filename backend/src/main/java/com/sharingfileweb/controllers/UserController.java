@@ -19,11 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.sharingfileweb.models.User;
 import com.sharingfileweb.payload.request.UpdateProfileRequest;
 import com.sharingfileweb.payload.response.MessageResponse;
+import com.sharingfileweb.payload.response.StandardResponse;
 import com.sharingfileweb.payload.response.UserProfileResponse;
-import com.sharingfileweb.repository.UserRepository;
-import com.sharingfileweb.repository.FileRepository;
-import com.sharingfileweb.security.services.UserDetailsImpl;
-import java.util.HashMap;
+import com.sharingfileweb.services.UserService;
 import java.util.Map;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -32,60 +30,27 @@ import java.util.Map;
 public class UserController {
 
   @Autowired
-  UserRepository userRepository;
-
-  @Autowired
-  FileRepository fileRepository;
+  UserService userService;
 
   @GetMapping("/auth/me")
   public ResponseEntity<?> getCurrentUser() {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-    
-    List<String> roles = userDetails.getAuthorities().stream()
-        .map(item -> item.getAuthority())
-        .collect(Collectors.toList());
-
-    return ResponseEntity.ok(new UserProfileResponse(
-        userDetails.getId(),
-        userDetails.getUsername(),
-        userDetails.getEmail(),
-        roles
-    ));
+    UserProfileResponse response = userService.getCurrentUserProfile();
+    return ResponseEntity.ok(StandardResponse.success("Fetched user profile successfully", response));
   }
 
   @PutMapping("/user/profile")
   public ResponseEntity<?> updateProfile(@Valid @RequestBody UpdateProfileRequest request) {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-
-    User user = userRepository.findById(userDetails.getId()).orElse(null);
-    if (user == null) {
-      return ResponseEntity.badRequest().body(new MessageResponse("User not found!"));
+    try {
+        userService.updateProfile(request);
+        return ResponseEntity.ok(StandardResponse.success("Profile updated successfully!", null));
+    } catch (RuntimeException e) {
+        return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
     }
-
-    if (request.getEmail() != null && !request.getEmail().isEmpty()) {
-      if (!user.getEmail().equals(request.getEmail()) && userRepository.existsByEmail(request.getEmail())) {
-        return ResponseEntity.badRequest().body(new MessageResponse("Error: Email is already in use!"));
-      }
-      user.setEmail(request.getEmail());
-    }
-
-    userRepository.save(user);
-    return ResponseEntity.ok(new MessageResponse("Profile updated successfully!"));
   }
 
   @GetMapping("/user/storage")
   public ResponseEntity<?> getStorageUsage() {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-
-    Long totalBytes = fileRepository.sumSizeByOwnerId(userDetails.getId());
-    
-    Map<String, Object> response = new HashMap<>();
-    response.put("usedStorage", totalBytes != null ? totalBytes : 0L);
-    // You could also return maxStorage if you have a limit config
-
-    return ResponseEntity.ok(response);
+    Map<String, Object> response = userService.getStorageUsage();
+    return ResponseEntity.ok(StandardResponse.success("Fetched storage usage successfully", response));
   }
 }

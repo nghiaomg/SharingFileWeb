@@ -96,6 +96,7 @@ export async function uploadFileChunked(
     formData.append("totalChunks", totalChunks.toString());
     formData.append("uploadId", uploadId);
     formData.append("folderId", folderId);
+    formData.append("totalFileSize", file.size.toString());
 
     await apiClient.post("/files/store/upload/chunk", formData, {
       headers: { "Content-Type": "multipart/form-data" },

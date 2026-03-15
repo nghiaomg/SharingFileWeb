@@ -10,14 +10,21 @@ public class JwtResponse {
   private String username;
   private String email;
   private List<String> roles;
+  private String subscriptionPlan;
+  private long maxStorage;
+  private long maxFileSize;
 
-  public JwtResponse(String accessToken, String refreshToken, String id, String username, String email, List<String> roles) {
+  public JwtResponse(String accessToken, String refreshToken, String id, String username, String email, List<String> roles,
+                     String subscriptionPlan, long maxStorage, long maxFileSize) {
     this.accessToken = accessToken;
     this.refreshToken = refreshToken;
     this.id = id;
     this.username = username;
     this.email = email;
     this.roles = roles;
+    this.subscriptionPlan = subscriptionPlan;
+    this.maxStorage = maxStorage;
+    this.maxFileSize = maxFileSize;
   }
 
   public String getAccessToken() {
@@ -70,5 +77,29 @@ public class JwtResponse {
 
   public List<String> getRoles() {
     return roles;
+  }
+
+  public String getSubscriptionPlan() {
+    return subscriptionPlan;
+  }
+
+  public void setSubscriptionPlan(String subscriptionPlan) {
+    this.subscriptionPlan = subscriptionPlan;
+  }
+
+  public long getMaxStorage() {
+    return maxStorage;
+  }
+
+  public void setMaxStorage(long maxStorage) {
+    this.maxStorage = maxStorage;
+  }
+
+  public long getMaxFileSize() {
+    return maxFileSize;
+  }
+
+  public void setMaxFileSize(long maxFileSize) {
+    this.maxFileSize = maxFileSize;
   }
 }

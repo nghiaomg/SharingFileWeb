@@ -22,14 +22,22 @@ public class UserDetailsImpl implements UserDetails {
   @JsonIgnore
   private String password;
 
+  private String subscriptionPlan;
+  private long maxStorage;
+  private long maxFileSize;
+
   private Collection<? extends GrantedAuthority> authorities;
 
   public UserDetailsImpl(String id, String username, String email, String password,
+      String subscriptionPlan, long maxStorage, long maxFileSize,
       Collection<? extends GrantedAuthority> authorities) {
     this.id = id;
     this.username = username;
     this.email = email;
     this.password = password;
+    this.subscriptionPlan = subscriptionPlan;
+    this.maxStorage = maxStorage;
+    this.maxFileSize = maxFileSize;
     this.authorities = authorities;
   }
 
@@ -43,6 +51,9 @@ public class UserDetailsImpl implements UserDetails {
         user.getUsername(), 
         user.getEmail(),
         user.getPassword(), 
+        user.getSubscriptionPlan(),
+        user.getMaxStorage(),
+        user.getMaxFileSize(),
         authorities);
   }
 
@@ -67,6 +78,18 @@ public class UserDetailsImpl implements UserDetails {
   @Override
   public String getUsername() {
     return username;
+  }
+
+  public String getSubscriptionPlan() {
+    return subscriptionPlan;
+  }
+
+  public long getMaxStorage() {
+    return maxStorage;
+  }
+
+  public long getMaxFileSize() {
+    return maxFileSize;
   }
 
   @Override

@@ -1,19 +1,30 @@
 "use client";
 
 import { useQuery, queryOptions } from "@tanstack/react-query";
-import { getDashboardOverview } from "./api";
+import { getDashboardCategories, getDashboardRecentFiles } from "./api";
 
 export const dashboardKeys = {
   all:      () => ["dashboard"] as const,
-  overview: () => [...dashboardKeys.all(), "overview"] as const,
+  categories: () => [...dashboardKeys.all(), "categories"] as const,
+  recentFiles: () => [...dashboardKeys.all(), "recentFiles"] as const,
 };
 
-export const dashboardOverviewQueryOptions = queryOptions({
-  queryKey: dashboardKeys.overview(),
-  queryFn: getDashboardOverview,
+export const dashboardCategoriesQueryOptions = queryOptions({
+  queryKey: dashboardKeys.categories(),
+  queryFn: getDashboardCategories,
   staleTime: 30 * 1000,
 });
 
-export function useDashboardOverview() {
-  return useQuery(dashboardOverviewQueryOptions);
+export const dashboardRecentFilesQueryOptions = queryOptions({
+  queryKey: dashboardKeys.recentFiles(),
+  queryFn: getDashboardRecentFiles,
+  staleTime: 30 * 1000,
+});
+
+export function useDashboardCategories() {
+  return useQuery(dashboardCategoriesQueryOptions);
+}
+
+export function useDashboardRecentFiles() {
+  return useQuery(dashboardRecentFilesQueryOptions);
 }

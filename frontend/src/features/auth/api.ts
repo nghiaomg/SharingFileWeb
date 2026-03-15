@@ -53,3 +53,9 @@ export async function getStorageUsage(): Promise<StorageUsage> {
   const response = await apiClient.get<StorageUsage>("/user/storage");
   return response.data;
 }
+
+export async function upgradePlan(): Promise<User> {
+  await apiClient.post("/subscription/upgrade");
+  // Sau khi upgrade, nên lấy lại info mới
+  return getMe();
+}

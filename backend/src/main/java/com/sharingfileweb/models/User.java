@@ -32,6 +32,10 @@ public class User {
   @DBRef
   private Set<Role> roles = new HashSet<>();
 
+  private String subscriptionPlan = "BASIC";
+  private long maxStorage = 5L * 1024 * 1024 * 1024; // 5GB default
+  private long maxFileSize = 100L * 1024 * 1024; // 100MB default
+
   public User() {
   }
 
@@ -79,5 +83,29 @@ public class User {
 
   public void setRoles(Set<Role> roles) {
     this.roles = roles;
+  }
+
+  public String getSubscriptionPlan() {
+    return subscriptionPlan;
+  }
+
+  public void setSubscriptionPlan(String subscriptionPlan) {
+    this.subscriptionPlan = subscriptionPlan;
+  }
+
+  public long getMaxStorage() {
+    return maxStorage;
+  }
+
+  public void setMaxStorage(long maxStorage) {
+    this.maxStorage = maxStorage;
+  }
+
+  public long getMaxFileSize() {
+    return maxFileSize;
+  }
+
+  public void setMaxFileSize(long maxFileSize) {
+    this.maxFileSize = maxFileSize;
   }
 }

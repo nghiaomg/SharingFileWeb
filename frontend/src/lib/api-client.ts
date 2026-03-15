@@ -27,6 +27,13 @@ apiClient.interceptors.request.use(
 // Interceptor for responses: handle global errors like 401 Unauthorized
 apiClient.interceptors.response.use(
   (response) => {
+    // Nếu API trả về cấu trúc StandardResponse (có thuộc tính success và msg),
+    // trích xuất phần 'data' để tương thích ngược với format cũ.
+    if (response.data && typeof response.data === 'object' && 'success' in response.data) {
+       // Chúng ta vẫn return nguyên response axios, nhưng ghi đè axios data = spring boot data
+       // Việc này giúp các component vẫn gọi req.data như bình thường
+       response.data = response.data.data !== undefined ? response.data.data : response.data;
+    }
     return response;
   },
   async (error) => {
@@ -45,7 +52,9 @@ apiClient.interceptors.response.use(
           refreshToken,
         });
 
-        const { accessToken } = rs.data;
+        // Backend trả về StandardResponse cho refreshtoken nên dữ liệu payload nằm trong rs.data.data
+        const payloadData = (rs.data && 'success' in rs.data) ? rs.data.data : rs.data;
+        const { accessToken } = payloadData;
 
         Cookies.set("access_token", accessToken, { expires: 1 });
         apiClient.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;

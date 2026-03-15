@@ -2,7 +2,7 @@
 
 import { FileText, ImageIcon, Video, HardDrive, TrendingUp, Clock, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { useDashboardOverview } from "@/features/dashboard/queries";
+import { useDashboardCategories, useDashboardRecentFiles } from "@/features/dashboard/queries";
 import { formatBytes } from "@/lib/format";
 
 const categoryIcons: Record<string, { icon: React.ElementType, color: string, bg: string }> = {
@@ -12,7 +12,8 @@ const categoryIcons: Record<string, { icon: React.ElementType, color: string, bg
     "other": { icon: HardDrive, color: "text-amber-500", bg: "bg-amber-500/10" },
 };
 
-function getCategoryUIKey(type: string): string {
+function getCategoryUIKey(type?: string): string {
+    if (!type) return "other";
     const t = type.toLowerCase();
     if (t.includes("image") || t.includes("hình")) return "image";
     if (t.includes("video")) return "video";
@@ -21,7 +22,11 @@ function getCategoryUIKey(type: string): string {
 }
 
 export default function DashboardPage() {
-    const { data, isLoading, error } = useDashboardOverview();
+    const { data: categories, isLoading: isCatLoading, error: catError } = useDashboardCategories();
+    const { data: recentFiles, isLoading: isRecentLoading, error: recentError } = useDashboardRecentFiles();
+
+    const isLoading = isCatLoading || isRecentLoading;
+    const error = catError || recentError;
 
     if (isLoading) {
         return (
@@ -39,8 +44,8 @@ export default function DashboardPage() {
         );
     }
 
-    const categories = data?.categories || [];
-    const recentFiles = data?.recentFiles || [];
+    const cats = categories || [];
+    const recent = recentFiles || [];
 
     return (
         <div className="p-8 pb-32 space-y-8">
@@ -52,8 +57,8 @@ export default function DashboardPage() {
 
             {/* Category Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {categories.map((cat, i) => {
-                    const uiKey = getCategoryUIKey(cat.type);
+                {cats.length > 0 ? cats.map((cat, i) => {
+                    const uiKey = getCategoryUIKey(cat.title);
                     const meta = categoryIcons[uiKey] || categoryIcons["other"];
                     const Icon = meta.icon;
                     return (
@@ -67,12 +72,35 @@ export default function DashboardPage() {
                                 </div>
                                 <TrendingUp className="w-4 h-4 text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                             </div>
-                            <h3 className="text-2xl font-bold mb-1">{cat.count}</h3>
-                            <p className="text-muted-foreground text-sm font-medium">{cat.type}</p>
-                            <p className="text-xs text-muted-foreground/70 mt-1 font-mono">{formatBytes(cat.totalSize)}</p>
+                            <h3 className="text-2xl font-bold mb-1">{cat.files}</h3>
+                            <p className="text-muted-foreground text-sm font-medium">{cat.title}</p>
+                            <p className="text-xs text-muted-foreground/70 mt-1 font-mono">{formatBytes(cat.size)}</p>
                         </div>
                     );
-                })}
+                }) : (
+                    // Hiển thị trạng thái rỗng nếu chưa có loại tệp nào
+                    ["Tài liệu", "Hình ảnh", "Video", "Khác"].map((defaultType, i) => {
+                        const defaultKeys = ["document", "image", "video", "other"];
+                        const uiKey = defaultKeys[i];
+                        const meta = categoryIcons[uiKey];
+                        const Icon = meta.icon;
+                        return (
+                            <div
+                                key={i}
+                                className="bg-card border border-border/50 rounded-2xl p-6 hover:border-border transition-all opacity-70 grayscale-[30%]"
+                            >
+                                <div className="flex items-start justify-between mb-4">
+                                    <div className={`p-3 rounded-xl ${meta.bg}`}>
+                                        <Icon className={`w-6 h-6 ${meta.color}`} />
+                                    </div>
+                                </div>
+                                <h3 className="text-2xl font-bold mb-1">0</h3>
+                                <p className="text-muted-foreground text-sm font-medium">{defaultType}</p>
+                                <p className="text-xs text-muted-foreground/70 mt-1 font-mono">0 B</p>
+                            </div>
+                        )
+                    })
+                )}
             </div>
 
             {/* Recent Files */}
@@ -84,10 +112,10 @@ export default function DashboardPage() {
                     <Link href="/dashboard/recent" className="text-sm font-bold text-primary hover:underline">Xem tất cả</Link>
                 </div>
                 <div className="divide-y divide-border/50">
-                    {recentFiles.length === 0 ? (
+                    {recent.length === 0 ? (
                         <div className="p-8 text-center text-muted-foreground">Chưa có tệp nào.</div>
                     ) : (
-                        recentFiles.slice(0, 5).map((file) => (
+                        recent.slice(0, 5).map((file) => (
                             <div key={file.id} className="flex items-center p-4 hover:bg-muted/20 transition-colors">
                                 <div className="p-2.5 rounded-xl bg-blue-500/10 mr-4">
                                     <FileText className="w-5 h-5 text-blue-500" />

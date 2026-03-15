@@ -19,7 +19,7 @@ public class DashboardService {
     @Autowired
     private FileRepository fileRepository;
 
-    public DashboardOverviewDTO getDashboardOverview(String ownerId) {
+    public List<StorageCategoryDTO> getDashboardCategories(String ownerId) {
         // 1. Fetch all files to aggregate categories
         List<StorageFile> allFiles = fileRepository.findByOwnerIdAndIsDeletedFalse(ownerId);
         
@@ -56,7 +56,10 @@ public class DashboardService {
         categories.add(new StorageCategoryDTO("Hình ảnh", countImgs, sizeImgs));
         categories.add(new StorageCategoryDTO("Video", countVids, sizeVids));
         categories.add(new StorageCategoryDTO("Khác", countOthers, sizeOthers));
+        return categories;
+    }
 
+    public List<RecentFileDTO> getDashboardRecentFiles(String ownerId) {
         // 2. Fetch Recent Files (Limit 5)
         Pageable pageable = PageRequest.of(0, 5);
         List<StorageFile> recentFilesRaw = fileRepository.findByOwnerIdAndIsDeletedFalseOrderByCreatedAtDesc(ownerId, pageable).getContent();
@@ -65,6 +68,6 @@ public class DashboardService {
             .map(f -> new RecentFileDTO(f.getId(), f.getName(), f.getSize(), f.getType(), f.getCreatedAt()))
             .collect(Collectors.toList());
 
-        return new DashboardOverviewDTO(categories, recentFiles);
+        return recentFiles;
     }
 }

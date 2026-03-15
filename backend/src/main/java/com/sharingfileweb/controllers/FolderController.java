@@ -16,11 +16,8 @@ import com.sharingfileweb.payload.request.CreateFolderRequest;
 import com.sharingfileweb.payload.request.UpdateFolderRequest;
 import com.sharingfileweb.payload.response.FolderResponse;
 import com.sharingfileweb.payload.response.MessageResponse;
-import com.sharingfileweb.repository.FolderRepository;
-import com.sharingfileweb.repository.FileRepository;
-import com.sharingfileweb.models.StorageFile;
-import com.sharingfileweb.security.services.FileStorageService;
-import com.sharingfileweb.security.services.UserDetailsImpl;
+import com.sharingfileweb.payload.response.StandardResponse;
+import com.sharingfileweb.services.FolderService;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -28,148 +25,60 @@ import com.sharingfileweb.security.services.UserDetailsImpl;
 public class FolderController {
 
   @Autowired
-  FolderRepository folderRepository;
-
-  @Autowired
-  FileRepository fileRepository;
-
-  @Autowired
-  FileStorageService fileStorageService;
-
-  private String getCurrentUserId() {
-    UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    return userDetails.getId();
-  }
-
-  // Helper method to convert Entity to Response DTO
-  private FolderResponse mapToResponse(Folder folder) {
-    return new FolderResponse(
-        folder.getId(),
-        folder.getName(),
-        folder.getParentId(),
-        folder.getCreatedAt(),
-        folder.getUpdatedAt()
-    );
-  }
+  FolderService folderService;
 
   @GetMapping
   public ResponseEntity<?> getRootFolders() {
-    String userId = getCurrentUserId();
-    // Return folders where parentId is null or empty
-    List<Folder> folders = folderRepository.findByOwnerIdAndIsDeletedFalse(userId)
-                            .stream()
-                            .filter(f -> f.getParentId() == null || f.getParentId().isEmpty())
-                            .collect(Collectors.toList());
-
-    List<FolderResponse> response = folders.stream().map(this::mapToResponse).collect(Collectors.toList());
-    return ResponseEntity.ok(response);
+    List<FolderResponse> response = folderService.getRootFolders();
+    return ResponseEntity.ok(StandardResponse.success("Fetched root folders successfully", response));
   }
 
   @GetMapping("/{id}")
   public ResponseEntity<?> getFolderById(@PathVariable String id) {
-    String userId = getCurrentUserId();
-    Optional<Folder> folderData = folderRepository.findByIdAndOwnerIdAndIsDeletedFalse(id, userId);
-
-    if (folderData.isPresent()) {
-      return ResponseEntity.ok(mapToResponse(folderData.get()));
-    } else {
-      return ResponseEntity.notFound().build();
+    try {
+        FolderResponse response = folderService.getFolderById(id);
+        return ResponseEntity.ok(StandardResponse.success("Fetched folder successfully", response));
+    } catch (RuntimeException e) {
+        return ResponseEntity.notFound().build();
     }
   }
 
   @GetMapping("/{id}/children")
   public ResponseEntity<?> getFolderChildren(@PathVariable String id) {
-    String userId = getCurrentUserId();
-    List<Folder> folders = folderRepository.findByOwnerIdAndParentIdAndIsDeletedFalse(userId, id);
-    List<FolderResponse> response = folders.stream().map(this::mapToResponse).collect(Collectors.toList());
-    return ResponseEntity.ok(response);
+    List<FolderResponse> response = folderService.getFolderChildren(id);
+    return ResponseEntity.ok(StandardResponse.success("Fetched folder children successfully", response));
   }
 
   @PostMapping
   public ResponseEntity<?> createFolder(@Valid @RequestBody CreateFolderRequest request) {
-    String userId = getCurrentUserId();
-    
-    // Check if a folder with the same name exists at this level
-    String parentId = request.getParentId();
-    if (parentId != null && parentId.trim().isEmpty()) {
-       parentId = null;
+    try {
+        FolderResponse response = folderService.createFolder(request);
+        return ResponseEntity.ok(StandardResponse.success("Folder created successfully", response));
+    } catch (RuntimeException e) {
+        return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
     }
-
-    if (folderRepository.existsByNameAndOwnerIdAndParentIdAndIsDeletedFalse(request.getName(), userId, parentId)) {
-      return ResponseEntity
-          .badRequest()
-          .body(new MessageResponse("Error: Folder name is already taken at this location!"));
-    }
-
-    Folder folder = new Folder(request.getName(), userId, parentId);
-    Folder savedFolder = folderRepository.save(folder);
-
-    return ResponseEntity.ok(mapToResponse(savedFolder));
   }
 
   @PutMapping("/{id}")
   public ResponseEntity<?> updateFolder(@PathVariable String id, @Valid @RequestBody UpdateFolderRequest request) {
-    String userId = getCurrentUserId();
-
-    Optional<Folder> folderData = folderRepository.findByIdAndOwnerIdAndIsDeletedFalse(id, userId);
-
-    if (folderData.isPresent()) {
-      Folder folder = folderData.get();
-      
-      // Check if new name exists
-      if (!folder.getName().equals(request.getName()) && 
-          folderRepository.existsByNameAndOwnerIdAndParentIdAndIsDeletedFalse(request.getName(), userId, folder.getParentId())) {
-          return ResponseEntity
-              .badRequest()
-              .body(new MessageResponse("Error: Folder name is already taken at this location!"));
-      }
-
-      folder.setName(request.getName());
-      Folder updatedFolder = folderRepository.save(folder);
-      return ResponseEntity.ok(mapToResponse(updatedFolder));
-    } else {
-      return ResponseEntity.notFound().build();
+    try {
+        FolderResponse response = folderService.updateFolder(id, request);
+        return ResponseEntity.ok(StandardResponse.success("Folder updated successfully", response));
+    } catch (RuntimeException e) {
+        if (e.getMessage().equals("Folder not found")) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
     }
   }
 
   @DeleteMapping("/{id}")
   public ResponseEntity<?> deleteFolder(@PathVariable String id) {
-    String userId = getCurrentUserId();
-    
-    Optional<Folder> folderData = folderRepository.findByIdAndOwnerIdAndIsDeletedFalse(id, userId);
-    
-    if (folderData.isPresent()) {
-      deleteFolderRecursively(id, userId);
-      return ResponseEntity.ok(new MessageResponse("Folder moved to trash!"));
-    } else {
-      return ResponseEntity.notFound().build();
+    try {
+        folderService.deleteFolder(id);
+        return ResponseEntity.ok(StandardResponse.success("Folder moved to trash!", null));
+    } catch (RuntimeException e) {
+        return ResponseEntity.notFound().build();
     }
-  }
-
-  private void deleteFolderRecursively(String folderId, String userId) {
-      java.util.Date now = new java.util.Date();
-      java.time.Instant nowInstant = java.time.Instant.now();
-
-      // 1. Soft delete all files inside this folder
-      List<StorageFile> filesInFolder = fileRepository.findByOwnerIdAndFolderIdAndIsDeletedFalse(userId, folderId);
-      for (StorageFile file : filesInFolder) {
-          file.setDeleted(true);
-          file.setDeletedAt(now);
-          fileRepository.save(file);
-      }
-
-      // 2. Soft delete sub-folders recursively
-      List<Folder> children = folderRepository.findByOwnerIdAndParentIdAndIsDeletedFalse(userId, folderId);
-      for (Folder child : children) {
-          deleteFolderRecursively(child.getId(), userId);
-      }
-      
-      // Soft Delete the requested folder
-      Folder folder = folderRepository.findById(folderId).orElse(null);
-      if (folder != null) {
-          folder.setDeleted(true);
-          folder.setDeletedAt(nowInstant);
-          folderRepository.save(folder);
-      }
   }
 }

@@ -7,14 +7,13 @@ import {
     HardDrive, Crown, X, Zap, FileUp
 } from "lucide-react";
 import { useStorageUsage } from "@/features/auth/queries";
+import { getCurrentUser } from "@/features/auth/api";
 import { formatBytes } from "@/lib/format";
 
 interface DashboardSidebarProps {
     isOpen: boolean;
     onClose: () => void;
 }
-
-const MAX_STORAGE = 5 * 1024 * 1024 * 1024; // 5GB
 
 const navItems = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Tổng quan" },
@@ -31,9 +30,11 @@ const bottomItems = [
 export function DashboardSidebar({ isOpen, onClose }: DashboardSidebarProps) {
     const pathname = usePathname();
     const { data: storageData } = useStorageUsage();
+    const user = getCurrentUser();
 
     const usedStorage = storageData?.usedStorage || 0;
-    const usagePercent = Math.min(100, (usedStorage / MAX_STORAGE) * 100);
+    const MAX_STORAGE = user?.maxStorage || 5 * 1024 * 1024 * 1024; // Mặc định 5GB nếu ko có
+    const usagePercent = Math.min(100, Math.max(0, (usedStorage / MAX_STORAGE) * 100));
 
     return (
         <>
@@ -103,7 +104,7 @@ export function DashboardSidebar({ isOpen, onClose }: DashboardSidebarProps) {
                             />
                         </div>
                         <Link
-                            href="/dashboard/upgrade"
+                            href="/upgrade"
                             className="flex items-center justify-center gap-2 w-full py-2 bg-primary/10 text-primary text-sm font-bold rounded-xl hover:bg-primary/20 transition-colors"
                         >
                             <Crown className="w-4 h-4" /> Nâng cấp Pro
