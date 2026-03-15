@@ -6,6 +6,7 @@ export interface FolderResponse {
   parentId: string | null;
   createdAt: string;
   updatedAt: string;
+  deletedAt?: string;
 }
 
 export const folderService = {

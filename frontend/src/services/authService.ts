@@ -56,5 +56,10 @@ export const authService = {
   updateProfile: async (data: { email: string }) => {
     const response = await api.put("/user/profile", data);
     return response.data;
+  },
+
+  getStorageUsage: async (): Promise<{ usedStorage: number }> => {
+    const response = await api.get<{usedStorage: number}>("/user/storage");
+    return response.data;
   }
 };

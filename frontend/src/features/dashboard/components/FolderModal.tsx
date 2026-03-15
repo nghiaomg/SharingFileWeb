@@ -40,7 +40,12 @@ export function FolderModal({ isOpen, onClose, onSubmit, initialName = "", title
             await onSubmit(name.trim());
             onClose();
         } catch (err: unknown) {
-            setError((err as any).response?.data?.message || "Đã xảy ra lỗi. Vui lòng thử lại.");
+            if (err instanceof Error) {
+                const e = err as Error & { response?: { data?: { message?: string } } };
+                setError(e.response?.data?.message || e.message || "Đã xảy ra lỗi. Vui lòng thử lại.");
+            } else {
+                setError("Đã xảy ra lỗi. Vui lòng thử lại.");
+            }
         } finally {
             setIsLoading(false);
         }

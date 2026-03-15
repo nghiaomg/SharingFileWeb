@@ -5,10 +5,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
 import java.nio.file.*;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
+import com.sharingfileweb.models.StorageFile;
 
 @Service
 public class FileStorageService {
@@ -102,6 +105,20 @@ public class FileStorageService {
     deleteDirectoryRecursively(chunkDir);
 
     return mergedFilePath.toString();
+  }
+
+  public Resource loadFileAsResource(StorageFile file) throws Exception {
+    try {
+      Path filePath = Paths.get(file.getStoredPath()).normalize();
+      Resource resource = new UrlResource(filePath.toUri());
+      if (resource.exists() && resource.isReadable()) {
+        return resource;
+      } else {
+        throw new FileNotFoundException("File not found or not readable " + file.getName());
+      }
+    } catch (Exception ex) {
+      throw new Exception("Could not find file " + file.getName(), ex);
+    }
   }
 
   public void deleteFilePhysical(String storedPath) {

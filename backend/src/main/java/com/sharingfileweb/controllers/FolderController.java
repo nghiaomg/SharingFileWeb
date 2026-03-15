@@ -56,7 +56,7 @@ public class FolderController {
   public ResponseEntity<?> getRootFolders() {
     String userId = getCurrentUserId();
     // Return folders where parentId is null or empty
-    List<Folder> folders = folderRepository.findByOwnerId(userId)
+    List<Folder> folders = folderRepository.findByOwnerIdAndIsDeletedFalse(userId)
                             .stream()
                             .filter(f -> f.getParentId() == null || f.getParentId().isEmpty())
                             .collect(Collectors.toList());
@@ -68,7 +68,7 @@ public class FolderController {
   @GetMapping("/{id}")
   public ResponseEntity<?> getFolderById(@PathVariable String id) {
     String userId = getCurrentUserId();
-    Optional<Folder> folderData = folderRepository.findByIdAndOwnerId(id, userId);
+    Optional<Folder> folderData = folderRepository.findByIdAndOwnerIdAndIsDeletedFalse(id, userId);
 
     if (folderData.isPresent()) {
       return ResponseEntity.ok(mapToResponse(folderData.get()));
@@ -80,7 +80,7 @@ public class FolderController {
   @GetMapping("/{id}/children")
   public ResponseEntity<?> getFolderChildren(@PathVariable String id) {
     String userId = getCurrentUserId();
-    List<Folder> folders = folderRepository.findByOwnerIdAndParentId(userId, id);
+    List<Folder> folders = folderRepository.findByOwnerIdAndParentIdAndIsDeletedFalse(userId, id);
     List<FolderResponse> response = folders.stream().map(this::mapToResponse).collect(Collectors.toList());
     return ResponseEntity.ok(response);
   }
@@ -95,7 +95,7 @@ public class FolderController {
        parentId = null;
     }
 
-    if (folderRepository.existsByNameAndOwnerIdAndParentId(request.getName(), userId, parentId)) {
+    if (folderRepository.existsByNameAndOwnerIdAndParentIdAndIsDeletedFalse(request.getName(), userId, parentId)) {
       return ResponseEntity
           .badRequest()
           .body(new MessageResponse("Error: Folder name is already taken at this location!"));
@@ -111,14 +111,14 @@ public class FolderController {
   public ResponseEntity<?> updateFolder(@PathVariable String id, @Valid @RequestBody UpdateFolderRequest request) {
     String userId = getCurrentUserId();
 
-    Optional<Folder> folderData = folderRepository.findByIdAndOwnerId(id, userId);
+    Optional<Folder> folderData = folderRepository.findByIdAndOwnerIdAndIsDeletedFalse(id, userId);
 
     if (folderData.isPresent()) {
       Folder folder = folderData.get();
       
       // Check if new name exists
       if (!folder.getName().equals(request.getName()) && 
-          folderRepository.existsByNameAndOwnerIdAndParentId(request.getName(), userId, folder.getParentId())) {
+          folderRepository.existsByNameAndOwnerIdAndParentIdAndIsDeletedFalse(request.getName(), userId, folder.getParentId())) {
           return ResponseEntity
               .badRequest()
               .body(new MessageResponse("Error: Folder name is already taken at this location!"));
@@ -136,32 +136,40 @@ public class FolderController {
   public ResponseEntity<?> deleteFolder(@PathVariable String id) {
     String userId = getCurrentUserId();
     
-    Optional<Folder> folderData = folderRepository.findByIdAndOwnerId(id, userId);
+    Optional<Folder> folderData = folderRepository.findByIdAndOwnerIdAndIsDeletedFalse(id, userId);
     
     if (folderData.isPresent()) {
-      // NOTE: In a real application, you might want to recursively delete children folders and files
-      // or prevent deletion if it contains files. For this phase, we simply delete the folder.
-      // To prevent orphaned folders, let's recursively delete children.
       deleteFolderRecursively(id, userId);
-      return ResponseEntity.ok(new MessageResponse("Folder deleted successfully!"));
+      return ResponseEntity.ok(new MessageResponse("Folder moved to trash!"));
     } else {
       return ResponseEntity.notFound().build();
     }
   }
 
   private void deleteFolderRecursively(String folderId, String userId) {
-      // 1. Delete all files inside this folder
-      List<StorageFile> filesInFolder = fileRepository.findByOwnerIdAndFolderId(userId, folderId);
+      java.util.Date now = new java.util.Date();
+      java.time.Instant nowInstant = java.time.Instant.now();
+
+      // 1. Soft delete all files inside this folder
+      List<StorageFile> filesInFolder = fileRepository.findByOwnerIdAndFolderIdAndIsDeletedFalse(userId, folderId);
       for (StorageFile file : filesInFolder) {
-          fileStorageService.deleteFilePhysical(file.getStoredPath());
-          fileRepository.deleteById(file.getId());
+          file.setDeleted(true);
+          file.setDeletedAt(now);
+          fileRepository.save(file);
       }
 
-      // 2. Delete sub-folders recursively
-      List<Folder> children = folderRepository.findByOwnerIdAndParentId(userId, folderId);
+      // 2. Soft delete sub-folders recursively
+      List<Folder> children = folderRepository.findByOwnerIdAndParentIdAndIsDeletedFalse(userId, folderId);
       for (Folder child : children) {
           deleteFolderRecursively(child.getId(), userId);
       }
-      folderRepository.deleteById(folderId);
+      
+      // Soft Delete the requested folder
+      Folder folder = folderRepository.findById(folderId).orElse(null);
+      if (folder != null) {
+          folder.setDeleted(true);
+          folder.setDeletedAt(nowInstant);
+          folderRepository.save(folder);
+      }
   }
 }

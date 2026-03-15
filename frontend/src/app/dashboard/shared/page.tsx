@@ -1,4 +1,4 @@
-import { Share2, Users, FileText, ImageIcon, Search, MoreVertical, Link as LinkIcon } from "lucide-react";
+import { Share2, Users, FileText, ImageIcon, MoreVertical, Link as LinkIcon } from "lucide-react";
 
 export default function SharedPage() {
     const sharedFiles = [

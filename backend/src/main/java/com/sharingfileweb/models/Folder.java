@@ -20,6 +20,10 @@ public class Folder {
 
   private Instant updatedAt;
 
+  private boolean isDeleted;
+
+  private Instant deletedAt;
+
   public Folder() {
   }
 
@@ -29,6 +33,7 @@ public class Folder {
     this.parentId = parentId;
     this.createdAt = Instant.now();
     this.updatedAt = Instant.now();
+    this.isDeleted = false;
   }
 
   public String getId() {
@@ -79,5 +84,21 @@ public class Folder {
 
   public void setUpdatedAt(Instant updatedAt) {
     this.updatedAt = updatedAt;
+  }
+
+  public boolean isDeleted() {
+    return isDeleted;
+  }
+
+  public void setDeleted(boolean deleted) {
+    isDeleted = deleted;
+  }
+
+  public Instant getDeletedAt() {
+    return deletedAt;
+  }
+
+  public void setDeletedAt(Instant deletedAt) {
+    this.deletedAt = deletedAt;
   }
 }

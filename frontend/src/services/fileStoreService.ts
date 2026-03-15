@@ -7,6 +7,8 @@ export interface FileResponse {
   size: number;
   folderId: string | null;
   createdAt: string;
+  public?: boolean;
+  deletedAt?: string;
 }
 
 const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB chunks
@@ -22,6 +24,28 @@ export const fileStoreService = {
   // Delete a file
   deleteFile: async (id: string): Promise<void> => {
     await api.delete(`/files/${id}`);
+  },
+
+  // Toggle Share File
+  toggleShareFile: async (id: string, isPublic: boolean): Promise<FileResponse> => {
+    const response = await api.put(`/files/${id}/share`, { isPublic });
+    return response.data;
+  },
+
+  // Download Private File
+  downloadFile: async (id: string, name: string): Promise<void> => {
+    const response = await api.get(`/files/download/${id}`, {
+        responseType: 'blob' 
+    });
+    
+    // Create blob link to download
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', name); 
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   },
 
   // Upload file in chunks

@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { LayoutDashboard, Folder, Clock, Share2, Trash2, Settings, FileUp, Sparkles } from "lucide-react";
+import { authService } from "@/services/authService";
 
 const navigation = [
     { name: "Tổng quan", href: "/dashboard", icon: LayoutDashboard },
@@ -15,6 +17,31 @@ const navigation = [
 export function DashboardSidebar() {
     const pathname = usePathname();
     const router = useRouter();
+    const [usedStorage, setUsedStorage] = useState<number>(0);
+    const maxStorage = 1024 * 1024 * 1024 * 5; // 5GB limit (mock)
+
+    useEffect(() => {
+        const fetchStorage = async () => {
+            try {
+                const data = await authService.getStorageUsage();
+                setUsedStorage(data.usedStorage);
+            } catch (err) {
+                console.error("Lỗi lấy dung lượng: ", err);
+            }
+        };
+        fetchStorage();
+    }, []);
+
+    const formatBytes = (bytes: number, decimals = 2) => {
+        if (!+bytes) return '0 Bytes';
+        const k = 1024;
+        const dm = decimals < 0 ? 0 : decimals;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+    };
+
+    const percentage = Math.min((usedStorage / maxStorage) * 100, 100).toFixed(1);
 
     return (
         <aside className="w-64 border-r border-border bg-card/30 flex flex-col h-full overflow-y-auto">
@@ -61,10 +88,15 @@ export function DashboardSidebar() {
                     <div className="absolute top-0 right-0 p-2 opacity-10">
                         <Sparkles className="w-12 h-12" />
                     </div>
-                    <h4 className="text-sm font-bold mb-1">Gói miễn phí</h4>
-                    <div className="text-xs text-muted-foreground mb-3 font-mono">2.4 GB / 5.0 GB đã dùng</div>
+                    <h4 className="text-sm font-bold mb-1">Gói cơ bản</h4>
+                    <div className="text-xs text-muted-foreground mb-3 font-mono">
+                        {formatBytes(usedStorage)} / {formatBytes(maxStorage)} đã dùng
+                    </div>
                     <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden mb-3">
-                        <div className="h-full bg-gradient-to-r from-primary to-violet-500 w-[48%]" />
+                        <div 
+                           className="h-full bg-gradient-to-r from-primary to-violet-500" 
+                           style={{ width: `${percentage}%` }}
+                        />
                     </div>
                     <Link href="/dashboard/upgrade" className="text-xs text-primary font-bold hover:underline">
                         Nâng cấp gói tài khoản

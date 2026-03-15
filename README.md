@@ -25,6 +25,12 @@ Hệ thống cho phép Tải tiếp tiến trình (Resume) ngay cả khi mất k
 - **Hành Vi Skip Chunks (Bỏ Qua Các Phần Đã Tải)**: Trước khi gửi `Chunk 0`, FrontEnd mở port `GET /api/files/upload/status` hỏi thăm Backend các Chunk id đã thành công và xác nhận (đã lưu vật lý ổ đĩa).
 - **Phục Hồi Điểm Nghẽn Tiến Trình Giả**: Nếu Frontend phát hiện backend đã giữ 1 nửa file, UI Progress Bar tự động gán nhảy vọt đúng với 50% hoàn thành chứ không cần gửi hay hiển thị tải lại từ số 0. Tiết kiệm lượng lớn băng thông HTTP.
 
+### 4. Hệ Thống Chia Sẻ Tập Tin (Public Links)
+Chia sẻ nhanh tệp với bất kỳ ai thông qua đường link công khai an toàn được hệ thống cung cấp trực tiếp.
+- **Backend Model Flagging**: Spring Data cấu trúc cờ `isPublic` (Boolean) dành cho tài liệu trong Mongo. Cung cấp API thay đổi trạng thái, tải file Stream, và gửi Public File Metadata mà không yêu cầu JWT Auth (Bearer).
+- **Frontend Clipboard API**: Tính năng tạo Context Menu và lưu URL vào khay nhớ đệm (`/shared/file/:id`) thông qua Browser Clipboard.
+- **Trang Tải Trực Tuyến Giao Diện Tách Biệt**: Render giao diện Next.js `[id]/page.tsx` cho phép người dùng có Link tự do xem Thumbnail cấu trúc và Tải file từ Server Node. 
+
 ## Khởi Chạy Dự Án
 
 ### Backend (Spring Boot)

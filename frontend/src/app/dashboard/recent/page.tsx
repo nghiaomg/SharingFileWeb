@@ -1,4 +1,4 @@
-import { Clock, FileText, ImageIcon, MoreVertical, Calendar, Download } from "lucide-react";
+import { Clock, FileText, ImageIcon, MoreVertical, Download } from "lucide-react";
 
 export default function RecentFilesPage() {
     const recentEvents = [

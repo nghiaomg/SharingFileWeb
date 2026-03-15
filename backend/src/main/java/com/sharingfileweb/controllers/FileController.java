@@ -40,7 +40,8 @@ public class FileController {
         file.getType(),
         file.getSize(),
         file.getFolderId(),
-        file.getCreatedAt()
+        file.getCreatedAt(),
+        file.isPublic()
     );
   }
 
@@ -50,11 +51,11 @@ public class FileController {
     List<StorageFile> files;
 
     if (folderId == null || folderId.trim().isEmpty()) {
-      files = fileRepository.findByOwnerId(userId).stream()
+      files = fileRepository.findByOwnerIdAndIsDeletedFalse(userId).stream()
           .filter(f -> f.getFolderId() == null || f.getFolderId().isEmpty())
           .collect(Collectors.toList());
     } else {
-      files = fileRepository.findByOwnerIdAndFolderId(userId, folderId);
+      files = fileRepository.findByOwnerIdAndFolderIdAndIsDeletedFalse(userId, folderId);
     }
 
     List<FileResponse> response = files.stream().map(this::mapToResponse).collect(Collectors.toList());
@@ -98,7 +99,7 @@ public class FileController {
 
     try {
       // Check if file already exists
-      if (fileRepository.existsByNameAndOwnerIdAndFolderId(fileName, userId, normalizedFolderId)) {
+      if (fileRepository.existsByNameAndOwnerIdAndFolderIdAndIsDeletedFalse(fileName, userId, normalizedFolderId)) {
         return ResponseEntity.badRequest().body(new MessageResponse("Lỗi: Đã tồn tại tệp có cùng tên trong thư mục này."));
       }
 
@@ -116,15 +117,98 @@ public class FileController {
   @DeleteMapping("/{id}")
   public ResponseEntity<?> deleteFile(@PathVariable String id) {
     String userId = getCurrentUserId();
-    Optional<StorageFile> fileData = fileRepository.findByIdAndOwnerId(id, userId);
+    Optional<StorageFile> fileData = fileRepository.findByIdAndOwnerIdAndIsDeletedFalse(id, userId);
 
     if (fileData.isPresent()) {
       StorageFile file = fileData.get();
-      fileStorageService.deleteFilePhysical(file.getStoredPath());
-      fileRepository.deleteById(id);
-      return ResponseEntity.ok(new MessageResponse("Deleted successfully"));
+      file.setDeleted(true);
+      file.setDeletedAt(new java.util.Date());
+      fileRepository.save(file);
+      return ResponseEntity.ok(new MessageResponse("Đã chuyển tệp vào thùng rác!"));
     } else {
       return ResponseEntity.notFound().build();
+    }
+  }
+
+  // Đổi trạng thái Public của File
+  @PutMapping("/{id}/share")
+  public ResponseEntity<?> toggleShareFile(@PathVariable String id, @RequestBody java.util.Map<String, Boolean> payload) {
+    UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    StorageFile file = fileRepository.findByIdAndOwnerIdAndIsDeletedFalse(id, userDetails.getId()).orElse(null);
+
+    if (file == null) {
+      return ResponseEntity.notFound().build();
+    }
+
+    if (!file.getOwnerId().equals(userDetails.getId())) {
+      return ResponseEntity.status(403).body(new MessageResponse("You are not authorized to update this file."));
+    }
+
+    boolean isPublic = payload.getOrDefault("isPublic", false);
+    file.setPublic(isPublic);
+    fileRepository.save(file);
+
+    return ResponseEntity.ok(mapToResponse(file));
+  }
+
+  // API download file nội bộ (Cần Auth)
+  @GetMapping("/download/{id}")
+  public ResponseEntity<org.springframework.core.io.Resource> downloadPrivateFile(@PathVariable String id) {
+    UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    try {
+      StorageFile file = fileRepository.findByIdAndOwnerIdAndIsDeletedFalse(id, userDetails.getId())
+          .orElseThrow(() -> new Exception("File not found or deleted"));
+
+      if (!file.getOwnerId().equals(userDetails.getId())) {
+          return ResponseEntity.status(403).build();
+      }
+
+      org.springframework.core.io.Resource resource = fileStorageService.loadFileAsResource(file);
+
+      String contentDisposition = "attachment; filename=\"" + file.getName() + "\"";
+      return ResponseEntity.ok()
+          .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
+          .contentType(org.springframework.http.MediaType.parseMediaType(file.getType()))
+          .body(resource);
+
+    } catch (Exception e) {
+       return ResponseEntity.status(500).build();
+    }
+  }
+
+  // API lấy Metadata public (Không cần Auth)
+  @GetMapping("/public/{id}")
+  public ResponseEntity<?> getPublicFileMetadata(@PathVariable String id) {
+     StorageFile file = fileRepository.findById(id).orElse(null);
+     
+     if (file == null || !file.isPublic() || file.isDeleted()) {
+        return ResponseEntity.notFound().build();
+     }
+
+     return ResponseEntity.ok(mapToResponse(file));
+  }
+
+  // API tải xuống Public (Không cần Auth)
+  @GetMapping("/public/download/{id}")
+  public ResponseEntity<org.springframework.core.io.Resource> downloadPublicFile(@PathVariable String id) {
+    try {
+      StorageFile file = fileRepository.findById(id)
+          .orElseThrow(() -> new Exception("File not found"));
+
+      if (!file.isPublic() || file.isDeleted()) {
+          return ResponseEntity.status(403).build();
+      }
+
+      org.springframework.core.io.Resource resource = fileStorageService.loadFileAsResource(file);
+
+      String contentDisposition = "attachment; filename=\"" + file.getName() + "\"";
+      return ResponseEntity.ok()
+          .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
+          .contentType(org.springframework.http.MediaType.parseMediaType(file.getType()))
+          .body(resource);
+
+    } catch (Exception e) {
+       return ResponseEntity.notFound().build();
     }
   }
 }

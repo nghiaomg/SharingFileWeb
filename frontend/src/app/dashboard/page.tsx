@@ -3,7 +3,7 @@
 import { Folder, FileText, Image as ImageIcon, Video, MoreVertical, Plus, HardDrive, Share2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+
 const categories = [
     { title: "Tài liệu", icon: FileText, files: 120, size: "1.2 GB", color: "text-blue-500", bg: "bg-blue-500/10" },
     { title: "Hình ảnh", icon: ImageIcon, files: 543, size: "3.4 GB", color: "text-emerald-500", bg: "bg-emerald-500/10" },

@@ -17,6 +17,7 @@ interface FileItem {
     icon: LucideIcon;
     color: string;
     bg: string;
+    public?: boolean;
 }
 
 const categories = ["Tất cả", "Thư mục", "Hình ảnh", "Tài liệu", "Media"];
@@ -27,7 +28,6 @@ export default function MyFilesPage() {
     const [activeTab, setActiveTab] = useState("Tất cả");
     const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
     const [isDragging, setIsDragging] = useState(false);
-    const [dragCounter, setDragCounter] = useState(0);
 
     const [folders, setFolders] = useState<FolderResponse[]>([]);
     const [files, setFiles] = useState<FileResponse[]>([]);
@@ -114,7 +114,8 @@ export default function MyFilesPage() {
             date: formatDate(f.createdAt),
             icon: meta.icon,
             color: meta.color,
-            bg: meta.bg
+            bg: meta.bg,
+            public: f.public
         };
     });
 
@@ -141,10 +142,40 @@ export default function MyFilesPage() {
 
     const handleDeleteFile = async (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        if(confirm("Bạn có chắc muốn xóa file này không?")) {
+        if(confirm("Bạn có chắc muốn bỏ tệp này vào thùng rác?")) {
             await fileStoreService.deleteFile(id);
             await loadData();
         }
+    };
+
+    const handleShareFile = async (id: string, isCurrentlyPublic: boolean, e: React.MouseEvent) => {
+        e.stopPropagation();
+        try {
+            const newStatus = !isCurrentlyPublic;
+            await fileStoreService.toggleShareFile(id, newStatus);
+            
+            if (newStatus) {
+                const link = `${window.location.origin}/shared/file/${id}`;
+                await navigator.clipboard.writeText(link);
+                alert("Đã sao chép liên kết chia sẻ vào khay nhớ tạm!");
+            } else {
+                alert("Đã huỷ chia sẻ công khai.");
+            }
+            await loadData();
+        } catch {
+             alert("Lỗi khi thay đổi trạng thái chia sẻ.");
+        }
+        setActiveMenuId(null);
+    };
+
+    const handleDownloadFile = async (id: string, name: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        try {
+            await fileStoreService.downloadFile(id, name);
+        } catch {
+            alert("Lỗi tải tệp xuống.");
+        }
+        setActiveMenuId(null);
     };
 
     const handleUploadClick = () => {
@@ -165,7 +196,11 @@ export default function MyFilesPage() {
 
             await loadData();
         } catch (error: unknown) {
-            alert((error as any).message || "Lỗi tải tệp lên.");
+            if (error instanceof Error) {
+                alert(error.message);
+            } else {
+                alert("Lỗi tải tệp lên.");
+            }
         } finally {
             setIsUploading(false);
             setUploadProgress(null);
@@ -194,23 +229,22 @@ export default function MyFilesPage() {
         setActiveMenuId(null);
     };
 
+    const dragCounterRef = useRef(0);
+
     const handleDragEnter = (e: React.DragEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        setDragCounter((prev) => prev + 1);
+        dragCounterRef.current += 1;
         setIsDragging(true);
     };
 
     const handleDragLeave = (e: React.DragEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        setDragCounter((prev) => {
-            const newCount = prev - 1;
-            if (newCount === 0) {
-                setIsDragging(false);
-            }
-            return newCount;
-        });
+        dragCounterRef.current -= 1;
+        if (dragCounterRef.current === 0) {
+            setIsDragging(false);
+        }
     };
 
     const handleDragOver = (e: React.DragEvent) => {
@@ -221,7 +255,7 @@ export default function MyFilesPage() {
     const handleDrop = (e: React.DragEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        setDragCounter(0);
+        dragCounterRef.current = 0;
         setIsDragging(false);
         if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
             alert(`Đã thả ${e.dataTransfer.files.length} tệp. Chờ tải lên!`);
@@ -415,6 +449,12 @@ export default function MyFilesPage() {
                                                     </>
                                                 ) : (
                                                     <>
+                                                        <button onClick={(e) => handleDownloadFile(file.id, file.name, e)} className="w-full text-left px-4 py-2.5 text-sm hover:bg-secondary transition-colors font-medium flex items-center gap-2 cursor-pointer">
+                                                            <Download className="w-4 h-4 text-emerald-500" /> Tải xuống
+                                                        </button>
+                                                        <button onClick={(e) => handleShareFile(file.id, !!file.public, e)} className="w-full text-left px-4 py-2.5 text-sm hover:bg-secondary transition-colors font-medium flex items-center gap-2 cursor-pointer">
+                                                            <Share2 className="w-4 h-4 text-primary" /> {file.public ? "Huỷ chia sẻ" : "Chia sẻ"}
+                                                        </button>
                                                         <button onClick={(e) => handleDeleteFile(file.id, e)} className="w-full text-left px-4 py-2.5 text-sm hover:bg-rose-500/10 text-rose-500 transition-colors font-medium flex items-center gap-2 cursor-pointer">
                                                             <Trash2 className="w-4 h-4" /> Xóa File
                                                         </button>
@@ -490,6 +530,12 @@ export default function MyFilesPage() {
                                                     </>
                                                 ) : (
                                                     <>
+                                                        <button onClick={(e) => handleDownloadFile(file.id, file.name, e)} className="w-full text-left px-4 py-2.5 text-sm hover:bg-secondary transition-colors font-medium flex items-center gap-2 cursor-pointer">
+                                                            <Download className="w-4 h-4 text-emerald-500" /> Tải xuống
+                                                        </button>
+                                                        <button onClick={(e) => handleShareFile(file.id, !!file.public, e)} className="w-full text-left px-4 py-2.5 text-sm hover:bg-secondary transition-colors font-medium flex items-center gap-2 cursor-pointer">
+                                                            <Share2 className="w-4 h-4 text-primary" /> {file.public ? "Huỷ chia sẻ" : "Chia sẻ"}
+                                                        </button>
                                                         <button onClick={(e) => handleDeleteFile(file.id, e)} className="w-full text-left px-4 py-2.5 text-sm hover:bg-rose-500/10 text-rose-500 transition-colors font-medium flex items-center gap-2 cursor-pointer">
                                                             <Trash2 className="w-4 h-4" /> Xóa File
                                                         </button>

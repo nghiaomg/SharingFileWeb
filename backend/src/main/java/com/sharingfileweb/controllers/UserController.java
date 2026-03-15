@@ -21,7 +21,10 @@ import com.sharingfileweb.payload.request.UpdateProfileRequest;
 import com.sharingfileweb.payload.response.MessageResponse;
 import com.sharingfileweb.payload.response.UserProfileResponse;
 import com.sharingfileweb.repository.UserRepository;
+import com.sharingfileweb.repository.FileRepository;
 import com.sharingfileweb.security.services.UserDetailsImpl;
+import java.util.HashMap;
+import java.util.Map;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -30,6 +33,9 @@ public class UserController {
 
   @Autowired
   UserRepository userRepository;
+
+  @Autowired
+  FileRepository fileRepository;
 
   @GetMapping("/auth/me")
   public ResponseEntity<?> getCurrentUser() {
@@ -67,5 +73,19 @@ public class UserController {
 
     userRepository.save(user);
     return ResponseEntity.ok(new MessageResponse("Profile updated successfully!"));
+  }
+
+  @GetMapping("/user/storage")
+  public ResponseEntity<?> getStorageUsage() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+    Long totalBytes = fileRepository.sumSizeByOwnerId(userDetails.getId());
+    
+    Map<String, Object> response = new HashMap<>();
+    response.put("usedStorage", totalBytes != null ? totalBytes : 0L);
+    // You could also return maxStorage if you have a limit config
+
+    return ResponseEntity.ok(response);
   }
 }

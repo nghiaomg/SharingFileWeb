@@ -23,7 +23,12 @@ export function DeleteConfirmModal({ isOpen, onClose, onConfirm, itemName }: Del
             await onConfirm();
             onClose();
         } catch (err: unknown) {
-            setError((err as any).response?.data?.message || "Lỗi khi xóa. Vui lòng thử lại.");
+            if (err instanceof Error) {
+                const e = err as Error & { response?: { data?: { message?: string } } };
+                setError(e.response?.data?.message || e.message || "Lỗi khi xóa. Vui lòng thử lại.");
+            } else {
+                setError("Lỗi khi xóa. Vui lòng thử lại.");
+            }
         } finally {
             setIsLoading(false);
         }
@@ -42,8 +47,8 @@ export function DeleteConfirmModal({ isOpen, onClose, onConfirm, itemName }: Del
                 </div>
 
                 <div className="p-5">
-                    <p className="mb-2 text-foreground">Bạn có chắc chắn muốn xóa <strong>{itemName}</strong> không?</p>
-                    <p className="text-sm text-muted-foreground mb-5">Hành động này không thể hoàn tác. Mọi dữ liệu bên trong thư mục này sẽ bị xóa vĩnh viễn.</p>
+                    <p className="mb-2 text-foreground">Bạn có chắc chắn muốn bỏ <strong>{itemName}</strong> vào thùng rác không?</p>
+                    <p className="text-sm text-muted-foreground mb-5">Dữ liệu có thể được khôi phục hoặc xóa vĩnh viễn trong thùng rác sau 30 ngày.</p>
                     
                     {error && <p className="text-rose-500 text-sm mb-4 p-3 bg-rose-500/10 rounded-lg">{error}</p>}
 
@@ -62,7 +67,7 @@ export function DeleteConfirmModal({ isOpen, onClose, onConfirm, itemName }: Del
                             className="px-5 py-2.5 rounded-xl font-bold bg-rose-500 text-white hover:bg-rose-600 transition-colors flex items-center gap-2 shadow-md shadow-rose-500/20"
                         >
                             {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-                            Xóa vĩnh viễn
+                            Bỏ vào thùng rác
                         </button>
                     </div>
                 </div>

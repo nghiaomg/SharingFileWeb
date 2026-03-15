@@ -24,6 +24,12 @@ public class StorageFile {
 
   private Instant createdAt;
 
+  private boolean isPublic;
+
+  private boolean isDeleted;
+
+  private java.util.Date deletedAt;
+
   public StorageFile() {
   }
 
@@ -35,6 +41,8 @@ public class StorageFile {
     this.folderId = folderId;
     this.storedPath = storedPath;
     this.createdAt = Instant.now();
+    this.isPublic = false;
+    this.isDeleted = false;
   }
 
   public String getId() {
@@ -99,5 +107,29 @@ public class StorageFile {
 
   public void setCreatedAt(Instant createdAt) {
     this.createdAt = createdAt;
+  }
+
+  public boolean isPublic() {
+    return isPublic;
+  }
+
+  public void setPublic(boolean isPublic) {
+    this.isPublic = isPublic;
+  }
+
+  public boolean isDeleted() {
+    return isDeleted;
+  }
+
+  public void setDeleted(boolean isDeleted) {
+    this.isDeleted = isDeleted;
+  }
+
+  public java.util.Date getDeletedAt() {
+    return deletedAt;
+  }
+
+  public void setDeletedAt(java.util.Date deletedAt) {
+    this.deletedAt = deletedAt;
   }
 }

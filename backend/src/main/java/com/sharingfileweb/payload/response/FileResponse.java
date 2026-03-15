@@ -9,14 +9,16 @@ public class FileResponse {
   private long size;
   private String folderId;
   private Instant createdAt;
+  private boolean isPublic;
 
-  public FileResponse(String id, String name, String type, long size, String folderId, Instant createdAt) {
+  public FileResponse(String id, String name, String type, long size, String folderId, Instant createdAt, boolean isPublic) {
     this.id = id;
     this.name = name;
     this.type = type;
     this.size = size;
     this.folderId = folderId;
     this.createdAt = createdAt;
+    this.isPublic = isPublic;
   }
 
   public String getId() {
@@ -65,5 +67,13 @@ public class FileResponse {
 
   public void setCreatedAt(Instant createdAt) {
     this.createdAt = createdAt;
+  }
+
+  public boolean isPublic() {
+    return isPublic;
+  }
+
+  public void setPublic(boolean isPublic) {
+    this.isPublic = isPublic;
   }
 }
