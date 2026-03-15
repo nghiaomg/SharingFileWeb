@@ -1,8 +1,36 @@
 "use client";
 
 import { CheckCircle2, Zap, Shield, HardDrive, Infinity, Crown } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { upgradePlan } from "@/features/auth/api";
+import { authKeys, useCurrentUser } from "@/features/auth/queries";
 
 export default function UpgradePage() {
+    const router = useRouter();
+    const queryClient = useQueryClient();
+    const { data: user } = useCurrentUser();
+
+    const isPro = user?.subscriptionPlan === "PRO";
+
+    const upgradeMutation = useMutation({
+        mutationFn: upgradePlan,
+        onSuccess: () => {
+            alert("Nâng cấp thành công! Chào mừng bạn đến với FileFlow Pro.");
+            queryClient.invalidateQueries({ queryKey: authKeys.all() });
+            router.push("/dashboard");
+        },
+        onError: (error: any) => {
+            alert("Có lỗi xảy ra khi nâng cấp: " + error.message);
+        }
+    });
+
+    const handleUpgrade = () => {
+        if (confirm("Chấp nhận thanh toán 99.000đ/tháng để nâng cấp lên PRO?")) {
+            upgradeMutation.mutate();
+        }
+    };
+
     return (
         <div className="p-4 md:p-8 pb-32 h-full flex flex-col w-full">
             <div className="flex flex-col items-center justify-center text-center max-w-2xl mx-auto mb-12">
@@ -46,8 +74,12 @@ export default function UpgradePage() {
                         </div>
                     </div>
 
-                    <button className="w-full py-4 rounded-xl border-2 border-border font-bold hover:bg-secondary transition-colors cursor-pointer text-muted-foreground">
-                        Gói hiện tại
+                    <button 
+                        className={`w-full py-4 rounded-xl border-2 font-bold transition-colors cursor-pointer ${!isPro ? "bg-secondary text-muted-foreground border-border" : "border-primary text-primary hover:bg-primary/5"}`}
+                        disabled={!isPro}
+                        onClick={() => router.push("/dashboard")}
+                    >
+                        {!isPro ? "Gói hiện tại" : "Chuyển về gói này"}
                     </button>
                 </div>
 
@@ -89,8 +121,12 @@ export default function UpgradePage() {
                         </div>
                     </div>
 
-                    <button className="w-full py-4 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 hover:shadow-lg transition-all cursor-pointer">
-                        Nâng cấp ngay
+                    <button 
+                        className={`w-full py-4 rounded-xl font-bold shadow-md transition-all ${isPro ? "bg-card text-muted-foreground cursor-not-allowed border border-border" : "bg-primary text-white hover:bg-primary/90 hover:shadow-lg cursor-pointer"}`}
+                        disabled={isPro || upgradeMutation.isPending}
+                        onClick={handleUpgrade}
+                    >
+                        {upgradeMutation.isPending ? "Đang xử lý..." : isPro ? "Đang sử dụng" : "Nâng cấp ngay"}
                     </button>
 
                     <p className="text-center text-xs text-muted-foreground mt-4 font-medium">Hủy bỏ bất cứ lúc nào. Không ràng buộc.</p>

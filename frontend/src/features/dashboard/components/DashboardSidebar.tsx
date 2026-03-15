@@ -104,7 +104,7 @@ export function DashboardSidebar({ isOpen, onClose }: DashboardSidebarProps) {
                             />
                         </div>
                         <Link
-                            href="/upgrade"
+                            href="/dashboard/upgrade"
                             className="flex items-center justify-center gap-2 w-full py-2 bg-primary/10 text-primary text-sm font-bold rounded-xl hover:bg-primary/20 transition-colors"
                         >
                             <Crown className="w-4 h-4" /> Nâng cấp Pro
