@@ -1,10 +1,14 @@
-import { Share2, Users, FileText, ImageIcon, MoreVertical, Link as LinkIcon } from "lucide-react";
+"use client";
+
+import { Share2, Users, Link as LinkIcon, ExternalLink, Loader2 } from "lucide-react";
+import { format } from "date-fns";
+import { vi } from "date-fns/locale";
+import { useSharedFiles } from "@/features/files/queries";
+import { categoriesMeta, getCategoryFromMime } from "@/lib/file-utils";
+import { formatBytes } from "@/lib/format";
 
 export default function SharedPage() {
-    const sharedFiles = [
-        { name: "Brand_Guidelines_2024.pdf", sharedBy: "Nguyễn Thị B", date: "Hôm nay", size: "12 MB", icon: FileText, color: "text-blue-500", type: "Tài liệu" },
-        { name: "Social_Media_Assets.zip", sharedBy: "Trần Văn C", date: "Tuần trước", size: "450 MB", icon: ImageIcon, color: "text-emerald-500", type: "Thư mục zip" }
-    ];
+    const { data: sharedFiles, isLoading } = useSharedFiles();
 
     return (
         <div className="p-8 pb-32 h-full flex flex-col">
@@ -39,23 +43,44 @@ export default function SharedPage() {
                 </div>
 
                 <div className="divide-y divide-border/50">
-                    {sharedFiles.map((file, i) => (
-                        <div key={i} className="flex items-center p-4 hover:bg-muted/20 transition-colors group cursor-pointer">
-                            <div className={`p-3 rounded-xl bg-background border border-border shadow-sm mr-4 ${file.color}`}>
-                                <file.icon className="w-5 h-5" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <h4 className="font-bold text-base truncate pr-4 text-foreground group-hover:text-primary transition-colors">{file.name}</h4>
-                                <p className="text-xs text-muted-foreground mt-1">Được chia sẻ bởi <span className="font-bold text-foreground">{file.sharedBy}</span> • {file.date}</p>
-                            </div>
-                            <div className="text-sm font-mono text-muted-foreground mr-6 hidden md:block">
-                                {file.size}
-                            </div>
-                            <button className="p-2 text-muted-foreground hover:bg-background hover:text-foreground rounded-lg border border-transparent hover:border-border transition-colors opacity-0 group-hover:opacity-100">
-                                <MoreVertical className="w-5 h-5" />
-                            </button>
+                    {isLoading ? (
+                        <div className="p-8 text-center text-muted-foreground flex items-center justify-center">
+                            <Loader2 className="w-5 h-5 animate-spin mr-2" /> Đang tải...
                         </div>
-                    ))}
+                    ) : !sharedFiles || sharedFiles.length === 0 ? (
+                        <div className="p-8 text-center text-muted-foreground">Bạn chưa chia sẻ công khai tệp tin nào.</div>
+                    ) : (
+                        sharedFiles.map((file, i) => {
+                            const catName = getCategoryFromMime(file.type);
+                            const meta = categoriesMeta[catName] || categoriesMeta["Khác"];
+                            const Icon = meta.icon;
+
+                            return (
+                                <div key={i} className="flex items-center p-4 hover:bg-muted/20 transition-colors group cursor-pointer">
+                                    <div className={`p-3 rounded-xl bg-background border border-border shadow-sm mr-4 ${meta.color}`}>
+                                        <Icon className="w-5 h-5" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <h4 className="font-bold text-base truncate pr-4 text-foreground group-hover:text-primary transition-colors">{file.name}</h4>
+                                        <p className="text-xs text-muted-foreground mt-1">Đã chia sẻ bởi <span className="font-bold text-foreground">tôi</span> • {format(new Date(file.createdAt), "dd MMM, yyyy HH:mm", { locale: vi })}</p>
+                                    </div>
+                                    <div className="text-sm font-mono text-muted-foreground mr-6 hidden md:block">
+                                        {formatBytes(file.size)}
+                                    </div>
+                                    <button
+                                        className="p-2 text-muted-foreground hover:bg-background hover:text-foreground rounded-lg border border-transparent hover:border-border transition-colors opacity-0 group-hover:opacity-100"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            window.open(`/api/files/public/${file.id}`, '_blank');
+                                        }}
+                                        title="Mở liên kết chia sẻ"
+                                    >
+                                        <ExternalLink className="w-5 h-5" />
+                                    </button>
+                                </div>
+                            );
+                        })
+                    )}
                 </div>
             </div>
         </div>

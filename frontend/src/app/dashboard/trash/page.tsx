@@ -2,32 +2,19 @@
 
 import { useState, useEffect } from "react";
 import { File as FileIcon, Trash2, RotateCcw, MoreVertical, LayoutGrid, List as ListIcon, Loader2, Sparkles, FolderOpen } from "lucide-react";
-import { trashService, TrashData } from "@/services/trashService";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
-import axios from "axios";
+import { useTrashItems } from "@/features/trash/queries";
+import { useRestoreItem, useDeletePermanent } from "@/features/trash/mutations";
+import { formatBytes } from "@/lib/format";
+import { getApiErrorMessage } from "@/types/api";
 
 export default function TrashPage() {
-    const [trashData, setTrashData] = useState<TrashData>({ folders: [], files: [] });
-    const [loading, setLoading] = useState(true);
+    const { data: trashData, isLoading } = useTrashItems();
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
     const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
-
-    const loadData = async () => {
-        try {
-            setLoading(true);
-            const data = await trashService.getTrashItems();
-            setTrashData(data);
-        } catch (error) {
-            console.error("Lỗi khi tải dữ liệu thùng rác:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        loadData();
-    }, []);
+    const restoreMutation = useRestoreItem();
+    const deletePermanentMutation = useDeletePermanent();
 
     useEffect(() => {
         const handleClickOutside = () => setActiveMenuId(null);
@@ -35,41 +22,26 @@ export default function TrashPage() {
         return () => document.removeEventListener("click", handleClickOutside);
     }, []);
 
-    const handleRestore = async (type: "folder" | "file", id: string, e: React.MouseEvent) => {
+    const handleRestore = (type: "folder" | "file", id: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        try {
-            await trashService.restoreItem(type, id);
-            await loadData();
-        } catch (error: unknown) {
-             if (axios.isAxiosError(error) && error.response) {
-                  alert(error.response.data.message || "Lỗi khôi phục.");
-             } else {
-                 alert("Lỗi khôi phục.");
-             }
-        }
+        restoreMutation.mutate({ type, id }, {
+            onError: (error) => {
+                alert(getApiErrorMessage(error, "Lỗi khôi phục."));
+            },
+        });
         setActiveMenuId(null);
     };
 
-    const handleDeletePermanent = async (type: "folder" | "file", id: string, e: React.MouseEvent) => {
+    const handleDeletePermanent = (type: "folder" | "file", id: string, e: React.MouseEvent) => {
         e.stopPropagation();
         if (confirm(`Bạn có chắc muốn XÓA VĨNH VIỄN ${type === 'folder' ? 'Thư mục' : 'Tệp'} này? Không thể hoàn tác!`)) {
-             try {
-                 await trashService.deletePermanent(type, id);
-                 await loadData();
-             } catch {
-                 alert("Lỗi xóa vĩnh viễn.");
-             }
+            deletePermanentMutation.mutate({ type, id }, {
+                onError: () => {
+                    alert("Lỗi xóa vĩnh viễn.");
+                },
+            });
         }
         setActiveMenuId(null);
-    };
-
-    const formatBytes = (bytes: number, decimals = 2) => {
-        if (!+bytes) return '0 Bytes';
-        const k = 1024;
-        const dm = decimals < 0 ? 0 : decimals;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
     };
 
     const formatDate = (dateString?: string) => {
@@ -77,7 +49,7 @@ export default function TrashPage() {
          return format(new Date(dateString), "dd MMM, yyyy - HH:mm", { locale: vi });
     };
 
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="flex-1 flex items-center justify-center bg-background/50 backdrop-blur-sm">
                 <div className="flex flex-col items-center gap-4">
@@ -88,14 +60,16 @@ export default function TrashPage() {
         );
     }
 
-    const isEmpty = trashData.folders.length === 0 && trashData.files.length === 0;
+    const folders = trashData?.folders || [];
+    const files = trashData?.files || [];
+    const isEmpty = folders.length === 0 && files.length === 0;
 
     return (
         <div className="flex-1 flex flex-col h-[calc(100vh-4rem)] lg:h-screen bg-background relative overflow-hidden">
             <div className="absolute top-0 right-0 p-32 opacity-5 pointer-events-none">
                 <Trash2 className="w-96 h-96" />
             </div>
-            
+
             <header className="px-8 py-6 flex items-end justify-between border-b border-border/50 bg-card/30 backdrop-blur-xl relative z-10">
                 <div>
                    <h1 className="text-3xl font-bold tracking-tight mb-2">Thùng rác</h1>
@@ -103,7 +77,7 @@ export default function TrashPage() {
                        Nơi chứa các tệp đã xóa. Tự động dọn dẹp sau 30 ngày.
                    </p>
                 </div>
-                
+
                 <div className="flex items-center gap-3 bg-card p-1.5 rounded-xl border object-contain shadow-sm">
                    <button
                         onClick={() => setViewMode("grid")}
@@ -132,15 +106,15 @@ export default function TrashPage() {
                 ) : (
                     <div className={viewMode === "grid" ? "space-y-10" : "space-y-8"}>
                         {/* Folders Section */}
-                        {trashData.folders.length > 0 && (
+                        {folders.length > 0 && (
                             <section>
                                 <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                                    Thư mục bị xóa ({trashData.folders.length})
+                                    Thư mục bị xóa ({folders.length})
                                 </h3>
-                                
+
                                 {viewMode === "grid" ? (
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-                                        {trashData.folders.map(folder => (
+                                        {folders.map(folder => (
                                             <div key={folder.id} className="group relative bg-card p-4 rounded-2xl border border-border/60 hover:border-border transition-all">
                                                 <div className="flex items-center gap-4 mb-4">
                                                     <div className="w-12 h-12 bg-rose-500/10 rounded-xl flex items-center justify-center">
@@ -153,7 +127,7 @@ export default function TrashPage() {
                                                         </p>
                                                     </div>
                                                 </div>
-                                                
+
                                                 <button
                                                     className="absolute top-2 right-2 p-2 rounded-lg text-muted-foreground hover:bg-secondary opacity-0 group-hover:opacity-100 transition-opacity"
                                                     onClick={(e) => {
@@ -163,19 +137,13 @@ export default function TrashPage() {
                                                 >
                                                     <MoreVertical className="w-5 h-5" />
                                                 </button>
-                                                
+
                                                 {activeMenuId === folder.id && (
                                                     <div className="absolute top-12 right-2 w-48 bg-card border border-border rounded-xl shadow-xl overflow-hidden z-20 py-1">
-                                                        <button
-                                                            onClick={(e) => handleRestore("folder", folder.id, e)}
-                                                            className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-secondary transition-colors text-emerald-500"
-                                                        >
+                                                        <button onClick={(e) => handleRestore("folder", folder.id, e)} className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-secondary transition-colors text-emerald-500">
                                                             <RotateCcw className="w-4 h-4" /> Khôi phục
                                                         </button>
-                                                        <button
-                                                            onClick={(e) => handleDeletePermanent("folder", folder.id, e)}
-                                                            className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-rose-500/10 transition-colors text-rose-500"
-                                                        >
+                                                        <button onClick={(e) => handleDeletePermanent("folder", folder.id, e)} className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-rose-500/10 transition-colors text-rose-500">
                                                             <Trash2 className="w-4 h-4" /> Xóa vĩnh viễn
                                                         </button>
                                                     </div>
@@ -186,12 +154,12 @@ export default function TrashPage() {
                                 ) : (
                                     <div className="bg-card rounded-2xl border border-border overflow-hidden">
                                         <div className="grid grid-cols-12 gap-4 p-4 border-b border-border bg-secondary/50 font-medium text-muted-foreground">
-                                            <div className="col-span-6">Tên thư mục thư mục</div>
+                                            <div className="col-span-6">Tên thư mục</div>
                                             <div className="col-span-4">Ngày xóa</div>
                                             <div className="col-span-2 text-right">Thao tác</div>
                                         </div>
                                         <div className="divide-y divide-border">
-                                            {trashData.folders.map((folder) => (
+                                            {folders.map((folder) => (
                                                 <div key={folder.id} className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-secondary/30 transition-colors relative">
                                                     <div className="col-span-6 flex items-center gap-3">
                                                        <FolderOpen className="w-5 h-5 text-rose-500" />
@@ -208,7 +176,7 @@ export default function TrashPage() {
                                                         >
                                                             <MoreVertical className="w-5 h-5" />
                                                         </button>
-                                                        
+
                                                         {activeMenuId === folder.id && (
                                                             <div className="absolute top-10 right-0 w-48 bg-card border border-border rounded-xl shadow-xl overflow-hidden z-20 py-1 text-left">
                                                                 <button onClick={(e) => handleRestore("folder", folder.id, e)} className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-secondary text-emerald-500">
@@ -227,17 +195,17 @@ export default function TrashPage() {
                                 )}
                             </section>
                         )}
-                        
+
                         {/* Files Section */}
-                        {trashData.files.length > 0 && (
+                        {files.length > 0 && (
                             <section>
                                 <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                                    Tệp bị xóa ({trashData.files.length})
+                                    Tệp bị xóa ({files.length})
                                 </h3>
-                                
+
                                 {viewMode === "grid" ? (
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-                                        {trashData.files.map(file => (
+                                        {files.map(file => (
                                             <div key={file.id} className="group relative bg-card p-4 rounded-2xl border border-border/60 hover:border-border transition-all">
                                                 <div className="flex items-center gap-4 mb-4">
                                                     <div className="w-12 h-12 bg-rose-500/10 rounded-xl flex items-center justify-center">
@@ -250,7 +218,7 @@ export default function TrashPage() {
                                                         </p>
                                                     </div>
                                                 </div>
-                                                
+
                                                 <button
                                                     className="absolute top-2 right-2 p-2 rounded-lg text-muted-foreground hover:bg-secondary opacity-0 group-hover:opacity-100 transition-opacity"
                                                     onClick={(e) => {
@@ -260,19 +228,13 @@ export default function TrashPage() {
                                                 >
                                                     <MoreVertical className="w-5 h-5" />
                                                 </button>
-                                                
+
                                                 {activeMenuId === file.id && (
                                                     <div className="absolute top-12 right-2 w-48 bg-card border border-border rounded-xl shadow-xl overflow-hidden z-20 py-1 mx-2">
-                                                        <button
-                                                            onClick={(e) => handleRestore("file", file.id, e)}
-                                                            className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-secondary transition-colors text-emerald-500"
-                                                        >
+                                                        <button onClick={(e) => handleRestore("file", file.id, e)} className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-secondary transition-colors text-emerald-500">
                                                             <RotateCcw className="w-4 h-4" /> Khôi phục
                                                         </button>
-                                                        <button
-                                                            onClick={(e) => handleDeletePermanent("file", file.id, e)}
-                                                            className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-rose-500/10 transition-colors text-rose-500"
-                                                        >
+                                                        <button onClick={(e) => handleDeletePermanent("file", file.id, e)} className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-rose-500/10 transition-colors text-rose-500">
                                                             <Trash2 className="w-4 h-4" /> Xóa vĩnh viễn
                                                         </button>
                                                     </div>
@@ -289,7 +251,7 @@ export default function TrashPage() {
                                             <div className="col-span-2 text-right">Thao tác</div>
                                         </div>
                                         <div className="divide-y divide-border">
-                                            {trashData.files.map((file) => (
+                                            {files.map((file) => (
                                                 <div key={file.id} className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-secondary/30 transition-colors relative">
                                                     <div className="col-span-6 flex items-center gap-3">
                                                        <FileIcon className="w-5 h-5 text-rose-500" />
@@ -307,7 +269,7 @@ export default function TrashPage() {
                                                         >
                                                             <MoreVertical className="w-5 h-5" />
                                                         </button>
-                                                        
+
                                                         {activeMenuId === file.id && (
                                                             <div className="absolute top-10 right-0 w-48 bg-card border border-border rounded-xl shadow-xl overflow-hidden z-20 py-1 text-left">
                                                                 <button onClick={(e) => handleRestore("file", file.id, e)} className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-secondary text-emerald-500">

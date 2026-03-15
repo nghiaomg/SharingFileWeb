@@ -6,11 +6,12 @@ import { X, Loader2, AlertTriangle } from "lucide-react";
 interface DeleteConfirmModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onConfirm: () => Promise<void>;
-    itemName: string;
+    onConfirm: () => void;
+    name: string;
+    type?: "folder" | "file";
 }
 
-export function DeleteConfirmModal({ isOpen, onClose, onConfirm, itemName }: DeleteConfirmModalProps) {
+export function DeleteConfirmModal({ isOpen, onClose, onConfirm, name }: DeleteConfirmModalProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
 
@@ -47,7 +48,7 @@ export function DeleteConfirmModal({ isOpen, onClose, onConfirm, itemName }: Del
                 </div>
 
                 <div className="p-5">
-                    <p className="mb-2 text-foreground">Bạn có chắc chắn muốn bỏ <strong>{itemName}</strong> vào thùng rác không?</p>
+                    <p className="mb-2 text-foreground">Bạn có chắc chắn muốn bỏ <strong>{name}</strong> vào thùng rác không?</p>
                     <p className="text-sm text-muted-foreground mb-5">Dữ liệu có thể được khôi phục hoặc xóa vĩnh viễn trong thùng rác sau 30 ngày.</p>
                     
                     {error && <p className="text-rose-500 text-sm mb-4 p-3 bg-rose-500/10 rounded-lg">{error}</p>}

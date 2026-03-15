@@ -1,35 +1,35 @@
+"use client";
+
 import { User, Mail, Calendar, MapPin, HardDrive, ShieldCheck, Activity, Star, Clock, Crown, Zap, Shield, FileText, Loader2, Save, X, Edit2 } from "lucide-react";
 import Link from "next/link";
-import { useAuthStore } from "@/features/auth/hooks/useAuthStore";
 import { useState } from "react";
-import { authService } from "@/services/authService";
+import { useCurrentUser } from "@/features/auth/queries";
+import { useUpdateProfile } from "@/features/auth/mutations";
+import { getApiErrorMessage } from "@/types/api";
 
 export default function ProfilePage() {
-    const { user, fetchUser } = useAuthStore();
+    const { data: user, isLoading: userLoading } = useCurrentUser();
+    const updateProfileMutation = useUpdateProfile();
     const [isEditing, setIsEditing] = useState(false);
-    const [editEmail, setEditEmail] = useState(user?.email || "");
-    const [isSaving, setIsSaving] = useState(false);
-    const [errorMsg, setErrorMsg] = useState("");
+    const [editEmail, setEditEmail] = useState("");
     const [successMsg, setSuccessMsg] = useState("");
 
-    const handleSaveProfile = async () => {
-        try {
-            setErrorMsg("");
-            setSuccessMsg("");
-            setIsSaving(true);
-            await authService.updateProfile({ email: editEmail });
-            await fetchUser(); // Reload data from server
-            setSuccessMsg("Cập nhật thông tin thành công!");
-            setIsEditing(false);
-        } catch (error) {
-            const err = error as { response?: { data?: { message?: string } } };
-            setErrorMsg(err.response?.data?.message || "Đã xảy ra lỗi khi cập nhật.");
-        } finally {
-            setIsSaving(false);
-        }
+    const handleStartEdit = () => {
+        setEditEmail(user?.email || "");
+        setIsEditing(true);
+        setSuccessMsg("");
     };
 
-    if (!user) {
+    const handleSaveProfile = () => {
+        updateProfileMutation.mutate({ email: editEmail }, {
+            onSuccess: () => {
+                setSuccessMsg("Cập nhật thông tin thành công!");
+                setIsEditing(false);
+            },
+        });
+    };
+
+    if (userLoading || !user) {
         return (
             <div className="p-8 flex items-center justify-center w-full h-full">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -38,6 +38,7 @@ export default function ProfilePage() {
     }
 
     const isAdmin = user.roles?.includes("ROLE_ADMIN");
+    const errorMsg = updateProfileMutation.isError ? getApiErrorMessage(updateProfileMutation.error, "Đã xảy ra lỗi khi cập nhật.") : "";
 
     return (
         <div className="p-8 pb-32 w-full h-full overflow-y-auto">
@@ -70,11 +71,11 @@ export default function ProfilePage() {
                         <h1 className="text-3xl font-bold mb-1">{user.username}</h1>
                         <div className="text-muted-foreground font-medium flex items-center justify-center sm:justify-start gap-4">
                             <span className="flex items-center gap-2">
-                                <Mail className="w-4 h-4" /> 
+                                <Mail className="w-4 h-4" />
                                 {isEditing ? (
-                                    <input 
-                                        type="email" 
-                                        value={editEmail} 
+                                    <input
+                                        type="email"
+                                        value={editEmail}
                                         onChange={(e) => setEditEmail(e.target.value)}
                                         className="bg-background border border-border rounded-md px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary w-64"
                                     />
@@ -91,15 +92,15 @@ export default function ProfilePage() {
                     <div className="flex gap-3 mb-2">
                         {isEditing ? (
                             <>
-                                <button onClick={() => setIsEditing(false)} disabled={isSaving} className="px-4 py-2 bg-secondary text-foreground font-bold rounded-xl hover:bg-secondary/80 transition-colors shadow-sm text-sm whitespace-nowrap">
+                                <button onClick={() => setIsEditing(false)} disabled={updateProfileMutation.isPending} className="px-4 py-2 bg-secondary text-foreground font-bold rounded-xl hover:bg-secondary/80 transition-colors shadow-sm text-sm whitespace-nowrap">
                                     <X className="w-4 h-4 inline mr-1" /> Hủy
                                 </button>
-                                <button onClick={handleSaveProfile} disabled={isSaving} className="px-6 py-2 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors shadow-lg hover:shadow-primary/30 text-sm flex items-center gap-2 whitespace-nowrap">
-                                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Lưu
+                                <button onClick={handleSaveProfile} disabled={updateProfileMutation.isPending} className="px-6 py-2 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors shadow-lg hover:shadow-primary/30 text-sm flex items-center gap-2 whitespace-nowrap">
+                                    {updateProfileMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Lưu
                                 </button>
                             </>
                         ) : (
-                            <button onClick={() => setIsEditing(true)} className="px-6 py-2.5 bg-secondary text-foreground font-bold rounded-xl hover:bg-secondary/80 transition-colors shadow-sm text-sm flex items-center gap-2">
+                            <button onClick={handleStartEdit} className="px-6 py-2.5 bg-secondary text-foreground font-bold rounded-xl hover:bg-secondary/80 transition-colors shadow-sm text-sm flex items-center gap-2">
                                 <Edit2 className="w-4 h-4 inline" /> Chỉnh sửa hồ sơ
                             </button>
                         )}
@@ -115,8 +116,6 @@ export default function ProfilePage() {
                         <h3 className="text-lg font-bold flex items-center gap-2 mb-6">
                             <HardDrive className="w-5 h-5 text-primary" /> Tổng quan lưu trữ
                         </h3>
-
-                        {/* Circular Progress (Stylized) */}
                         <div className="relative w-40 h-40 mx-auto mb-6 flex justify-center items-center">
                             <svg className="w-full h-full transform -rotate-90">
                                 <circle cx="80" cy="80" r="70" stroke="currentColor" strokeWidth="12" fill="transparent" className="text-secondary" />
@@ -127,12 +126,10 @@ export default function ProfilePage() {
                                 <span className="block text-xs text-muted-foreground font-bold">Đã dùng</span>
                             </div>
                         </div>
-
                         <div className="flex justify-between items-center text-sm font-medium mb-2">
                             <span>2.4 GB</span>
                             <span className="text-muted-foreground">5.0 GB</span>
                         </div>
-
                         <div className="space-y-3 mt-6 pt-6 border-t border-border/50">
                             <div className="flex justify-between items-center text-sm">
                                 <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 bg-blue-500 rounded-full"></div> Tài liệu</div>
@@ -173,7 +170,6 @@ export default function ProfilePage() {
 
                 {/* Right Column: Activity & Badges */}
                 <div className="lg:col-span-2 space-y-8">
-
                     {/* Gamification / Badges */}
                     <div className="bg-card border border-border/50 rounded-3xl p-6 shadow-sm">
                         <h3 className="text-lg font-bold flex items-center gap-2 mb-6">

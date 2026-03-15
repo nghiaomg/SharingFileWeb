@@ -62,6 +62,25 @@ public class FileController {
     return ResponseEntity.ok(response);
   }
 
+  @GetMapping("/recent")
+  public ResponseEntity<?> getRecentFiles() {
+    String userId = getCurrentUserId();
+    org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, 50);
+    List<StorageFile> recentFiles = fileRepository.findByOwnerIdAndIsDeletedFalseOrderByCreatedAtDesc(userId, pageable).getContent();
+    
+    List<FileResponse> response = recentFiles.stream().map(this::mapToResponse).collect(Collectors.toList());
+    return ResponseEntity.ok(response);
+  }
+
+  @GetMapping("/shared")
+  public ResponseEntity<?> getSharedFiles() {
+    String userId = getCurrentUserId();
+    List<StorageFile> sharedFiles = fileRepository.findByOwnerIdAndIsPublicTrueAndIsDeletedFalse(userId);
+    
+    List<FileResponse> response = sharedFiles.stream().map(this::mapToResponse).collect(Collectors.toList());
+    return ResponseEntity.ok(response);
+  }
+
   // Expect FormData: file (blob), chunkIndex, uploadId
   @PostMapping("/upload/chunk")
   public ResponseEntity<?> uploadChunk(

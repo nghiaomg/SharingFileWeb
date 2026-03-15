@@ -1,38 +1,32 @@
+"use client";
+
+import { useState } from "react";
 import { DashboardSidebar } from "@/features/dashboard/components/DashboardSidebar";
 import { DashboardHeader } from "@/features/dashboard/components/DashboardHeader";
-import { useAuthStore } from "@/features/auth/hooks/useAuthStore";
-import { useEffect } from "react";
+import { useCurrentUser } from "@/features/auth/queries";
 import { Loader2 } from "lucide-react";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-    const { fetchUser, isLoading } = useAuthStore();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { data: user, isLoading } = useCurrentUser();
 
-    useEffect(() => {
-        fetchUser();
-    }, [fetchUser]);
-
-    if (isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-background">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-        );
-    }
-
+  if (isLoading) {
     return (
-        <div className="h-screen w-full flex bg-background text-foreground overflow-hidden">
-            {/* Sidebar Desktop */}
-            <div className="hidden lg:block h-full">
-                <DashboardSidebar />
-            </div>
-
-            <div className="flex-1 flex flex-col h-full overflow-hidden relative">
-                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none -z-10" />
-                <DashboardHeader />
-                <main className="flex-1 overflow-y-auto w-full">
-                    {children}
-                </main>
-            </div>
-        </div>
+      <div className="flex items-center justify-center h-screen bg-background">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+      </div>
     );
+  }
+
+  return (
+    <div className="flex h-screen bg-background text-foreground overflow-hidden">
+      <DashboardSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <DashboardHeader userName={user?.username} onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
+        <main className="flex-1 overflow-y-auto">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
 }

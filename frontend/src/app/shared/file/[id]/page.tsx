@@ -3,7 +3,15 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Download, FileText, Image as ImageIcon, Video, Music, FileArchive, Loader2, Home, AlertCircle } from "lucide-react";
-import { FileResponse } from "@/services/fileStoreService";
+
+interface FileResponse {
+    id: string;
+    name: string;
+    type: string;
+    size: number;
+    createdAt: string;
+    isPublic: boolean;
+}
 
 // Helper function
 const getFormatSize = (bytes: number) => {

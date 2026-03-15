@@ -3,7 +3,7 @@ import Cookies from "js-cookie";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
 
-const api = axios.create({
+const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
@@ -11,7 +11,7 @@ const api = axios.create({
 });
 
 // Interceptor for requests: attach token from cookies
-api.interceptors.request.use(
+apiClient.interceptors.request.use(
   (config) => {
     const token = Cookies.get("access_token");
     if (token && config.headers) {
@@ -25,7 +25,7 @@ api.interceptors.request.use(
 );
 
 // Interceptor for responses: handle global errors like 401 Unauthorized
-api.interceptors.response.use(
+apiClient.interceptors.response.use(
   (response) => {
     return response;
   },
@@ -48,14 +48,13 @@ api.interceptors.response.use(
         const { accessToken } = rs.data;
 
         Cookies.set("access_token", accessToken, { expires: 1 });
-        api.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+        apiClient.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
 
-        return api(originalRequest);
+        return apiClient(originalRequest);
       } catch (_error) {
         Cookies.remove("access_token");
         Cookies.remove("refresh_token");
         Cookies.remove("user_data");
-        // Có thể redirect user đến trang login ở client side. Thông thường kết hợp với event bus hoặc store.
         if (typeof window !== "undefined") {
           window.location.href = '/login';
         }
@@ -67,4 +66,4 @@ api.interceptors.response.use(
   }
 );
 
-export default api;
+export default apiClient;

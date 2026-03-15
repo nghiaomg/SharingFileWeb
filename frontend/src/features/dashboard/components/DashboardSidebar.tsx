@@ -1,115 +1,131 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { LayoutDashboard, Folder, Clock, Share2, Trash2, Settings, FileUp, Sparkles } from "lucide-react";
-import { authService } from "@/services/authService";
+import { usePathname } from "next/navigation";
+import {
+    LayoutDashboard, FolderOpen, Clock, Share2, Trash2, Settings,
+    HardDrive, Crown, X, Zap, FileUp
+} from "lucide-react";
+import { useStorageUsage } from "@/features/auth/queries";
+import { formatBytes } from "@/lib/format";
 
-const navigation = [
-    { name: "Tổng quan", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Tệp của tôi", href: "/dashboard/files", icon: Folder },
-    { name: "Gần đây", href: "/dashboard/recent", icon: Clock },
-    { name: "Đã chia sẻ", href: "/dashboard/shared", icon: Share2 },
-    { name: "Thùng rác", href: "/dashboard/trash", icon: Trash2 },
+interface DashboardSidebarProps {
+    isOpen: boolean;
+    onClose: () => void;
+}
+
+const MAX_STORAGE = 5 * 1024 * 1024 * 1024; // 5GB
+
+const navItems = [
+    { href: "/dashboard", icon: LayoutDashboard, label: "Tổng quan" },
+    { href: "/dashboard/files", icon: FolderOpen, label: "Tệp của tôi" },
+    { href: "/dashboard/recent", icon: Clock, label: "Gần đây" },
+    { href: "/dashboard/shared", icon: Share2, label: "Được chia sẻ" },
+    { href: "/dashboard/trash", icon: Trash2, label: "Thùng rác" },
 ];
 
-export function DashboardSidebar() {
+const bottomItems = [
+    { href: "/dashboard/settings", icon: Settings, label: "Cài đặt" },
+];
+
+export function DashboardSidebar({ isOpen, onClose }: DashboardSidebarProps) {
     const pathname = usePathname();
-    const router = useRouter();
-    const [usedStorage, setUsedStorage] = useState<number>(0);
-    const maxStorage = 1024 * 1024 * 1024 * 5; // 5GB limit (mock)
+    const { data: storageData } = useStorageUsage();
 
-    useEffect(() => {
-        const fetchStorage = async () => {
-            try {
-                const data = await authService.getStorageUsage();
-                setUsedStorage(data.usedStorage);
-            } catch (err) {
-                console.error("Lỗi lấy dung lượng: ", err);
-            }
-        };
-        fetchStorage();
-    }, []);
-
-    const formatBytes = (bytes: number, decimals = 2) => {
-        if (!+bytes) return '0 Bytes';
-        const k = 1024;
-        const dm = decimals < 0 ? 0 : decimals;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
-    };
-
-    const percentage = Math.min((usedStorage / maxStorage) * 100, 100).toFixed(1);
+    const usedStorage = storageData?.usedStorage || 0;
+    const usagePercent = Math.min(100, (usedStorage / MAX_STORAGE) * 100);
 
     return (
-        <aside className="w-64 border-r border-border bg-card/30 flex flex-col h-full overflow-y-auto">
-            <div className="p-6">
-                <Link href="/dashboard" className="flex items-center gap-2 group">
-                    <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center group-hover:rotate-12 transition-transform duration-300 shadow-md shadow-primary/20">
-                        <FileUp className="text-white w-5 h-5" />
-                    </div>
-                    <span className="text-xl font-bold tracking-tight">FileFlow</span>
-                </Link>
-            </div>
+        <>
+            {/* Overlay on mobile */}
+            {isOpen && (
+                <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={onClose} />
+            )}
 
-            <div className="px-4 pb-6 border-b border-border/50">
-                <button
-                    onClick={() => router.push('/dashboard/files')}
-                    className="w-full bg-primary text-white flex items-center justify-center gap-2 py-3 rounded-xl font-bold shadow-lg hover:shadow-primary/30 transition-all hover:bg-primary/90 hover:-translate-y-0.5 group cursor-pointer"
-                >
-                    <FileUp className="w-5 h-5 group-hover:animate-bounce-subtle" />
-                    Tải lên tệp mới
-                </button>
-            </div>
-
-            <nav className="flex-1 px-4 py-6 space-y-1">
-                {navigation.map((item) => {
-                    const isActive = pathname === item.href;
-                    return (
-                        <Link
-                            key={item.name}
-                            href={item.href}
-                            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all ${isActive
-                                ? "bg-primary/10 text-primary"
-                                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                                }`}
-                        >
-                            <item.icon className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-                            {item.name}
-                        </Link>
-                    )
-                })}
-            </nav>
-
-            <div className="p-4 mt-auto">
-                <div className="glass bg-card/50 rounded-2xl p-4 border border-border shadow-sm mb-4 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-2 opacity-10">
-                        <Sparkles className="w-12 h-12" />
-                    </div>
-                    <h4 className="text-sm font-bold mb-1">Gói cơ bản</h4>
-                    <div className="text-xs text-muted-foreground mb-3 font-mono">
-                        {formatBytes(usedStorage)} / {formatBytes(maxStorage)} đã dùng
-                    </div>
-                    <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden mb-3">
-                        <div 
-                           className="h-full bg-gradient-to-r from-primary to-violet-500" 
-                           style={{ width: `${percentage}%` }}
-                        />
-                    </div>
-                    <Link href="/dashboard/upgrade" className="text-xs text-primary font-bold hover:underline">
-                        Nâng cấp gói tài khoản
+            <aside className={`
+                fixed lg:static inset-y-0 left-0 z-50 w-72 bg-card border-r border-border/50 flex flex-col
+                transform transition-transform duration-300 ease-in-out lg:translate-x-0
+                ${isOpen ? "translate-x-0" : "-translate-x-full"}
+            `}>
+                {/* Logo */}
+                <div className="h-16 flex items-center justify-between px-6 border-b border-border/50">
+                    <Link href="/dashboard" className="flex items-center gap-2 group">
+                        <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform duration-300 shadow-lg shadow-primary/20">
+                            <FileUp className="text-white w-5 h-5" />
+                        </div>
+                        <span className="text-lg font-bold tracking-tight">FileFlow</span>
                     </Link>
+                    <button onClick={onClose} className="lg:hidden p-1 hover:bg-secondary rounded-lg">
+                        <X className="w-5 h-5" />
+                    </button>
                 </div>
 
-                <Link
-                    href="/dashboard/settings"
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-all"
-                >
-                    <Settings className="w-5 h-5" /> Cài đặt
-                </Link>
-            </div>
-        </aside>
+                {/* Nav Items */}
+                <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+                    {navItems.map((item) => {
+                        const isActive = item.href === "/dashboard"
+                            ? pathname === "/dashboard"
+                            : pathname.startsWith(item.href);
+                        return (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                onClick={onClose}
+                                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                                    isActive
+                                        ? "bg-primary text-white shadow-md shadow-primary/20"
+                                        : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                                }`}
+                            >
+                                <item.icon className="w-5 h-5" />
+                                {item.label}
+                            </Link>
+                        );
+                    })}
+                </nav>
+
+                {/* Bottom Section */}
+                <div className="p-4 space-y-4 border-t border-border/50">
+                    {/* Storage Usage */}
+                    <div className="bg-secondary/50 rounded-2xl p-4 space-y-3">
+                        <div className="flex items-center justify-between text-sm">
+                            <span className="font-bold flex items-center gap-2">
+                                <HardDrive className="w-4 h-4 text-primary" /> Lưu trữ
+                            </span>
+                            <span className="text-muted-foreground font-mono text-xs">
+                                {formatBytes(usedStorage)} / {formatBytes(MAX_STORAGE)}
+                            </span>
+                        </div>
+                        <div className="h-2 bg-background rounded-full overflow-hidden">
+                            <div
+                                className="h-full bg-gradient-to-r from-primary to-violet-500 rounded-full transition-all duration-500"
+                                style={{ width: `${usagePercent}%` }}
+                            />
+                        </div>
+                        <Link
+                            href="/dashboard/upgrade"
+                            className="flex items-center justify-center gap-2 w-full py-2 bg-primary/10 text-primary text-sm font-bold rounded-xl hover:bg-primary/20 transition-colors"
+                        >
+                            <Crown className="w-4 h-4" /> Nâng cấp Pro
+                        </Link>
+                    </div>
+
+                    {bottomItems.map((item) => (
+                        <Link
+                            key={item.href}
+                            href={item.href}
+                            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-all"
+                        >
+                            <item.icon className="w-5 h-5" />
+                            {item.label}
+                        </Link>
+                    ))}
+
+                    <div className="text-center text-xs text-muted-foreground pt-2 flex items-center justify-center gap-1 pb-2">
+                        <Zap className="w-3 h-3 text-primary" /> FileFlow v2.4.0
+                    </div>
+                </div>
+            </aside>
+        </>
     );
 }
