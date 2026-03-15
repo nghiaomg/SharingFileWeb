@@ -33,8 +33,20 @@ Chia sẻ nhanh tệp với bất kỳ ai thông qua đường link công khai a
 
 ## Khởi Chạy Dự Án
 
+Bạn có thể chạy tự động cả 2 server (Backend & Frontend) bằng cách chạy tệp tin `start.bat` tại thư mục gốc. Hệ thống sẽ tự cấp phát 2 cửa sổ cmd độc lập.
+
 ### Backend (Spring Boot)
-Yêu cầu: JDK 17, Maven, MongoDB (Port mặc định `localhost:27017`)
+Yêu cầu: JDK 17+, Maven, MongoDB (Port mặc định `localhost:27017`)
+
+1. Tạo file `.env` tại thư mục `backend/` với nội dung cơ bản sau:
+   ```properties
+   MONGO_URI=mongodb://localhost:27017/sharingfileweb
+   MONGO_DATABASE=sharingfileweb
+   JWT_SECRET=SharingFileWebSecretKeyLongEnoughMin256Bits
+   JWT_EXPIRATION_MS=86400000
+   JWT_REFRESH_EXPIRATION_MS=604800000
+   ```
+2. Chạy Server:
 ```bash
 cd backend
 mvn clean spring-boot:run
