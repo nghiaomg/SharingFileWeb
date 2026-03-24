@@ -1,16 +1,17 @@
 "use client";
 
-import { Clock, Download, Share2, Loader2 } from "lucide-react";
+import { Clock, Loader2 } from "lucide-react";
 import { format, isToday, isYesterday, differenceInDays } from "date-fns";
 import { vi } from "date-fns/locale";
 import { useRecentFiles } from "@/features/files/queries";
-import { categoriesMeta, getCategoryFromMime } from "@/lib/file-utils";
 import { useMemo } from "react";
+import { FileCard } from "@/features/files/components/FileCard";
+import { Grid } from "@radix-ui/themes";
+import type { FileItem } from "@/features/files/schemas";
 
 interface GroupedFilesItem {
     file: { id: string; name: string; type: string | null; size: number; createdAt: string };
     timeStr: string;
-    meta: { icon: React.ElementType; color: string; bg: string };
 }
 
 interface GroupedFiles {
@@ -50,11 +51,9 @@ export default function RecentFilesPage() {
                 groupsMap.set(label, []);
             }
 
-            const catName = getCategoryFromMime(file.type);
             groupsMap.get(label)!.push({
                 file,
                 timeStr,
-                meta: categoriesMeta[catName] || categoriesMeta["Khác"],
             });
         });
 
@@ -91,34 +90,19 @@ export default function RecentFilesPage() {
                                 <div className="h-px flex-1 bg-border/50"></div>
                             </div>
 
-                            <div className="grid gap-4">
-                                {group.items.map((item, j) => {
-                                    const Icon = item.meta.icon;
-                                    return (
-                                    <div key={j} className="flex items-center justify-between p-4 bg-card border border-border/50 rounded-2xl hover:bg-muted/30 transition-colors group cursor-pointer">
-                                        <div className="flex items-center gap-4">
-                                            <div className={`w-10 h-10 rounded-xl bg-background border border-border flex items-center justify-center ${item.meta.color}`}>
-                                                <Icon className="w-5 h-5" />
-                                            </div>
-                                            <div>
-                                                <h4 className="font-bold text-base truncate max-w-sm sm:max-w-md">{item.file.name}</h4>
-                                                <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1 font-medium italic">
-                                                    <span>{item.timeStr}</span>
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex opacity-0 group-hover:opacity-100 transition-opacity gap-2">
-                                            <button className="p-2 text-muted-foreground hover:bg-background rounded-lg hover:text-foreground">
-                                                <Download className="w-5 h-5" />
-                                            </button>
-                                            <button className="p-2 text-muted-foreground hover:bg-background rounded-lg hover:text-foreground">
-                                                <Share2 className="w-5 h-5" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                )})}
-                            </div>
+                            <Grid columns={{ initial: "1", sm: "2", lg: "3", xl: "5" }} gap="4">
+                                {group.items.map((item) => (
+                                    <FileCard 
+                                        key={item.file.id} 
+                                        file={item.file as unknown as FileItem} 
+                                        variant="grid" 
+                                        subtitle={item.timeStr}
+                                        showDirectActions 
+                                        onDownload={() => {}}
+                                        onShare={() => {}}
+                                    />
+                                ))}
+                            </Grid>
                         </div>
                     ))}
                 </div>

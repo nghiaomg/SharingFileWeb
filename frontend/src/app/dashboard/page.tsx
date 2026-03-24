@@ -4,12 +4,15 @@ import { FileText, ImageIcon, Video, HardDrive, TrendingUp, Clock, Loader2 } fro
 import Link from "next/link";
 import { useDashboardCategories, useDashboardRecentFiles } from "@/features/dashboard/queries";
 import { formatBytes } from "@/lib/format";
+import { Box, Flex, Grid, Card, Heading, Text, Container } from "@radix-ui/themes";
+import { FileCard } from "@/features/files/components/FileCard";
+import type { FileItem } from "@/features/files/schemas";
 
-const categoryIcons: Record<string, { icon: React.ElementType, color: string, bg: string }> = {
-    "document": { icon: FileText, color: "text-blue-500", bg: "bg-blue-500/10" },
-    "image": { icon: ImageIcon, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-    "video": { icon: Video, color: "text-rose-500", bg: "bg-rose-500/10" },
-    "other": { icon: HardDrive, color: "text-amber-500", bg: "bg-amber-500/10" },
+const categoryIcons: Record<string, { icon: React.ElementType, colorName: string }> = {
+    "document": { icon: FileText, colorName: "blue" },
+    "image": { icon: ImageIcon, colorName: "teal" },
+    "video": { icon: Video, colorName: "rose" },
+    "other": { icon: HardDrive, colorName: "amber" },
 };
 
 function getCategoryUIKey(type?: string): string {
@@ -30,17 +33,17 @@ export default function DashboardPage() {
 
     if (isLoading) {
         return (
-            <div className="flex-1 flex items-center justify-center p-8">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
+            <Flex align="center" justify="center" style={{ flex: 1, padding: "2rem" }}>
+                <Loader2 className="w-8 h-8 animate-spin text-violet-9" style={{ color: "var(--violet-9)" }} />
+            </Flex>
         );
     }
 
     if (error) {
         return (
-            <div className="p-8 text-center text-muted-foreground">
-                Không thể tải dữ liệu tổng quan.
-            </div>
+            <Box p="8" style={{ textAlign: "center" }}>
+                <Text color="gray">Không thể tải dữ liệu tổng quan.</Text>
+            </Box>
         );
     }
 
@@ -48,89 +51,88 @@ export default function DashboardPage() {
     const recent = recentFiles || [];
 
     return (
-        <div className="p-8 pb-32 space-y-8">
-            {/* Overview Header */}
-            <div>
-                <h1 className="text-3xl font-bold mb-2">Tổng quan</h1>
-                <p className="text-muted-foreground">Xem nhanh tình trạng lưu trữ và các hoạt động gần đây.</p>
-            </div>
+        <Box p="6" pb="9" style={{ height: "100%", overflowY: "auto" }}>
+            <Container size="4">
+                {/* Overview Header */}
+                <Box mb="6">
+                    <Heading size="8" mb="2">Tổng quan</Heading>
+                    <Text size="3" color="gray">Xem nhanh tình trạng lưu trữ và các hoạt động gần đây.</Text>
+                </Box>
 
-            {/* Category Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {cats.length > 0 ? cats.map((cat, i) => {
-                    const uiKey = getCategoryUIKey(cat.title);
-                    const meta = categoryIcons[uiKey] || categoryIcons["other"];
-                    const Icon = meta.icon;
-                    return (
-                        <div
-                            key={i}
-                            className="bg-card border border-border/50 rounded-2xl p-6 hover:border-border transition-all group"
-                        >
-                            <div className="flex items-start justify-between mb-4">
-                                <div className={`p-3 rounded-xl ${meta.bg}`}>
-                                    <Icon className={`w-6 h-6 ${meta.color}`} />
-                                </div>
-                                <TrendingUp className="w-4 h-4 text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </div>
-                            <h3 className="text-2xl font-bold mb-1">{cat.files}</h3>
-                            <p className="text-muted-foreground text-sm font-medium">{cat.title}</p>
-                            <p className="text-xs text-muted-foreground/70 mt-1 font-mono">{formatBytes(cat.size)}</p>
-                        </div>
-                    );
-                }) : (
-                    // Hiển thị trạng thái rỗng nếu chưa có loại tệp nào
-                    ["Tài liệu", "Hình ảnh", "Video", "Khác"].map((defaultType, i) => {
-                        const defaultKeys = ["document", "image", "video", "other"];
-                        const uiKey = defaultKeys[i];
-                        const meta = categoryIcons[uiKey];
+                {/* Category Cards */}
+                <Grid columns={{ initial: "1", sm: "2", lg: "4" }} gap="5">
+                    {cats.length > 0 ? cats.map((cat, i) => {
+                        const uiKey = getCategoryUIKey(cat.title);
+                        const meta = categoryIcons[uiKey] || categoryIcons["other"];
                         const Icon = meta.icon;
                         return (
-                            <div
-                                key={i}
-                                className="bg-card border border-border/50 rounded-2xl p-6 hover:border-border transition-all opacity-70 grayscale-[30%]"
-                            >
-                                <div className="flex items-start justify-between mb-4">
-                                    <div className={`p-3 rounded-xl ${meta.bg}`}>
-                                        <Icon className={`w-6 h-6 ${meta.color}`} />
-                                    </div>
-                                </div>
-                                <h3 className="text-2xl font-bold mb-1">0</h3>
-                                <p className="text-muted-foreground text-sm font-medium">{defaultType}</p>
-                                <p className="text-xs text-muted-foreground/70 mt-1 font-mono">0 B</p>
-                            </div>
-                        )
-                    })
-                )}
-            </div>
-
-            {/* Recent Files */}
-            <div className="bg-card border border-border/50 rounded-3xl overflow-hidden">
-                <div className="p-6 border-b border-border/50 flex justify-between items-center">
-                    <h3 className="text-lg font-bold flex items-center gap-2">
-                        <Clock className="w-5 h-5 text-primary" /> Tệp gần đây
-                    </h3>
-                    <Link href="/dashboard/recent" className="text-sm font-bold text-primary hover:underline">Xem tất cả</Link>
-                </div>
-                <div className="divide-y divide-border/50">
-                    {recent.length === 0 ? (
-                        <div className="p-8 text-center text-muted-foreground">Chưa có tệp nào.</div>
-                    ) : (
-                        recent.slice(0, 5).map((file) => (
-                            <div key={file.id} className="flex items-center p-4 hover:bg-muted/20 transition-colors">
-                                <div className="p-2.5 rounded-xl bg-blue-500/10 mr-4">
-                                    <FileText className="w-5 h-5 text-blue-500" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <h4 className="font-bold text-sm truncate">{file.name}</h4>
-                                    <p className="text-xs text-muted-foreground">
-                                        {formatBytes(file.size)} • {new Date(file.createdAt).toLocaleDateString("vi-VN")}
-                                    </p>
-                                </div>
-                            </div>
-                        ))
+                            <Card key={i} size="3" variant="surface" style={{ transition: "all 0.2s" }} className="group hover:-translate-y-1">
+                                <Flex align="start" justify="between" mb="4">
+                                    <Box p="3" style={{ borderRadius: "var(--radius-3)", backgroundColor: `var(--${meta.colorName}-a3)` }}>
+                                        <Icon style={{ width: 24, height: 24, color: `var(--${meta.colorName}-11)` }} />
+                                    </Box>
+                                    <TrendingUp className="w-4 h-4 text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </Flex>
+                                <Heading size="7" mb="1" weight="bold">{cat.files}</Heading>
+                                <Text as="div" size="2" color="gray" weight="medium">{cat.title}</Text>
+                                <Text as="div" size="1" color="gray" mt="1" style={{ fontFamily: "var(--font-geist-mono)" }}>{formatBytes(cat.size)}</Text>
+                            </Card>
+                        );
+                    }) : (
+                        // Mặc định tĩnh nếu chưa có data
+                        ["Tài liệu", "Hình ảnh", "Video", "Khác"].map((defaultType, i) => {
+                            const defaultKeys = ["document", "image", "video", "other"];
+                            const uiKey = defaultKeys[i];
+                            const meta = categoryIcons[uiKey];
+                            const Icon = meta.icon;
+                            return (
+                                <Card key={i} size="3" variant="surface" style={{ opacity: 0.7, filter: "grayscale(30%)" }}>
+                                    <Flex align="start" justify="between" mb="4">
+                                        <Box p="3" style={{ borderRadius: "var(--radius-3)", backgroundColor: `var(--${meta.colorName}-a3)` }}>
+                                            <Icon style={{ width: 24, height: 24, color: `var(--${meta.colorName}-11)` }} />
+                                        </Box>
+                                    </Flex>
+                                    <Heading size="7" mb="1" weight="bold">0</Heading>
+                                    <Text as="div" size="2" color="gray" weight="medium">{defaultType}</Text>
+                                    <Text as="div" size="1" color="gray" mt="1" style={{ fontFamily: "var(--font-geist-mono)" }}>0 B</Text>
+                                </Card>
+                            )
+                        })
                     )}
-                </div>
-            </div>
-        </div>
+                </Grid>
+
+                {/* Recent Files */}
+                <Card size="4" variant="surface" mt="6" style={{ overflow: "hidden", padding: 0 }}>
+                    <Flex align="center" justify="between" p="5" style={{ borderBottom: "1px solid var(--gray-a6)" }}>
+                        <Heading size="5" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <Clock className="w-5 h-5 text-violet-9" style={{ color: "var(--violet-9)" }} /> Tệp gần đây
+                        </Heading>
+                        <Link href="/dashboard/recent">
+                            <Text size="2" weight="bold" color="violet" style={{ cursor: "pointer" }}>Xem tất cả</Text>
+                        </Link>
+                    </Flex>
+
+                    <Flex direction="column">
+                        {recent.length === 0 ? (
+                            <Box p="6" style={{ textAlign: "center" }}>
+                                <Text color="gray">Chưa có tệp nào.</Text>
+                            </Box>
+                        ) : (
+                            recent.slice(0, 5).map((file, i) => (
+                                <FileCard 
+                                    key={file.id} 
+                                    file={file as unknown as FileItem} 
+                                    variant="list" 
+                                    subtitle={`${formatBytes(file.size)} • ${new Date(file.createdAt).toLocaleDateString("vi-VN")}`}
+                                    style={{
+                                        borderBottom: i !== Math.min(recent.length, 5) - 1 ? "1px solid var(--gray-a4)" : "none",
+                                    }}
+                                />
+                            ))
+                        )}
+                    </Flex>
+                </Card>
+            </Container>
+        </Box>
     );
 }

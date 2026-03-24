@@ -99,6 +99,43 @@ public class FolderService {
         return mapToResponse(updatedFolder);
     }
 
+    public synchronized FolderResponse resolvePath(String path, String rootParentId) {
+        if (path == null || path.trim().isEmpty()) {
+            throw new RuntimeException("Path cannot be empty");
+        }
+        String userId = getCurrentUserId();
+        String currentParentId = (rootParentId != null && !rootParentId.trim().isEmpty() && !"root".equals(rootParentId)) ? rootParentId : null;
+        
+        String[] parts = path.split("/");
+        Folder currentFolder = null;
+        
+        for (String part : parts) {
+            String folderName = part.trim();
+            if (folderName.isEmpty()) continue;
+            
+            // Check if folder exists
+            Optional<Folder> existingFolder = folderRepository.findByNameAndOwnerIdAndParentIdAndIsDeletedFalse(folderName, userId, currentParentId);
+            if (existingFolder.isPresent()) {
+                currentFolder = existingFolder.get();
+            } else {
+                // Determine if there happens to be a conflict in the time we checked? 
+                // Using synchronized will help prevent race conditions for identical paths on the same server instance.
+                Folder newFolder = new Folder(folderName, userId, currentParentId);
+                currentFolder = folderRepository.save(newFolder);
+            }
+            currentParentId = currentFolder.getId();
+        }
+        
+        if (currentFolder == null) {
+            if (rootParentId != null && !"root".equals(rootParentId)) {
+                return getFolderById(rootParentId); // If path was essentially empty and resolved to parent
+            }
+            throw new RuntimeException("Could not resolve path");
+        }
+        
+        return mapToResponse(currentFolder);
+    }
+
     public void deleteFolder(String id) {
         String userId = getCurrentUserId();
         Folder folder = folderRepository.findByIdAndOwnerIdAndIsDeletedFalse(id, userId)

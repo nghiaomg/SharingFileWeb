@@ -1,16 +1,17 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
-    FolderOpen, Upload, Plus, LayoutGrid, List as ListIcon, MoreVertical,
-    Pencil, Trash2, Download, Link as LinkIcon, Loader2, ChevronRight, Home,
-    FileText, FolderUp
+    FolderOpen, Plus, LayoutGrid, List as ListIcon, MoreVertical,
+    Pencil, Trash2, Download, Link as LinkIcon, Loader2, ChevronRight, Home
 } from "lucide-react";
 import Link from "next/link";
 import { useFolderChildren, useRootFolder, useFolder } from "@/features/files/queries";
 import { useCreateFolder, useUpdateFolder, useDeleteFolder, useUploadFile, useDeleteFile, useDownloadFile } from "@/features/files/mutations";
+import { resolveFolderPath } from "@/features/files/api";
 import { FolderModal } from "@/features/dashboard/components/FolderModal";
+import { UploadDropdown } from "./UploadDropdown";
 import { DeleteConfirmModal } from "@/features/dashboard/components/DeleteConfirmModal";
 import { ShareModal } from "@/features/dashboard/components/ShareModal";
 import { formatBytes } from "@/lib/format";
@@ -18,6 +19,8 @@ import { determineFileType } from "@/lib/file-utils";
 import { getApiErrorMessage } from "@/types/api";
 import type { FolderItem, FileItem } from "@/features/files/schemas";
 import { toast } from "sonner";
+import { Box, Flex, Grid, Card, Heading, Text, Button, IconButton, DropdownMenu } from "@radix-ui/themes";
+import { FileCard } from "@/features/files/components/FileCard";
 
 interface FileExplorerProps {
     folderId?: string | null;
@@ -43,8 +46,6 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
 
     // ─── Local UI State ─────────────────────────────────────────────────────────
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-    const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
-    const [isUploadMenuOpen, setIsUploadMenuOpen] = useState(false);
     const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
     const [isDragging, setIsDragging] = useState(false);
 
@@ -58,21 +59,8 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
     // Share
     const [shareTarget, setShareTarget] = useState<FileItem | null>(null);
 
-    const fileInputRef = useRef<HTMLInputElement>(null);
-    const folderInputRef = useRef<HTMLInputElement>(null);
-
     const folders = children?.folders || [];
     const files = children?.files || [];
-
-    // Close menus on click outside
-    useEffect(() => {
-        const handleClickOutside = () => {
-            setActiveMenuId(null);
-            setIsUploadMenuOpen(false);
-        };
-        document.addEventListener("click", handleClickOutside);
-        return () => document.removeEventListener("click", handleClickOutside);
-    }, []);
 
     // ─── Handlers ───────────────────────────────────────────────────────────────
     const handleCreateFolder = useCallback((name: string) => {
@@ -109,20 +97,62 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
             setDeleteTarget(null);
         } catch (err) {
             toast.error(getApiErrorMessage(err));
-            throw err; // throw to let DeleteConfirmModal show the error inline
+            throw err;
         }
     }, [deleteTarget, deleteFolderMutation, deleteFileMutation]);
 
-    const processFiles = useCallback((filesToUpload: FileList | File[]) => {
+    const processFiles = useCallback(async (filesToUpload: FileList | File[]) => {
         if (!filesToUpload || filesToUpload.length === 0 || !currentFolderId) return;
 
-        Array.from(filesToUpload).forEach(file => {
+        const filesArray = Array.from(filesToUpload);
+        const pathsToResolve = new Set<string>();
+
+        filesArray.forEach(file => {
+            if (file.webkitRelativePath) {
+                const parts = file.webkitRelativePath.split('/');
+                if (parts.length > 1) {
+                    parts.pop(); 
+                    pathsToResolve.add(parts.join('/'));
+                }
+            }
+        });
+
+        const folderMap: Record<string, string> = {};
+
+        if (pathsToResolve.size > 0) {
+            toast.loading("Đang tạo cấu trúc thư mục...", { id: "resolve-folders" });
+            try {
+                for (const path of Array.from(pathsToResolve)) {
+                    const resolvedFolder = await resolveFolderPath({ path, parentId: currentFolderId });
+                    folderMap[path] = resolvedFolder.id;
+                }
+                toast.success("Đã tạo cấu trúc thư mục", { id: "resolve-folders" });
+            } catch (err) {
+                console.error("Folder creation error:", err);
+                toast.error("Lỗi khi tạo cấu trúc thư mục", { id: "resolve-folders" });
+                return;
+            }
+        }
+
+        filesArray.forEach(file => {
             const fileId = crypto.randomUUID();
             setUploadProgress(prev => ({ ...prev, [fileId]: 0 }));
 
+            let targetFolderId = currentFolderId;
+            if (file.webkitRelativePath) {
+                const parts = file.webkitRelativePath.split('/');
+                if (parts.length > 1) {
+                    parts.pop();
+                    const path = parts.join('/');
+                    if (folderMap[path]) {
+                        targetFolderId = folderMap[path];
+                    }
+                }
+            }
+
             uploadFileMutation.mutate({
                 file,
-                folderId: currentFolderId,
+                folderId: targetFolderId,
                 onProgress: (p) => setUploadProgress(prev => ({ ...prev, [fileId]: p }))
             }, {
                 onSuccess: () => {
@@ -131,10 +161,10 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
                         delete next[fileId];
                         return next;
                     });
-                    toast.success(`Đã tải lên ${file.name}`);
+                    toast.success(`Đã tải lên tệp: ${file.name}`);
                 },
                 onError: (err) => {
-                    toast.error(getApiErrorMessage(err, "Lỗi upload file"));
+                    toast.error(getApiErrorMessage(err, "Lỗi upload file: " + file.name));
                     setUploadProgress(prev => {
                         const next = { ...prev };
                         delete next[fileId];
@@ -144,13 +174,6 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
             });
         });
     }, [currentFolderId, uploadFileMutation]);
-
-    const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
-            processFiles(e.target.files);
-        }
-        e.target.value = "";
-    }, [processFiles]);
 
     const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
@@ -165,14 +188,14 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
     const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
         setIsDragging(false);
-        if (e.dataTransfer.files) {
-            processFiles(e.dataTransfer.files);
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            const filesCopy = Array.from(e.dataTransfer.files);
+            processFiles(filesCopy);
         }
     }, [processFiles]);
 
     const handleShare = useCallback((file: FileItem) => {
         setShareTarget(file);
-        setActiveMenuId(null);
     }, []);
 
     const handleDownload = useCallback((fileId: string, fileName: string) => {
@@ -180,7 +203,6 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
             onSuccess: () => toast.success("Đang tải xuống..."),
             onError: (err) => toast.error(getApiErrorMessage(err, "Lỗi khi tải xuống"))
         });
-        setActiveMenuId(null);
     }, [downloadFileMutation]);
 
     // ─── Uploading indicator ────────────────────────────────────────────────────
@@ -188,336 +210,275 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
 
     if (isLoading) {
         return (
-            <div className="flex-1 flex items-center justify-center p-12">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
+            <Flex align="center" justify="center" style={{ flex: 1, padding: "3rem" }}>
+                <Loader2 className="w-8 h-8 animate-spin text-violet-9" style={{ color: "var(--violet-9)" }} />
+            </Flex>
         );
     }
 
     return (
-        <div className="flex-1 flex flex-col h-[calc(100vh-4rem)] lg:h-screen bg-background overflow-hidden">
+        <Flex direction="column" style={{ height: "calc(100vh - 4rem)", backgroundColor: "var(--color-background)", overflow: "hidden" }} className="lg:h-[calc(100vh-4rem)]">
             {/* Header */}
-            <header className="px-8 py-6 flex flex-col sm:flex-row sm:items-end justify-between border-b border-border/50 bg-card/30 backdrop-blur-xl gap-4">
-                <div>
-                    {/* Breadcrumb */}
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                        <Link href="/dashboard/files" className="hover:text-foreground transition-colors flex items-center gap-1">
-                            <Home className="w-4 h-4" /> Tệp của tôi
-                        </Link>
-                        {folderId && folderInfo && (
-                            <>
-                                <ChevronRight className="w-4 h-4" />
-                                <span className="text-foreground font-medium">{folderInfo.name}</span>
-                            </>
-                        )}
-                    </div>
-                    <h1 className="text-3xl font-bold tracking-tight">
+            <Flex direction={{ initial: "column", sm: "row" }} align={{ initial: "stretch", sm: "end" }} justify="between" gap="4" px={{ initial: "4", sm: "6", lg: "8" }} py="5" className="relative z-10 bg-card/30 backdrop-blur-xl" style={{ borderBottom: "1px solid var(--gray-a4)", flexShrink: 0 }}>
+                <Box>
+                    {folderId && folderInfo && (
+                        <Flex align="center" gap="2" mb="2">
+                            <Link href="/dashboard/files" className="hover:text-foreground transition-colors flex items-center gap-1">
+                                <Text size="2" color="gray" style={{ display: "flex", alignItems: "center" }}><Home className="w-4 h-4 mr-1" /> Tệp của tôi</Text>
+                            </Link>
+                            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                            <Text size="2" weight="medium">{folderInfo.name}</Text>
+                        </Flex>
+                    )}
+                    <Heading size="8" style={{ letterSpacing: "-0.025em", display: "flex", alignItems: "center", gap: "12px" }}>
+                        {!folderId || !folderInfo ? <Home style={{ width: 32, height: 32, color: "var(--violet-9)" }} /> : <FolderOpen style={{ width: 32, height: 32, color: "var(--amber-11)" }} />}
                         {folderId && folderInfo ? folderInfo.name : "Tệp của tôi"}
-                    </h1>
-                </div>
+                    </Heading>
+                </Box>
 
-                <div className="flex items-center gap-3 shrink-0">
-                    {/* Upload */}
-                    <div className="relative">
-                        <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" multiple />
-                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                        <input type="file" ref={folderInputRef} onChange={handleFileUpload} className="hidden" multiple {...({webkitdirectory: "true", directory: "true"} as any)} />
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setTimeout(() => setIsUploadMenuOpen(prev => !prev), 0);
-                            }}
-                            disabled={isUploading}
-                            className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-colors text-sm disabled:opacity-60 border border-primary/40 hover:border-primary cursor-pointer"
-                        >
-                            {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                            {isUploading ? "Đang tải lên..." : "Tải lên"}
-                        </button>
-
-                        {isUploadMenuOpen && !isUploading && (
-                            <div className="absolute top-12 right-0 w-48 bg-card border border-border rounded-xl z-20 py-1 shadow-sm mt-2" onClick={(e) => e.stopPropagation()}>
-                                <button
-                                    onClick={() => {
-                                        setIsUploadMenuOpen(false);
-                                        fileInputRef.current?.click();
-                                    }}
-                                    className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-secondary transition-colors cursor-pointer"
-                                >
-                                    <FileText className="w-4 h-4" /> Tải tệp lên
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setIsUploadMenuOpen(false);
-                                        folderInputRef.current?.click();
-                                    }}
-                                    className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-secondary transition-colors cursor-pointer"
-                                >
-                                    <FolderUp className="w-4 h-4" /> Tải thư mục lên
-                                </button>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* New Folder */}
-                    <button
+                <Flex align="center" gap="3" style={{ flexShrink: 0 }}>
+                    <UploadDropdown isUploading={isUploading} onUpload={processFiles} />
+                    
+                    <Button
+                        variant="soft"
+                        color="gray"
+                        size="3"
                         onClick={() => {
                             setEditingFolder(null);
                             setIsFolderModalOpen(true);
                         }}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-secondary text-foreground rounded-xl font-bold hover:bg-secondary/80 transition-colors text-sm border border-border"
                     >
                         <Plus className="w-4 h-4" /> Thư mục mới
-                    </button>
+                    </Button>
 
-                    {/* View Toggle */}
-                    <div className="flex items-center bg-card p-1 rounded-xl border border-border/60">
-                        <button
+                    <Flex align="center" gap="1" p="1" style={{ backgroundColor: "var(--color-card)", borderRadius: "var(--radius-3)", border: "1px solid var(--gray-a5)" }}>
+                        <IconButton
+                            size="2"
+                            variant={viewMode === "grid" ? "solid" : "ghost"}
+                            color={viewMode === "grid" ? "violet" : "gray"}
                             onClick={() => setViewMode("grid")}
-                            className={`p-2 rounded-lg transition-colors ${viewMode === "grid" ? "bg-primary text-white border border-primary/30" : "text-muted-foreground hover:bg-secondary border border-transparent"}`}
+                            style={{ cursor: "pointer" }}
                         >
-                            <LayoutGrid className="w-5 h-5" />
-                        </button>
-                        <button
+                            <LayoutGrid className="w-4 h-4" />
+                        </IconButton>
+                        <IconButton
+                            size="2"
+                            variant={viewMode === "list" ? "solid" : "ghost"}
+                            color={viewMode === "list" ? "violet" : "gray"}
                             onClick={() => setViewMode("list")}
-                            className={`p-2 rounded-lg transition-colors ${viewMode === "list" ? "bg-primary text-white border border-primary/30" : "text-muted-foreground hover:bg-secondary border border-transparent"}`}
+                            style={{ cursor: "pointer" }}
                         >
-                            <ListIcon className="w-5 h-5" />
-                        </button>
-                    </div>
-                </div>
-            </header>
+                            <ListIcon className="w-4 h-4" />
+                        </IconButton>
+                    </Flex>
+                </Flex>
+            </Flex>
 
             {/* Upload Progress */}
             {isUploading && (
-                <div className="px-8 py-3 bg-primary/5 border-b border-primary/20">
+                <Box px={{ initial: "4", sm: "6", lg: "8" }} py="3" style={{ backgroundColor: "var(--violet-a2)", borderBottom: "1px solid var(--violet-a4)" }}>
                     {Object.entries(uploadProgress).map(([id, progress]) => (
-                        <div key={id} className="flex items-center gap-3">
-                            <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                            <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
-                                <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${progress}%` }} />
-                            </div>
-                            <span className="text-sm font-mono text-primary">{progress}%</span>
-                        </div>
+                        <Flex key={id} align="center" gap="3">
+                            <Loader2 className="w-4 h-4 animate-spin text-violet-9" style={{ color: "var(--violet-9)" }} />
+                            <Box style={{ flex: 1, height: "8px", backgroundColor: "var(--violet-a3)", borderRadius: "9999px", overflow: "hidden" }}>
+                                <Box style={{ height: "100%", backgroundColor: "var(--violet-9)", width: `${progress}%`, transition: "width 0.2s" }} />
+                            </Box>
+                            <Text size="2" style={{ fontFamily: "var(--font-geist-mono)", color: "var(--violet-11)" }}>{progress}%</Text>
+                        </Flex>
                     ))}
-                </div>
+                </Box>
             )}
 
-            {/* Content */}
-            <main className="flex-1 overflow-y-auto p-8 scroll-smooth z-0">
+            {/* Content  */}
+            <Box p={{ initial: "4", sm: "6", lg: "8" }} style={{ flex: 1, overflowY: "auto", position: "relative", zIndex: 0 }}>
                 {folders.length === 0 && files.length === 0 ? (
-                    <div 
+                    <Flex 
+                        direction="column"
+                        align="center"
+                        justify="center"
                         onDragOver={handleDragOver}
                         onDragLeave={handleDragLeave}
                         onDrop={handleDrop}
-                        className={`h-full min-h-[400px] flex flex-col items-center justify-center text-center rounded-3xl border-2 border-dashed transition-all duration-300 ${
-                            isDragging ? "border-primary bg-primary/5" : "border-border/60 hover:border-border hover:bg-card/50"
-                        }`}
+                        p="6"
+                        style={{
+                            minHeight: "400px",
+                            border: `2px dashed ${isDragging ? "var(--violet-9)" : "var(--gray-a6)"}`,
+                            backgroundColor: isDragging ? "var(--violet-a2)" : "transparent",
+                            borderRadius: "var(--radius-5)",
+                            transition: "all 0.3s",
+                            cursor: "pointer",
+                            textAlign: "center"
+                        }}
                     >
-                        <div className={`p-6 rounded-full mb-6 transition-colors duration-300 ${isDragging ? "bg-primary/20" : "bg-card border border-border"}`}>
-                            <FolderOpen className={`w-16 h-16 transition-colors duration-300 ${isDragging ? "text-primary" : "text-muted-foreground/40"}`} />
-                        </div>
-                        <h3 className={`text-2xl font-bold mb-3 transition-colors duration-300 ${isDragging ? "text-primary" : ""}`}>
+                        <Box p="4" mb="4" style={{ borderRadius: "100%", backgroundColor: isDragging ? "var(--violet-a3)" : "var(--gray-a3)", transition: "all 0.3s" }}>
+                            <FolderOpen style={{ width: 64, height: 64, color: isDragging ? "var(--violet-9)" : "var(--gray-a8)", transition: "all 0.3s" }} />
+                        </Box>
+                        <Heading size="6" mb="3" style={{ color: isDragging ? "var(--violet-11)" : "inherit" }}>
                             {isDragging ? "Thả tệp vào đây" : "Thư mục trống"}
-                        </h3>
-                        <p className="text-muted-foreground/80 font-medium max-w-sm leading-relaxed">
+                        </Heading>
+                        <Text size="3" color="gray" style={{ maxWidth: "24rem" }}>
                             {isDragging ? "Chúng tôi sẽ tự động tải lên không gian của bạn." : "Kéo thả tệp vào đây hoặc nhấn mũi tên tải lên ở góc trên cùng để bắt đầu."}
-                        </p>
-                    </div>
+                        </Text>
+                    </Flex>
                 ) : (
-                    <div className="space-y-8">
+                    <Flex direction="column" gap="6">
                         {/* Folders */}
                         {folders.length > 0 && (
-                            <section>
-                                <h3 className="text-sm font-bold text-muted-foreground mb-4 uppercase tracking-wider">Thư mục ({folders.length})</h3>
-                                <div className={viewMode === "grid"
-                                    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4"
-                                    : "space-y-2"
-                                }>
-                                    {folders.map(folder => (
-                                        <div
-                                            key={folder.id}
-                                            onClick={() => router.push(`/dashboard/files/${folder.id}`)}
-                                            className={`group relative cursor-pointer transition-all ${activeMenuId === folder.id ? "z-50" : "z-0"} ${
-                                                viewMode === "grid"
-                                                    ? "bg-card border border-border/60 hover:border-border p-4 rounded-2xl"
-                                                    : "bg-card border border-border/60 hover:border-border p-3 rounded-xl flex items-center gap-4"
-                                            }`}
-                                        >
-                                            <div className={`${viewMode === "grid" ? "flex items-center gap-4 mb-3" : "flex items-center gap-4 flex-1"}`}>
-                                                <div className="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center shrink-0">
-                                                    <FolderOpen className="w-5 h-5 text-amber-500" />
-                                                </div>
-                                                <h4 className="font-semibold truncate">{folder.name}</h4>
-                                            </div>
+                            <Box>
+                                <Text size="2" weight="bold" color="gray" mb="4" style={{ textTransform: "uppercase", letterSpacing: "0.05em", display: "block" }}>
+                                    Thư mục ({folders.length})
+                                </Text>
+                                
+                                {viewMode === "grid" ? (
+                                    <Grid columns={{ initial: "1", sm: "2", lg: "3", xl: "4" }} gap="4">
+                                        {folders.map(folder => (
+                                            <Card key={folder.id} size="2" variant="surface" className="group" style={{ cursor: "pointer", position: "relative", transition: "background-color 0.2s" }}>
+                                                <Flex 
+                                                    align="center" 
+                                                    gap="3" 
+                                                    onClick={() => router.push(`/dashboard/files/${folder.id}`)}
+                                                >
+                                                    <Flex align="center" justify="center" flexShrink="0" style={{ width: 40, height: 40, backgroundColor: "var(--amber-a3)", borderRadius: "var(--radius-3)" }}>
+                                                        <FolderOpen className="w-5 h-5 text-amber-500" style={{ color: "var(--amber-11)" }} />
+                                                    </Flex>
+                                                    <Text size="3" weight="bold" truncate>{folder.name}</Text>
+                                                </Flex>
 
-                                            {/* Context Menu */}
-                                            <button
-                                                type="button"
-                                                className="absolute top-2 right-2 p-2 rounded-lg text-muted-foreground hover:bg-secondary opacity-0 group-hover:opacity-100 transition-opacity"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    const newId = activeMenuId === folder.id ? null : folder.id;
-                                                    setTimeout(() => setActiveMenuId(newId), 0);
-                                                }}
-                                            >
-                                                <MoreVertical className="w-5 h-5" />
-                                            </button>
+                                                {/* Context Menu */}
+                                                <Box position="absolute" top="0" right="0" m="2">
+                                                    <DropdownMenu.Root>
+                                                        <DropdownMenu.Trigger>
+                                                            <IconButton variant="ghost" color="gray" className="opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                                                                <MoreVertical className="w-4 h-4" />
+                                                            </IconButton>
+                                                        </DropdownMenu.Trigger>
+                                                        <DropdownMenu.Content size="2" variant="solid" align="end">
+                                                            <DropdownMenu.Item onClick={(e) => { e.stopPropagation(); setEditingFolder(folder); setIsFolderModalOpen(true); }} className="cursor-pointer">
+                                                                <Pencil className="w-4 h-4 mr-2" /> Đổi tên
+                                                            </DropdownMenu.Item>
+                                                            <DropdownMenu.Item color="red" onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: "folder", id: folder.id, name: folder.name }); }} className="cursor-pointer">
+                                                                <Trash2 className="w-4 h-4 mr-2" /> Xóa
+                                                            </DropdownMenu.Item>
+                                                        </DropdownMenu.Content>
+                                                    </DropdownMenu.Root>
+                                                </Box>
+                                            </Card>
+                                        ))}
+                                    </Grid>
+                                ) : (
+                                    <Flex direction="column" gap="2">
+                                        {folders.map(folder => (
+                                            <Card key={folder.id} size="2" variant="surface" className="group" style={{ cursor: "pointer", position: "relative" }}>
+                                                <Flex 
+                                                    align="center" 
+                                                    gap="4"
+                                                    onClick={() => router.push(`/dashboard/files/${folder.id}`)}
+                                                >
+                                                    <Flex align="center" justify="center" flexShrink="0" style={{ width: 40, height: 40, backgroundColor: "var(--amber-a3)", borderRadius: "var(--radius-3)" }}>
+                                                        <FolderOpen className="w-5 h-5 text-amber-500" style={{ color: "var(--amber-11)" }} />
+                                                    </Flex>
+                                                    <Text size="3" weight="bold" truncate style={{ flex: 1 }}>{folder.name}</Text>
+                                                </Flex>
 
-                                            {activeMenuId === folder.id && (
-                                                <div className="absolute top-12 right-2 w-52 bg-card border border-border rounded-xl z-20 py-1" onClick={(e) => e.stopPropagation()}>
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setEditingFolder(folder);
-                                                            setIsFolderModalOpen(true);
-                                                            setActiveMenuId(null);
-                                                        }}
-                                                        className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-secondary transition-colors"
-                                                    >
-                                                        <Pencil className="w-4 h-4" /> Đổi tên
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setDeleteTarget({ type: "folder", id: folder.id, name: folder.name });
-                                                            setActiveMenuId(null);
-                                                        }}
-                                                        className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-rose-500/10 text-rose-500 transition-colors"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" /> Xóa
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            </section>
+                                                <Box position="absolute" top="0" right="0" bottom="0" m="2" style={{ display: "flex", alignItems: "center" }}>
+                                                    <DropdownMenu.Root>
+                                                        <DropdownMenu.Trigger>
+                                                            <IconButton variant="ghost" color="gray" className="opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                                                                <MoreVertical className="w-4 h-4" />
+                                                            </IconButton>
+                                                        </DropdownMenu.Trigger>
+                                                        <DropdownMenu.Content size="2" variant="solid" align="end">
+                                                            <DropdownMenu.Item onClick={(e) => { e.stopPropagation(); setEditingFolder(folder); setIsFolderModalOpen(true); }} className="cursor-pointer">
+                                                                <Pencil className="w-4 h-4 mr-2" /> Đổi tên
+                                                            </DropdownMenu.Item>
+                                                            <DropdownMenu.Item color="red" onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: "folder", id: folder.id, name: folder.name }); }} className="cursor-pointer">
+                                                                <Trash2 className="w-4 h-4 mr-2" /> Xóa
+                                                            </DropdownMenu.Item>
+                                                        </DropdownMenu.Content>
+                                                    </DropdownMenu.Root>
+                                                </Box>
+                                            </Card>
+                                        ))}
+                                    </Flex>
+                                )}
+                            </Box>
                         )}
 
                         {/* Files */}
                         {files.length > 0 && (
-                            <section>
-                                <h3 className="text-sm font-bold text-muted-foreground mb-4 uppercase tracking-wider">Tệp ({files.length})</h3>
+                            <Box>
+                                <Text size="2" weight="bold" color="gray" mb="4" style={{ textTransform: "uppercase", letterSpacing: "0.05em", display: "block" }}>
+                                    Tệp ({files.length})
+                                </Text>
                                 {viewMode === "grid" ? (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-                                        {files.map(file => {
-                                            const fileMeta = determineFileType(file.type || "");
-                                            const Icon = fileMeta.icon;
-                                            return (
-                                                <div key={file.id} className={`group relative bg-card border border-border/60 hover:border-border p-4 rounded-2xl transition-all ${activeMenuId === file.id ? "z-50" : "z-0"}`}>
-                                                    <div className="flex items-center gap-4 mb-3">
-                                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${fileMeta.bg}`}>
-                                                            <Icon className={`w-5 h-5 ${fileMeta.color}`} />
-                                                        </div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <h4 className="font-semibold truncate text-sm" title={file.name}>{file.name}</h4>
-                                                            <p className="text-xs text-muted-foreground">{formatBytes(file.size)}</p>
-                                                        </div>
-                                                    </div>
-
-                                                    <button
-                                                            type="button"
-                                                        className="absolute top-2 right-2 p-2 rounded-lg text-muted-foreground hover:bg-secondary opacity-0 group-hover:opacity-100 transition-opacity"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            const newId = activeMenuId === file.id ? null : file.id;
-                                                            setTimeout(() => setActiveMenuId(newId), 0);
-                                                        }}
-                                                    >
-                                                        <MoreVertical className="w-5 h-5" />
-                                                    </button>
-
-                                                    {activeMenuId === file.id && (
-                                                        <div className="absolute top-12 right-2 w-52 bg-card border border-border rounded-xl shadow-xl overflow-hidden z-20 py-1" onClick={e => e.stopPropagation()}>
-                                                            <button onClick={() => handleDownload(file.id, file.name)} className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-secondary transition-colors">
-                                                                <Download className="w-4 h-4" /> Tải xuống
-                                                            </button>
-                                                            <button onClick={() => handleShare(file)} className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-secondary transition-colors">
-                                                                <LinkIcon className="w-4 h-4" /> Chia sẻ
-                                                            </button>
-                                                            <button
-                                                                onClick={() => {
-                                                                    setDeleteTarget({ type: "file", id: file.id, name: file.name });
-                                                                    setActiveMenuId(null);
-                                                                }}
-                                                                className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-rose-500/10 text-rose-500 transition-colors"
-                                                            >
-                                                                <Trash2 className="w-4 h-4" /> Xóa
-                                                            </button>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
+                                    <Grid columns={{ initial: "1", sm: "2", lg: "3", xl: "5" }} gap="4">
+                                        {files.map(file => (
+                                            <FileCard
+                                                key={file.id}
+                                                file={file}
+                                                variant="grid"
+                                                onDownload={() => handleDownload(file.id, file.name)}
+                                                onShare={() => handleShare(file)}
+                                                onDelete={() => setDeleteTarget({ type: "file", id: file.id, name: file.name })}
+                                            />
+                                        ))}
+                                    </Grid>
                                 ) : (
-                                    <div className="bg-card rounded-2xl border border-border">
-                                        <div className="grid grid-cols-12 gap-4 p-4 border-b border-border bg-secondary/50 font-medium text-muted-foreground text-sm rounded-t-2xl">
-                                            <div className="col-span-5">Tên tệp</div>
-                                            <div className="col-span-2">Loại</div>
-                                            <div className="col-span-2 text-right">Dung lượng</div>
-                                            <div className="col-span-2">Ngày tạo</div>
-                                            <div className="col-span-1 text-right">Thao tác</div>
-                                        </div>
-                                        <div className="divide-y divide-border">
-                                            {files.map(file => {
+                                    <Card size="1" variant="surface" style={{ padding: 0, overflow: "hidden" }}>
+                                        <Flex px="4" py="3" style={{ borderBottom: "1px solid var(--gray-a4)", backgroundColor: "var(--gray-a2)" }}>
+                                            <Box style={{ flex: 5 }}><Text size="2" weight="medium" color="gray">Tên tệp</Text></Box>
+                                            <Box style={{ flex: 2 }}><Text size="2" weight="medium" color="gray">Loại</Text></Box>
+                                            <Box style={{ flex: 2, textAlign: "right" }}><Text size="2" weight="medium" color="gray">Dung lượng</Text></Box>
+                                            <Box style={{ flex: 2 }} className="ml-4"><Text size="2" weight="medium" color="gray">Ngày tạo</Text></Box>
+                                            <Box style={{ flex: 1, textAlign: "right" }}><Text size="2" weight="medium" color="gray">Thao tác</Text></Box>
+                                        </Flex>
+                                        <Flex direction="column">
+                                            {files.map((file, i) => {
                                                 const fileMeta = determineFileType(file.type || "");
                                                 const Icon = fileMeta.icon;
+                                                const colorName = fileMeta.type.includes("Hình ảnh") ? "teal" : fileMeta.type.includes("Video") ? "rose" : fileMeta.type.includes("Nén") ? "amber" : "blue";
                                                 return (
-                                                    <div key={file.id} className={`grid grid-cols-12 gap-4 p-4 items-center hover:bg-secondary/30 transition-colors relative group ${activeMenuId === file.id ? "z-50" : "z-0"}`}>
-                                                        <div className="col-span-5 flex items-center gap-3">
-                                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${fileMeta.bg}`}>
-                                                                <Icon className={`w-4 h-4 ${fileMeta.color}`} />
-                                                            </div>
-                                                            <span className="font-medium truncate text-sm" title={file.name}>{file.name}</span>
-                                                        </div>
-                                                        <div className="col-span-2 text-muted-foreground text-sm">{fileMeta.type}</div>
-                                                        <div className="col-span-2 text-right text-muted-foreground text-sm font-mono">{formatBytes(file.size)}</div>
-                                                        <div className="col-span-2 text-muted-foreground text-sm">{new Date(file.createdAt).toLocaleDateString("vi-VN")}</div>
-                                                        <div className="col-span-1 text-right relative">
-                                                            <button
-                                                                type="button"
-                                                                className="p-2 rounded-lg text-muted-foreground hover:bg-secondary opacity-0 group-hover:opacity-100 transition-opacity"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    const newId = activeMenuId === file.id ? null : file.id;
-                                                                    setTimeout(() => setActiveMenuId(newId), 0);
-                                                                }}
-                                                            >
-                                                                <MoreVertical className="w-5 h-5" />
-                                                            </button>
-
-                                                            {activeMenuId === file.id && (
-                                                                <div className="absolute top-10 right-0 w-52 bg-card border border-border rounded-xl overflow-hidden z-20 py-1 text-left" onClick={e => e.stopPropagation()}>
-                                                                    <button onClick={() => handleDownload(file.id, file.name)} className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-secondary transition-colors">
-                                                                        <Download className="w-4 h-4" /> Tải xuống
-                                                                    </button>
-                                                                    <button onClick={() => handleShare(file)} className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-secondary transition-colors">
-                                                                        <LinkIcon className="w-4 h-4" /> Chia sẻ
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={() => {
-                                                                            setDeleteTarget({ type: "file", id: file.id, name: file.name });
-                                                                            setActiveMenuId(null);
-                                                                        }}
-                                                                        className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-rose-500/10 text-rose-500 transition-colors"
-                                                                    >
-                                                                        <Trash2 className="w-4 h-4" /> Xóa
-                                                                    </button>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </div>
+                                                    <Flex key={file.id} align="center" px="4" py="3" className="group hover:bg-secondary/50" style={{ borderBottom: i < files.length - 1 ? "1px solid var(--gray-a3)" : "none", transition: "background-color 0.2s" }}>
+                                                        <Flex align="center" gap="3" style={{ flex: 5, minWidth: 0 }}>
+                                                            <Flex align="center" justify="center" flexShrink="0" style={{ width: 40, height: 40, backgroundColor: `var(--${colorName}-a3)`, borderRadius: "var(--radius-3)" }}>
+                                                                <Icon className="w-5 h-5" style={{ color: `var(--${colorName}-11)` }} />
+                                                            </Flex>
+                                                            <Text size="2" weight="medium" truncate title={file.name}>{file.name}</Text>
+                                                        </Flex>
+                                                        <Box style={{ flex: 2 }}><Text size="2" color="gray">{fileMeta.type}</Text></Box>
+                                                        <Box style={{ flex: 2, textAlign: "right" }}><Text size="2" color="gray" style={{ fontFamily: "var(--font-geist-mono)" }}>{formatBytes(file.size)}</Text></Box>
+                                                        <Box style={{ flex: 2 }} className="ml-4"><Text size="2" color="gray">{new Date(file.createdAt).toLocaleDateString("vi-VN")}</Text></Box>
+                                                        <Flex justify="end" style={{ flex: 1 }}>
+                                                            <DropdownMenu.Root>
+                                                                <DropdownMenu.Trigger>
+                                                                    <IconButton variant="ghost" color="gray" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                        <MoreVertical className="w-4 h-4" />
+                                                                    </IconButton>
+                                                                </DropdownMenu.Trigger>
+                                                                <DropdownMenu.Content size="2" variant="solid" align="end">
+                                                                    <DropdownMenu.Item onClick={() => handleDownload(file.id, file.name)} className="cursor-pointer">
+                                                                        <Download className="w-4 h-4 mr-2" /> Tải xuống
+                                                                    </DropdownMenu.Item>
+                                                                    <DropdownMenu.Item onClick={() => handleShare(file)} className="cursor-pointer">
+                                                                        <LinkIcon className="w-4 h-4 mr-2" /> Chia sẻ
+                                                                    </DropdownMenu.Item>
+                                                                    <DropdownMenu.Item color="red" onClick={() => setDeleteTarget({ type: "file", id: file.id, name: file.name })} className="cursor-pointer">
+                                                                        <Trash2 className="w-4 h-4 mr-2" /> Xóa
+                                                                    </DropdownMenu.Item>
+                                                                </DropdownMenu.Content>
+                                                            </DropdownMenu.Root>
+                                                        </Flex>
+                                                    </Flex>
                                                 );
                                             })}
-                                        </div>
-                                    </div>
+                                        </Flex>
+                                    </Card>
                                 )}
-                            </section>
+                            </Box>
                         )}
-                    </div>
+                    </Flex>
                 )}
-            </main>
+            </Box>
 
             {/* Modals */}
             {isFolderModalOpen && (
@@ -546,6 +507,6 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
                 onClose={() => setShareTarget(null)}
                 file={shareTarget}
             />
-        </div>
+        </Flex>
     );
 }

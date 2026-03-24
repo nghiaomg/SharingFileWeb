@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, Loader2 } from "lucide-react";
+import { Dialog, Button, Flex, TextField, Callout } from "@radix-ui/themes";
 
 interface FolderModalProps {
     isOpen: boolean;
@@ -19,8 +19,6 @@ export function FolderModal({ isOpen, onClose, onSubmit, folder, isLoading = fal
     const title = isEdit ? "Đổi tên thư mục" : "Tạo thư mục mới";
     const submitText = isEdit ? "Lưu" : "Tạo";
 
-    if (!isOpen) return null;
-
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
@@ -34,45 +32,40 @@ export function FolderModal({ isOpen, onClose, onSubmit, folder, isLoading = fal
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
-            <div className="bg-card w-full max-w-md rounded-2xl border border-border overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                <div className="flex justify-between items-center p-5 border-b border-border/50">
-                    <h3 className="text-xl font-bold">{title}</h3>
-                    <button onClick={onClose} disabled={isLoading} className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground hover:text-foreground">
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
+        <Dialog.Root open={isOpen} onOpenChange={(open) => {
+            if (!open && !isLoading) onClose();
+        }}>
+            <Dialog.Content maxWidth="450px">
+                <Dialog.Title>{title}</Dialog.Title>
 
-                <form onSubmit={handleSubmit} className="p-5 space-y-4">
-                    <div>
-                        <label className="text-sm font-bold text-muted-foreground mb-2 block">Tên thư mục</label>
-                        <input
-                            type="text"
+                <form onSubmit={handleSubmit}>
+                    <Flex direction="column" gap="3" mb="4">
+                        <label>Tên thư mục</label>
+                        <TextField.Root 
+                            placeholder="Nhập tên thư mục..." 
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             autoFocus
-                            placeholder="Nhập tên thư mục..."
-                            className="w-full px-4 py-3 bg-secondary/60 border border-border rounded-xl text-foreground outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+                            size="3"
                         />
-                    </div>
+                    </Flex>
 
-                    {error && <p className="text-rose-500 text-sm p-3 bg-rose-500/10 rounded-lg">{error}</p>}
+                    {error && (
+                        <Callout.Root color="red" mb="4">
+                            <Callout.Text>{error}</Callout.Text>
+                        </Callout.Root>
+                    )}
 
-                    <div className="flex gap-3 justify-end pt-2">
-                        <button type="button" onClick={onClose} disabled={isLoading} className="px-5 py-2.5 rounded-xl font-medium text-muted-foreground hover:bg-muted transition-colors">
+                    <Flex gap="3" justify="end">
+                        <Button variant="soft" color="gray" onClick={onClose} disabled={isLoading} type="button">
                             Hủy
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={isLoading}
-                            className="px-5 py-2.5 rounded-xl font-bold bg-primary text-white hover:bg-primary/90 transition-colors flex items-center gap-2"
-                        >
-                            {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                        </Button>
+                        <Button type="submit" disabled={isLoading} loading={isLoading}>
                             {submitText}
-                        </button>
-                    </div>
+                        </Button>
+                    </Flex>
                 </form>
-            </div>
-        </div>
+            </Dialog.Content>
+        </Dialog.Root>
     );
 }

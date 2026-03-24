@@ -13,6 +13,7 @@ public interface FolderRepository extends MongoRepository<Folder, String> {
   List<Folder> findByOwnerIdAndParentIdAndIsDeletedFalse(String ownerId, String parentId);
   List<Folder> findByOwnerIdAndIsDeletedFalse(String ownerId);
   Optional<Folder> findByIdAndOwnerIdAndIsDeletedFalse(String id, String ownerId);
+  Optional<Folder> findByNameAndOwnerIdAndParentIdAndIsDeletedFalse(String name, String ownerId, String parentId);
   Boolean existsByNameAndOwnerIdAndParentIdAndIsDeletedFalse(String name, String ownerId, String parentId);
   void deleteByOwnerIdAndParentId(String ownerId, String parentId);
 

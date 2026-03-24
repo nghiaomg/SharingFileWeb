@@ -1,6 +1,11 @@
 import apiClient from "@/lib/api-client";
 import type { FileItem, FolderItem, FolderChildren, CreateFolderInput, UpdateFolderInput, ShareFileInput } from "./schemas";
 
+export interface ResolvePathInput {
+  path: string;
+  parentId?: string;
+}
+
 // ─── Folder APIs ─────────────────────────────────────────────────────────────
 export async function getRootFolder(): Promise<FolderItem> {
   const res = await apiClient.get<FolderItem>("/folders/root");
@@ -36,6 +41,11 @@ export async function updateFolder(folderId: string, data: UpdateFolderInput): P
 
 export async function deleteFolder(folderId: string): Promise<void> {
   await apiClient.delete(`/folders/${folderId}`);
+}
+
+export async function resolveFolderPath(data: ResolvePathInput): Promise<FolderItem> {
+  const res = await apiClient.post<FolderItem>("/folders/resolve-path", data);
+  return res.data;
 }
 
 // ─── File APIs ───────────────────────────────────────────────────────────────
@@ -77,6 +87,13 @@ export async function downloadFile(fileId: string, fileName: string): Promise<vo
   link.click();
   link.remove();
   window.URL.revokeObjectURL(url);
+}
+
+export async function getFileBlobUrl(fileId: string): Promise<string> {
+  const response = await apiClient.get(`/files/download/${fileId}`, {
+    responseType: "blob",
+  });
+  return window.URL.createObjectURL(new Blob([response.data]));
 }
 
 // ─── Chunked Upload ──────────────────────────────────────────────────────────
@@ -127,4 +144,79 @@ export async function uploadFileChunked(
   });
 
   return completeRes.data;
+}
+
+// ─── Share APIs ──────────────────────────────────────────────────────────────
+import type { ShareLinkItem, SharedAccessItem, NotificationItem, CreateShareLinkInput, InternalShareInput } from "./schemas";
+
+export async function shareInternal(data: InternalShareInput): Promise<SharedAccessItem[]> {
+  const res = await apiClient.post<SharedAccessItem[]>("/share/internal", data);
+  return res.data;
+}
+
+export async function getSharedWithMe(): Promise<SharedAccessItem[]> {
+  const res = await apiClient.get<SharedAccessItem[]>("/share/with-me");
+  return res.data;
+}
+
+export async function getSharedByMe(): Promise<SharedAccessItem[]> {
+  const res = await apiClient.get<SharedAccessItem[]>("/share/by-me");
+  return res.data;
+}
+
+export async function getAccessesForFile(fileId: string): Promise<SharedAccessItem[]> {
+  const res = await apiClient.get<SharedAccessItem[]>(`/share/access/file/${fileId}`);
+  return res.data;
+}
+
+export async function updateAccessPermission(accessId: string, permission: string): Promise<SharedAccessItem> {
+  const res = await apiClient.put<SharedAccessItem>(`/share/access/${accessId}`, { permission });
+  return res.data;
+}
+
+export async function getSharedFolderContent(accessId: string): Promise<FileItem[]> {
+  const res = await apiClient.get<FileItem[]>(`/share/access/folder/${accessId}`);
+  return res.data;
+}
+
+export async function revokeAccess(accessId: string): Promise<void> {
+  await apiClient.delete(`/share/access/${accessId}`);
+}
+
+export async function revokeAllFileAccess(fileId: string): Promise<void> {
+  await apiClient.delete(`/share/access/file/${fileId}`);
+}
+
+export async function createShareLink(data: CreateShareLinkInput): Promise<ShareLinkItem> {
+  const res = await apiClient.post<ShareLinkItem>("/share/link", data);
+  return res.data;
+}
+
+export async function getShareLinksForFile(fileId: string): Promise<ShareLinkItem[]> {
+  const res = await apiClient.get<ShareLinkItem[]>(`/share/link/file/${fileId}`);
+  return res.data;
+}
+
+export async function updateShareLink(linkId: string, data: Partial<CreateShareLinkInput>): Promise<ShareLinkItem> {
+  const res = await apiClient.put<ShareLinkItem>(`/share/link/${linkId}`, data);
+  return res.data;
+}
+
+export async function revokeShareLink(linkId: string): Promise<void> {
+  await apiClient.delete(`/share/link/${linkId}`);
+}
+
+// ─── Notification APIs ───────────────────────────────────────────────────────
+export async function getNotifications(): Promise<NotificationItem[]> {
+  const res = await apiClient.get<NotificationItem[]>("/notifications");
+  return res.data;
+}
+
+export async function markNotificationRead(notificationId: string): Promise<void> {
+  await apiClient.put(`/notifications/${notificationId}/read`);
+}
+
+export async function getUnreadNotificationCount(): Promise<number> {
+  const res = await apiClient.get<number>("/notifications/unread-count");
+  return res.data;
 }

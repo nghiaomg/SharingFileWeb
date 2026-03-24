@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import com.sharingfileweb.models.Folder;
 import com.sharingfileweb.payload.request.CreateFolderRequest;
 import com.sharingfileweb.payload.request.UpdateFolderRequest;
+import com.sharingfileweb.payload.request.ResolvePathRequest;
 import com.sharingfileweb.payload.response.FolderResponse;
 import com.sharingfileweb.payload.response.MessageResponse;
 import com.sharingfileweb.payload.response.StandardResponse;
@@ -58,6 +59,16 @@ public class FolderController {
     try {
         FolderResponse response = folderService.createFolder(request);
         return ResponseEntity.ok(StandardResponse.success("Folder created successfully", response));
+    } catch (RuntimeException e) {
+        return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
+    }
+  }
+
+  @PostMapping("/resolve-path")
+  public ResponseEntity<?> resolvePath(@Valid @RequestBody ResolvePathRequest request) {
+    try {
+        FolderResponse response = folderService.resolvePath(request.getPath(), request.getParentId());
+        return ResponseEntity.ok(StandardResponse.success("Path resolved successfully", response));
     } catch (RuntimeException e) {
         return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
     }

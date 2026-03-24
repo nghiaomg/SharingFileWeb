@@ -306,7 +306,7 @@ export default function TrashPage() {
                 title="Xóa vĩnh viễn"
                 description={`Bạn có chắc muốn XÓA VĨNH VIỄN ${deleteTarget?.type === 'folder' ? 'thư mục' : 'tệp'} này không? Hành động này không thể hoàn tác và dữ liệu sẽ mất vĩnh viễn!`}
                 confirmText="Xác nhận xóa"
-                confirmColor="bg-rose-500 hover:bg-rose-600 text-white"
+                color="red"
             />
         </div>
     );

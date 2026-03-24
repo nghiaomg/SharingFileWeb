@@ -9,6 +9,7 @@ import {
 import { useStorageUsage } from "@/features/auth/queries";
 import { getCurrentUser } from "@/features/auth/api";
 import { formatBytes } from "@/lib/format";
+import { Box, Flex, Text, Button, IconButton } from "@radix-ui/themes";
 
 interface DashboardSidebarProps {
     isOpen: boolean;
@@ -49,83 +50,99 @@ export function DashboardSidebar({ isOpen, onClose }: DashboardSidebarProps) {
                 ${isOpen ? "translate-x-0" : "-translate-x-full"}
             `}>
                 {/* Logo */}
-                <div className="h-16 flex items-center justify-between px-6 border-b border-border/50">
+                <Flex align="center" justify="between" px="6" style={{ height: "4rem", borderBottom: "1px solid var(--gray-a4)" }}>
                     <Link href="/dashboard" className="flex items-center gap-2 group">
-                        <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform duration-300 shadow-lg shadow-primary/20">
-                            <FileUp className="text-white w-5 h-5" />
-                        </div>
-                        <span className="text-lg font-bold tracking-tight">FileFlow</span>
+                        <Flex align="center" justify="center" style={{ width: "36px", height: "36px", background: "var(--violet-9)", borderRadius: "var(--radius-4)", transition: "transform 0.3s" }} className="group-hover:rotate-12">
+                            <FileUp style={{ color: "white", width: "20px", height: "20px" }} />
+                        </Flex>
+                        <Text size="4" weight="bold" style={{ letterSpacing: "-0.025em" }}>FileFlow</Text>
                     </Link>
-                    <button onClick={onClose} className="lg:hidden p-1 hover:bg-secondary rounded-lg">
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
+                    <Box display={{ initial: "block", lg: "none" }}>
+                        <IconButton variant="ghost" color="gray" onClick={onClose}>
+                            <X className="w-5 h-5" />
+                        </IconButton>
+                    </Box>
+                </Flex>
 
                 {/* Nav Items */}
-                <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-                    {navItems.map((item) => {
-                        const isActive = item.href === "/dashboard"
-                            ? pathname === "/dashboard"
-                            : pathname.startsWith(item.href);
-                        return (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                onClick={onClose}
-                                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                                    isActive
-                                        ? "bg-primary text-white shadow-md shadow-primary/20"
-                                        : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                                }`}
-                            >
-                                <item.icon className="w-5 h-5" />
-                                {item.label}
-                            </Link>
-                        );
-                    })}
-                </nav>
+                <Box p="4" style={{ flex: 1, overflowY: "auto" }}>
+                    <Flex direction="column" gap="1">
+                        {navItems.map((item) => {
+                            const isActive = item.href === "/dashboard"
+                                ? pathname === "/dashboard"
+                                : pathname.startsWith(item.href);
+                            return (
+                                <Link
+                                    key={item.href}
+                                    href={item.href}
+                                    onClick={onClose}
+                                    className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                                        !isActive ? "text-muted-foreground hover:bg-secondary hover:text-foreground" : ""
+                                    }`}
+                                    style={isActive ? { background: "var(--violet-9)", color: "white" } : {}}
+                                >
+                                    <item.icon className="w-5 h-5" />
+                                    {item.label}
+                                </Link>
+                            );
+                        })}
+                    </Flex>
+                </Box>
 
                 {/* Bottom Section */}
-                <div className="p-4 space-y-4 border-t border-border/50">
+                <Box p="4" style={{ borderTop: "1px solid var(--gray-a4)" }}>
                     {/* Storage Usage */}
-                    <div className="bg-secondary/50 rounded-2xl p-4 space-y-3">
-                        <div className="flex items-center justify-between text-sm">
-                            <span className="font-bold flex items-center gap-2">
-                                <HardDrive className="w-4 h-4 text-primary" /> Lưu trữ
-                            </span>
-                            <span className="text-muted-foreground font-mono text-xs">
+                    <Box p="4" mb="4" style={{ background: "var(--gray-a3)", borderRadius: "var(--radius-4)" }}>
+                        <Flex align="center" justify="between" mb="3">
+                            <Text size="2" weight="bold" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                <HardDrive className="w-4 h-4 text-violet-9" style={{ color: "var(--violet-9)" }} /> Lưu trữ
+                            </Text>
+                            <Text size="1" color="gray" style={{ fontFamily: "var(--font-geist-mono)" }}>
                                 {formatBytes(usedStorage)} / {formatBytes(MAX_STORAGE)}
-                            </span>
-                        </div>
-                        <div className="h-2 bg-background rounded-full overflow-hidden">
-                            <div
-                                className="h-full bg-gradient-to-r from-primary to-violet-500 rounded-full transition-all duration-500"
-                                style={{ width: `${usagePercent}%` }}
+                            </Text>
+                        </Flex>
+                        <Box style={{ height: "8px", background: "var(--color-background)", borderRadius: "9999px", overflow: "hidden", marginBottom: "12px" }}>
+                            <Box
+                                style={{
+                                    height: "100%",
+                                    width: `${usagePercent}%`,
+                                    background: "linear-gradient(to right, var(--violet-9), var(--purple-9))",
+                                    borderRadius: "9999px",
+                                    transition: "width 0.5s ease-in-out"
+                                }}
                             />
-                        </div>
-                        <Link
-                            href="/dashboard/upgrade"
-                            className="flex items-center justify-center gap-2 w-full py-2 bg-primary/10 text-primary text-sm font-bold rounded-xl hover:bg-primary/20 transition-colors"
-                        >
-                            <Crown className="w-4 h-4" /> Nâng cấp Pro
-                        </Link>
-                    </div>
+                        </Box>
+                        <Button asChild size="2" variant="soft" color="violet" style={{ width: "100%" }}>
+                            <Link href="/dashboard/upgrade">
+                                <Crown className="w-4 h-4" /> Nâng cấp Pro
+                            </Link>
+                        </Button>
+                    </Box>
 
-                    {bottomItems.map((item) => (
-                        <Link
-                            key={item.href}
-                            href={item.href}
-                            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-all"
-                        >
-                            <item.icon className="w-5 h-5" />
-                            {item.label}
-                        </Link>
-                    ))}
+                    <Flex direction="column" gap="1">
+                        {bottomItems.map((item) => {
+                            const isActive = pathname.startsWith(item.href);
+                            return (
+                                <Link
+                                    key={item.href}
+                                    href={item.href}
+                                    className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                                        !isActive ? "text-muted-foreground hover:bg-secondary hover:text-foreground" : ""
+                                    }`}
+                                    style={isActive ? { background: "var(--violet-9)", color: "white" } : {}}
+                                >
+                                    <item.icon className="w-5 h-5" />
+                                    {item.label}
+                                </Link>
+                            );
+                        })}
+                    </Flex>
 
-                    <div className="text-center text-xs text-muted-foreground pt-2 flex items-center justify-center gap-1 pb-2">
-                        <Zap className="w-3 h-3 text-primary" /> FileFlow v2.4.0
-                    </div>
-                </div>
+                    <Flex align="center" justify="center" gap="1" mt="3" mb="1">
+                        <Zap className="w-3 h-3 text-violet-9" style={{ color: "var(--violet-9)" }} />
+                        <Text size="1" color="gray">FileFlow v2.4.0</Text>
+                    </Flex>
+                </Box>
             </aside>
         </>
     );

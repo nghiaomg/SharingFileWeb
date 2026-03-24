@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Settings, User, Shield, CreditCard, LogOut, Loader2, CheckCircle2 } from "lucide-react";
+import { Settings, User, Shield, CreditCard, LogOut, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Box, Flex, Grid, Card, Heading, Text, TextField, Button, Badge } from "@radix-ui/themes";
 
 export default function SettingsPage() {
     const router = useRouter();
     const [isSaving, setIsSaving] = useState(false);
-    const [savedSuccess, setSavedSuccess] = useState(false);
     const [is2FAEnabled, setIs2FAEnabled] = useState(false);
     const [passwordSent, setPasswordSent] = useState(false);
 
@@ -16,8 +17,7 @@ export default function SettingsPage() {
         setIsSaving(true);
         setTimeout(() => {
             setIsSaving(false);
-            setSavedSuccess(true);
-            setTimeout(() => setSavedSuccess(false), 3000);
+            toast.success("Hồ sơ đã được lưu thành công!");
         }, 1500);
     };
 
@@ -27,177 +27,181 @@ export default function SettingsPage() {
     };
 
     return (
-        <div className="p-8 pb-32 w-full h-full overflow-y-auto relative">
-            {/* Success Toast */}
-            {savedSuccess && (
-                <div className="fixed bottom-8 right-8 bg-emerald-500 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-5 z-50">
-                    <CheckCircle2 className="w-5 h-5" />
-                    <span className="font-bold">Hồ sơ đã được lưu thành công!</span>
-                </div>
-            )}
+        <Box p="6" pb="9" style={{ height: "100%", overflowY: "auto", position: "relative" }}>
+            <Flex align="center" gap="3" mt="2" mb="6">
+                <Settings className="w-8 h-8 text-violet-9" style={{ color: "var(--violet-9)" }} />
+                <Heading size="8">Cài đặt & Hồ sơ</Heading>
+            </Flex>
 
-            <h1 className="text-3xl font-bold flex items-center gap-3 mb-12 self-start">
-                <Settings className="w-8 h-8 text-primary/80" /> Cài đặt & Hồ sơ
-            </h1>
+            <Grid columns={{ initial: "1", lg: "2", xl: "3" }} gap="6" width="100%">
+                {/* Column 1: Profile & Security */}
+                <Flex direction="column" gap="6" className="xl:col-span-2">
+                    {/* General Profile */}
+                    <Card size="4" variant="surface">
+                        <Flex direction={{ initial: "column", sm: "row" }} align={{ initial: "start", sm: "center" }} gap="5" mb="5" pb="5" style={{ borderBottom: "1px solid var(--gray-a6)" }}>
+                            <Box position="relative" style={{ flexShrink: 0 }}>
+                                <Box width="96px" height="96px" style={{ padding: "3px", borderRadius: "100%", background: "linear-gradient(to top right, var(--violet-9), var(--purple-9))" }}>
+                                    <Flex align="center" justify="center" width="100%" height="100%" style={{ background: "var(--color-panel-solid)", borderRadius: "100%", overflow: "hidden" }}>
+                                        <User className="w-10 h-10" />
+                                    </Flex>
+                                </Box>
+                                <Box position="absolute" bottom="0" right="0">
+                                    <Button variant="outline" size="1" color="violet" radius="full" style={{ padding: "4px 8px", background: "var(--color-panel-solid)" }}>
+                                        Sửa
+                                    </Button>
+                                </Box>
+                            </Box>
+                            <Box>
+                                <Heading size="6">Trung Nghĩa</Heading>
+                                <Text as="div" size="3" color="gray" mt="1">trungnghia@example.com</Text>
+                                <Box mt="3">
+                                    <Badge size="2" color="violet" variant="soft">PRO PLAN</Badge>
+                                </Box>
+                            </Box>
+                        </Flex>
 
-            <div className="w-full flex flex-col md:flex-row gap-12 items-start justify-center">
-                {/* Right side settings content first logically but rendered on the left or center based on viewport */}
-                <div className="w-full">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 w-full">
-                        {/* Column 1: Profile & Security */}
-                        <div className="flex flex-col gap-8 xl:col-span-2">
-                            {/* General Profile */}
-                            <div className="bg-card border border-border/50 rounded-3xl p-6 md:p-8 shadow-sm">
-                                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 mb-8 border-b border-border/50 pb-8">
-                                    <div className="relative shrink-0">
-                                        <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-primary to-violet-500 p-[3px]">
-                                            <div className="w-full h-full bg-background rounded-full flex items-center justify-center overflow-hidden">
-                                                <User className="w-10 h-10 text-foreground" />
-                                            </div>
-                                        </div>
-                                        <button className="absolute bottom-0 right-0 p-2 bg-background border border-border rounded-full shadow-md text-sm text-primary hover:scale-110 transition-transform cursor-pointer">
-                                            Sửa
-                                        </button>
-                                    </div>
-                                    <div>
-                                        <h3 className="text-2xl font-bold">Trung Nghĩa</h3>
-                                        <p className="text-muted-foreground mt-1">trungnghia@example.com</p>
-                                        <span className="inline-block px-3 py-1 mt-3 text-xs font-bold text-primary bg-primary/10 rounded-full border border-primary/20">
-                                            PRO PLAN
-                                        </span>
-                                    </div>
-                                </div>
+                        <Flex direction="column" gap="5">
+                            <Grid columns={{ initial: "1", sm: "2" }} gap="5">
+                                <Box>
+                                    <Text as="label" size="2" weight="bold" color="gray" mb="2" style={{ display: "block" }}>Tên hiển thị</Text>
+                                    <TextField.Root size="3" defaultValue="Trung Nghĩa" />
+                                </Box>
+                                <Box>
+                                    <Text as="label" size="2" weight="bold" color="gray" mb="2" style={{ display: "block" }}>Số điện thoại</Text>
+                                    <TextField.Root size="3" type="tel" placeholder="+84 ..." />
+                                </Box>
+                            </Grid>
 
-                                <div className="space-y-6">
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                        <div>
-                                            <label className="text-sm font-semibold text-muted-foreground mb-2 block">Tên hiển thị</label>
-                                            <input type="text" defaultValue="Trung Nghĩa" className="w-full px-4 py-3 bg-secondary/50 border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all text-foreground" />
-                                        </div>
-                                        <div>
-                                            <label className="text-sm font-semibold text-muted-foreground mb-2 block">Số điện thoại</label>
-                                            <input type="tel" placeholder="+84 ..." className="w-full px-4 py-3 bg-secondary/50 border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all text-foreground" />
-                                        </div>
-                                    </div>
+                            <Grid columns={{ initial: "1", sm: "2" }} gap="5">
+                                <Box>
+                                    <Text as="label" size="2" weight="bold" color="gray" mb="2" style={{ display: "block" }}>Quốc gia</Text>
+                                    <TextField.Root size="3" defaultValue="Việt Nam" />
+                                </Box>
+                                <Box>
+                                    <Text as="label" size="2" weight="bold" color="gray" mb="2" style={{ display: "block" }}>Công ty / Tổ chức</Text>
+                                    <TextField.Root size="3" placeholder="Nhập tên tổ chức..." />
+                                </Box>
+                            </Grid>
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                        <div>
-                                            <label className="text-sm font-semibold text-muted-foreground mb-2 block">Quốc gia</label>
-                                            <input type="text" defaultValue="Việt Nam" className="w-full px-4 py-3 bg-secondary/50 border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all text-foreground" />
-                                        </div>
-                                        <div>
-                                            <label className="text-sm font-semibold text-muted-foreground mb-2 block">Công ty / Tổ chức</label>
-                                            <input type="text" placeholder="Nhập tên tổ chức..." className="w-full px-4 py-3 bg-secondary/50 border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all text-foreground" />
-                                        </div>
-                                    </div>
-
-                                    <div className="pt-4 flex justify-end">
-                                        <button
-                                            onClick={handleSaveProfile}
-                                            disabled={isSaving}
-                                            className="px-6 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all shadow-lg hover:shadow-primary/30 cursor-pointer w-full sm:w-auto flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-                                        >
-                                            {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : "Lưu thay đổi hồ sơ"}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Security */}
-                            <div className="bg-card border border-border/50 rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="bg-emerald-500/10 text-emerald-500 p-2.5 rounded-xl">
-                                        <Shield className="w-6 h-6" />
-                                    </div>
-                                    <div>
-                                        <h4 className="font-bold text-lg">Bảo mật tài khoản</h4>
-                                        <p className="text-sm text-muted-foreground">Quản lý lớp bảo vệ cho dữ liệu của bạn</p>
-                                    </div>
-                                </div>
-                                <div className="divide-y divide-border/50 border-t border-border/50">
-                                    <div className="py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                                        <div>
-                                            <h5 className="font-bold">Đổi mật khẩu</h5>
-                                            <p className="text-sm text-muted-foreground mt-1">Cập nhật mật khẩu mới 6 tháng một lần để an toàn</p>
-                                        </div>
-                                        <button
-                                            onClick={() => setPasswordSent(true)}
-                                            className="font-bold text-sm bg-secondary px-5 py-2.5 rounded-xl hover:bg-secondary/80 transition-colors cursor-pointer shrink-0"
-                                        >
-                                            {passwordSent ? <span className="text-emerald-500 flex items-center gap-1"><CheckCircle2 className="w-4 h-4" /> Đã gửi email</span> : "Cập nhật mã"}
-                                        </button>
-                                    </div>
-                                    <div className="py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                                        <div>
-                                            <h5 className="font-bold">Xác thực 2 bước (2FA)</h5>
-                                            {is2FAEnabled ? (
-                                                <p className="text-sm mt-1 text-emerald-500 font-medium">Đang kích hoạt - Bảo mật cao</p>
-                                            ) : (
-                                                <p className="text-sm mt-1 text-rose-500 font-medium">Chưa kích hoạt - Nguy cơ rủi ro cao</p>
-                                            )}
-                                        </div>
-                                        <button
-                                            onClick={() => setIs2FAEnabled(!is2FAEnabled)}
-                                            className={`font-bold text-sm px-5 py-2.5 rounded-xl transition-colors cursor-pointer shrink-0 ${is2FAEnabled ? "bg-secondary text-foreground hover:bg-secondary/80" : "bg-primary text-white hover:bg-primary/90 shadow-md shadow-primary/20"}`}
-                                        >
-                                            {is2FAEnabled ? "Tắt 2FA" : "Bật ngay"}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Column 2: Subscription & Actions */}
-                        <div className="flex flex-col gap-8">
-                            {/* Subscription Settings */}
-                            <div className="bg-card border border-border/50 rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="bg-amber-500/10 text-amber-500 p-2.5 rounded-xl">
-                                        <CreditCard className="w-6 h-6" />
-                                    </div>
-                                    <div>
-                                        <h4 className="font-bold text-lg">Gói lưu trữ</h4>
-                                        <p className="text-sm text-muted-foreground">Thông tin thanh toán & gia hạn</p>
-                                    </div>
-                                </div>
-
-                                <div className="glass bg-primary/5 border border-primary/20 rounded-2xl p-6">
-                                    <div className="flex flex-col gap-4 mb-6">
-                                        <div>
-                                            <div className="text-2xl font-extrabold text-primary flex items-center gap-2">
-                                                FileFlow Pro
-                                                <span className="text-xs bg-primary text-white px-2 py-0.5 rounded-full font-bold relative -top-1">HOT</span>
-                                            </div>
-                                            <div className="text-sm text-muted-foreground mt-2 font-medium">Chu kỳ tiếp theo: 24/05/2024</div>
-                                        </div>
-                                        <div className="text-3xl font-extrabold text-foreground mt-2">$9.99<span className="text-base text-muted-foreground font-medium">/tháng</span></div>
-                                    </div>
-
-                                    <div className="flex flex-col gap-3">
-                                        <Link href="#" className="font-bold justify-center text-sm text-primary bg-primary/10 border border-primary/20 px-4 py-3 rounded-xl hover:bg-primary hover:text-white transition-all text-center cursor-pointer">
-                                            Nâng cấp gói doanh nghiệp
-                                        </Link>
-                                        <Link href="/dashboard/billing" className="font-bold justify-center text-sm bg-background border border-border px-4 py-3 rounded-xl hover:bg-secondary transition-colors text-center cursor-pointer">
-                                            Quản lý hóa đơn
-                                        </Link>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Danger Zone */}
-                            <div className="pt-4">
-                                <button
-                                    onClick={handleLogout}
-                                    className="flex items-center justify-center w-full gap-3 text-rose-500 font-bold px-4 py-3 rounded-2xl hover:bg-rose-500 hover:text-white border border-rose-500/30 transition-all cursor-pointer shadow-sm hover:shadow-rose-500/30 group"
+                            <Flex justify="end" pt="3">
+                                <Button
+                                    size="3"
+                                    onClick={handleSaveProfile}
+                                    disabled={isSaving}
+                                    loading={isSaving}
+                                    color="violet"
                                 >
-                                    <LogOut className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-                                    Đăng xuất khỏi thiết bị này
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+                                    Lưu thay đổi hồ sơ
+                                </Button>
+                            </Flex>
+                        </Flex>
+                    </Card>
+
+                    {/* Security */}
+                    <Card size="4" variant="surface">
+                        <Flex align="center" gap="3" mb="4">
+                            <Box p="2" style={{ background: "var(--jade-a3)", color: "var(--jade-11)", borderRadius: "var(--radius-3)" }}>
+                                <Shield className="w-6 h-6" />
+                            </Box>
+                            <Box>
+                                <Heading size="5">Bảo mật tài khoản</Heading>
+                                <Text as="div" size="2" color="gray">Quản lý lớp bảo vệ cho dữ liệu của bạn</Text>
+                            </Box>
+                        </Flex>
+                        
+                        <Flex direction="column" style={{ borderTop: "1px solid var(--gray-a6)" }}>
+                            <Flex py="4" direction={{ initial: "column", sm: "row" }} align={{ initial: "start", sm: "center" }} justify="between" gap="4" style={{ borderBottom: "1px solid var(--gray-a6)" }}>
+                                <Box>
+                                    <Heading size="3">Đổi mật khẩu</Heading>
+                                    <Text as="div" size="2" color="gray" mt="1">Cập nhật mật khẩu mới 6 tháng một lần để an toàn</Text>
+                                </Box>
+                                <Box style={{ flexShrink: 0 }}>
+                                    <Button
+                                        variant="soft"
+                                        color={passwordSent ? "jade" : "gray"}
+                                        onClick={() => setPasswordSent(true)}
+                                    >
+                                        {passwordSent ? <><CheckCircle2 className="w-4 h-4" /> Đã gửi email</> : "Cập nhật mã"}
+                                    </Button>
+                                </Box>
+                            </Flex>
+
+                            <Flex py="4" direction={{ initial: "column", sm: "row" }} align={{ initial: "start", sm: "center" }} justify="between" gap="4">
+                                <Box>
+                                    <Heading size="3">Xác thực 2 bước (2FA)</Heading>
+                                    <Text as="div" size="2" color={is2FAEnabled ? "jade" : "red"} weight="medium" mt="1">
+                                        {is2FAEnabled ? "Đang kích hoạt - Bảo mật cao" : "Chưa kích hoạt - Nguy cơ rủi ro cao"}
+                                    </Text>
+                                </Box>
+                                <Box style={{ flexShrink: 0 }}>
+                                    <Button
+                                        variant={is2FAEnabled ? "soft" : "solid"}
+                                        color={is2FAEnabled ? "gray" : "violet"}
+                                        onClick={() => setIs2FAEnabled(!is2FAEnabled)}
+                                    >
+                                        {is2FAEnabled ? "Tắt 2FA" : "Bật ngay"}
+                                    </Button>
+                                </Box>
+                            </Flex>
+                        </Flex>
+                    </Card>
+                </Flex>
+
+                {/* Column 2: Subscription & Actions */}
+                <Flex direction="column" gap="6">
+                    {/* Subscription Settings */}
+                    <Card size="4" variant="surface">
+                        <Flex align="center" gap="3" mb="4">
+                            <Box p="2" style={{ background: "var(--amber-a3)", color: "var(--amber-11)", borderRadius: "var(--radius-3)" }}>
+                                <CreditCard className="w-6 h-6" />
+                            </Box>
+                            <Box>
+                                <Heading size="5">Gói lưu trữ</Heading>
+                                <Text as="div" size="2" color="gray">Thông tin thanh toán & gia hạn</Text>
+                            </Box>
+                        </Flex>
+
+                        <Box p="5" mb="2" style={{ background: "var(--violet-a2)", border: "1px solid var(--violet-a5)", borderRadius: "var(--radius-4)" }}>
+                            <Flex direction="column" gap="4" mb="5">
+                                <Box>
+                                    <Flex align="center" gap="2">
+                                        <Heading size="6" style={{ color: "var(--violet-11)" }} weight="bold">FileFlow Pro</Heading>
+                                        <Badge size="1" color="violet" variant="solid" radius="full">HOT</Badge>
+                                    </Flex>
+                                    <Text as="div" size="2" color="gray" mt="2" weight="medium">Chu kỳ tiếp theo: 24/05/2024</Text>
+                                </Box>
+                                <Flex align="baseline" gap="1">
+                                    <Heading size="8" weight="bold">$9.99</Heading>
+                                    <Text as="span" size="3" color="gray" weight="medium">/tháng</Text>
+                                </Flex>
+                            </Flex>
+
+                            <Flex direction="column" gap="3">
+                                <Button asChild size="3" variant="soft" color="violet">
+                                    <Link href="#">Nâng cấp gói doanh nghiệp</Link>
+                                </Button>
+                                <Button asChild size="3" variant="outline" color="gray">
+                                    <Link href="/dashboard/billing">Quản lý hóa đơn</Link>
+                                </Button>
+                            </Flex>
+                        </Box>
+                    </Card>
+
+                    {/* Danger Zone */}
+                    <Box pt="2">
+                        <Button
+                            size="3"
+                            variant="outline"
+                            color="red"
+                            style={{ width: "100%", justifyContent: "center" }}
+                            onClick={handleLogout}
+                        >
+                            <LogOut className="w-5 h-5 mr-1" />
+                            Đăng xuất khỏi thiết bị này
+                        </Button>
+                    </Box>
+                </Flex>
+            </Grid>
+        </Box>
     );
 }
