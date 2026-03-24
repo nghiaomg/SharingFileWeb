@@ -17,6 +17,21 @@ export async function login(data: LoginInput): Promise<User> {
   return userData;
 }
 
+export async function loginWithGoogle(idToken: string): Promise<User> {
+  const response = await apiClient.post("/auth/google", { idToken });
+  const userData = response.data;
+
+  if (userData.accessToken) {
+    Cookies.set("access_token", userData.accessToken, { expires: 1 });
+    if (userData.refreshToken) {
+      Cookies.set("refresh_token", userData.refreshToken, { expires: 30 });
+    }
+    Cookies.set("user_data", JSON.stringify(userData), { expires: 1 });
+  }
+
+  return userData;
+}
+
 export async function register(data: SignupInput): Promise<unknown> {
   const response = await apiClient.post("/auth/signup", data);
   return response.data;

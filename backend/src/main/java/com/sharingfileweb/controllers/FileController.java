@@ -10,6 +10,7 @@ import com.sharingfileweb.models.StorageFile;
 import com.sharingfileweb.payload.response.FileResponse;
 import com.sharingfileweb.payload.response.MessageResponse;
 import com.sharingfileweb.payload.response.StandardResponse;
+import com.sharingfileweb.payload.request.RenameFileRequest;
 import com.sharingfileweb.payload.request.ShareFileRequest;
 import com.sharingfileweb.repository.FileRepository;
 import com.sharingfileweb.repository.UserRepository;
@@ -90,15 +91,29 @@ public class FileController {
     }
   }
 
-  @DeleteMapping("/{id}")
-  public ResponseEntity<?> deleteFile(@PathVariable String id) {
-    try {
-      fileService.deleteFile(id);
-      return ResponseEntity.ok(StandardResponse.success("Đã chuyển tệp vào thùng rác!", null));
-    } catch (RuntimeException e) {
-      return ResponseEntity.notFound().build();
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteFile(@PathVariable String id) {
+        try {
+            fileService.deleteFile(id);
+            return ResponseEntity.ok(StandardResponse.success("Đã chuyển tệp vào thùng rác!", null));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
-  }
+
+    // Đổi tên tệp
+    @PutMapping("/{id}/rename")
+    public ResponseEntity<?> renameFile(@PathVariable String id, @jakarta.validation.Valid @RequestBody RenameFileRequest payload) {
+        try {
+            FileResponse response = fileService.renameFile(id, payload);
+            return ResponseEntity.ok(StandardResponse.success("Đã đổi tên tệp thành công", response));
+        } catch (RuntimeException e) {
+            if (e.getMessage().equals("File not found or unauthorized")) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
+        }
+    }
 
   // Đổi trạng thái Public/Share của File
   @PutMapping("/{id}/share")

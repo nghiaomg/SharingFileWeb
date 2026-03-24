@@ -1,9 +1,18 @@
 package com.sharingfileweb.services;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
+
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
+
+import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -49,6 +58,70 @@ public class AuthService {
 
     @Autowired
     RefreshTokenService refreshTokenService;
+
+    @Value("${sharingfileweb.app.googleClientId}")
+    private String googleClientId;
+
+    public JwtResponse loginWithGoogle(String idToken) {
+        try {
+            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
+                    new NetHttpTransport(), GsonFactory.getDefaultInstance())
+                    .setAudience(java.util.Collections.singletonList(googleClientId))
+                    .build();
+
+            GoogleIdToken googleIdToken = verifier.verify(idToken);
+            if (googleIdToken == null) {
+                throw new RuntimeException("Invalid Google ID Token");
+            }
+
+            GoogleIdToken.Payload payload = googleIdToken.getPayload();
+            String email = payload.getEmail();
+            String rawName = (String) payload.get("name");
+            final String finalName = (rawName != null && !rawName.isBlank()) ? rawName : email.split("@")[0];
+
+            // Tìm hoặc tạo user
+            User user = userRepository.findByEmail(email).orElseGet(() -> {
+                User newUser = new User(
+                        finalName.replaceAll("\\s+", "_").toLowerCase() + "_" + UUID.randomUUID().toString().substring(0, 6),
+                        email,
+                        encoder.encode(UUID.randomUUID().toString()) // random password
+                );
+                newUser.setSubscriptionPlan("BASIC");
+                newUser.setMaxStorage(5L * 1024 * 1024 * 1024);
+                newUser.setMaxFileSize(100L * 1024 * 1024);
+
+                Role userRole = roleRepository.findByName(ERole.ROLE_USER)
+                        .orElseThrow(() -> new RuntimeException("Role not found"));
+                Set<Role> roles = new HashSet<>();
+                roles.add(userRole);
+                newUser.setRoles(roles);
+                return userRepository.save(newUser);
+            });
+
+            String jwt = jwtUtils.generateTokenFromUsername(user.getUsername());
+            RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
+
+            List<String> roles = user.getRoles().stream()
+                    .map(r -> r.getName().name())
+                    .collect(Collectors.toList());
+
+            return new JwtResponse(jwt,
+                    refreshToken.getToken(),
+                    user.getId(),
+                    user.getUsername(),
+                    user.getEmail(),
+                    roles,
+                    user.getSubscriptionPlan(),
+                    user.getMaxStorage(),
+                    user.getMaxFileSize());
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to verify Google ID Token: " + e.getMessage());
+        } catch (Exception e) {
+            throw new RuntimeException("Google login error: " + e.getMessage());
+        }
+    }
 
     public JwtResponse authenticateUser(LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(

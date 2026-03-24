@@ -3,7 +3,7 @@ import type { FileItem } from "@/features/files/schemas";
 import { Box, Flex, Card, Text, IconButton, DropdownMenu } from "@radix-ui/themes";
 import { determineFileType } from "@/lib/file-utils";
 import { formatBytes } from "@/lib/format";
-import { MoreVertical, Download, Link as LinkIcon, Trash2, Share2 } from "lucide-react";
+import { MoreVertical, Download, Link as LinkIcon, Trash2, Share2, Pencil } from "lucide-react";
 
 export interface FileCardProps {
     file: FileItem;
@@ -18,6 +18,7 @@ export interface FileCardProps {
     /** Các actions file thông dụng */
     onDownload?: (file: FileItem) => void;
     onShare?: (file: FileItem) => void;
+    onRename?: (file: FileItem) => void;
     onDelete?: (file: FileItem) => void;
     onClick?: (file: FileItem) => void;
     className?: string;
@@ -32,6 +33,7 @@ export function FileCard({
     showDirectActions = false,
     onDownload,
     onShare,
+    onRename,
     onDelete,
     onClick,
     className = "",
@@ -63,7 +65,7 @@ export function FileCard({
         }
 
         // Render DropdownMenu context menu
-        if (onDownload || onShare || onDelete) {
+        if (onDownload || onShare || onRename || onDelete) {
             return (
                 <DropdownMenu.Root>
                     <DropdownMenu.Trigger>
@@ -80,6 +82,11 @@ export function FileCard({
                         {onShare && (
                             <DropdownMenu.Item onClick={(e) => { e.stopPropagation(); onShare(file); }} className="cursor-pointer">
                                 <LinkIcon className="w-4 h-4 mr-2" /> Chia sẻ
+                            </DropdownMenu.Item>
+                        )}
+                        {onRename && (
+                            <DropdownMenu.Item onClick={(e) => { e.stopPropagation(); onRename(file); }} className="cursor-pointer">
+                                <Pencil className="w-4 h-4 mr-2" /> Đổi tên
                             </DropdownMenu.Item>
                         )}
                         {onDelete && (

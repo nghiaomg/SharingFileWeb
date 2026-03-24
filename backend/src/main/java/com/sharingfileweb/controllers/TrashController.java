@@ -60,4 +60,15 @@ public class TrashController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    // Dọn sạch thùng rác
+    @DeleteMapping("/empty")
+    public ResponseEntity<?> emptyTrash() {
+        try {
+            trashService.emptyTrash();
+            return ResponseEntity.ok(StandardResponse.success("Dọn sạch thùng rác thành công!", null));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(StandardResponse.error("Lỗi khi dọn thùng rác: " + e.getMessage(), null));
+        }
+    }
 }

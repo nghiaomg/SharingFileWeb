@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.sharingfileweb.models.ERole;
 import com.sharingfileweb.models.Role;
 import com.sharingfileweb.models.User;
+import com.sharingfileweb.payload.request.GoogleLoginRequest;
 import com.sharingfileweb.payload.request.LoginRequest;
 import com.sharingfileweb.payload.request.SignupRequest;
 import com.sharingfileweb.payload.request.TokenRefreshRequest;
@@ -52,6 +53,16 @@ public class AuthController {
   public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
     JwtResponse response = authService.authenticateUser(loginRequest);
     return ResponseEntity.ok(StandardResponse.success("Login successful", response));
+  }
+
+  @PostMapping("/google")
+  public ResponseEntity<?> googleLogin(@Valid @RequestBody GoogleLoginRequest request) {
+    try {
+        JwtResponse response = authService.loginWithGoogle(request.getIdToken());
+        return ResponseEntity.ok(StandardResponse.success("Google login successful", response));
+    } catch (RuntimeException e) {
+        return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
+    }
   }
 
   @PostMapping("/signup")

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createFolder, updateFolder, deleteFolder, deleteFile, shareFile, uploadFileChunked, downloadFile } from "./api";
+import { createFolder, updateFolder, deleteFolder, deleteFile, shareFile, uploadFileChunked, downloadFile, renameFile } from "./api";
 import { fileKeys } from "./queries";
 import { authKeys } from "../auth/queries";
 import type { CreateFolderInput, UpdateFolderInput, ShareFileInput } from "./schemas";
@@ -51,8 +51,10 @@ export function useUploadFile() {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ file, folderId, onProgress }: { file: File; folderId: string; onProgress?: (p: number) => void }) =>
-      uploadFileChunked(file, folderId, onProgress),
+    mutationFn: async ({ file, folderId, onProgress }: { file: File; folderId: string; onProgress?: (p: number) => void }) => {
+      const { fileItem } = await uploadFileChunked(file, folderId, { onProgress });
+      return fileItem;
+    },
     onSettled: () => {
       qc.invalidateQueries({ queryKey: fileKeys.all() });
       qc.invalidateQueries({ queryKey: authKeys.storageUsage() });
@@ -69,6 +71,18 @@ export function useDeleteFile() {
     onSettled: () => {
       qc.invalidateQueries({ queryKey: fileKeys.all() });
       qc.invalidateQueries({ queryKey: authKeys.storageUsage() });
+    },
+  });
+}
+
+// ─── Rename File ─────────────────────────────────────────────────────────────
+export function useRenameFile() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ fileId, newName }: { fileId: string; newName: string }) => renameFile(fileId, newName),
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: fileKeys.all() });
     },
   });
 }

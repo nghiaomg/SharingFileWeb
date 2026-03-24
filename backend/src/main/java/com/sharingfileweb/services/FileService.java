@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.sharingfileweb.models.StorageFile;
 import com.sharingfileweb.models.User;
+import com.sharingfileweb.payload.request.RenameFileRequest;
 import com.sharingfileweb.payload.request.ShareFileRequest;
 import com.sharingfileweb.payload.response.FileResponse;
 import com.sharingfileweb.repository.FileRepository;
@@ -136,6 +137,27 @@ public class FileService {
         file.setDeleted(true);
         file.setDeletedAt(new Date());
         fileRepository.save(file);
+    }
+
+    public FileResponse renameFile(String id, RenameFileRequest request) {
+        String userId = getCurrentUserId();
+        StorageFile file = fileRepository.findByIdAndOwnerIdAndIsDeletedFalse(id, userId)
+                .orElseThrow(() -> new RuntimeException("File not found or unauthorized"));
+
+        String newName = request.getName();
+        if (newName == null || newName.trim().isEmpty()) {
+            throw new RuntimeException("Name cannot be empty");
+        }
+
+        if (!file.getName().equals(newName) &&
+                fileRepository.existsByNameAndOwnerIdAndFolderIdAndIsDeletedFalse(newName, userId, file.getFolderId())) {
+            throw new RuntimeException("Error: File name is already taken in this folder!");
+        }
+
+        file.setName(newName);
+        fileRepository.save(file);
+
+        return mapToResponse(file);
     }
 
     public FileResponse shareFile(String id, ShareFileRequest payload) {

@@ -1,16 +1,18 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
     FolderOpen, Plus, LayoutGrid, List as ListIcon, MoreVertical,
     Pencil, Trash2, Download, Link as LinkIcon, Loader2, ChevronRight, Home
 } from "lucide-react";
 import Link from "next/link";
-import { useFolderChildren, useRootFolder, useFolder } from "@/features/files/queries";
-import { useCreateFolder, useUpdateFolder, useDeleteFolder, useUploadFile, useDeleteFile, useDownloadFile } from "@/features/files/mutations";
+import { useFolderChildren, useRootFolder, useFolder, fileKeys } from "@/features/files/queries";
+import { useCreateFolder, useUpdateFolder, useDeleteFolder, useDeleteFile, useDownloadFile, useRenameFile } from "@/features/files/mutations";
 import { resolveFolderPath } from "@/features/files/api";
+import { useUploadStore } from "@/features/files/upload-store";
 import { FolderModal } from "@/features/dashboard/components/FolderModal";
+import { RenameFileDialog } from "@/features/files/components/RenameFileDialog";
 import { UploadDropdown } from "./UploadDropdown";
 import { DeleteConfirmModal } from "@/features/dashboard/components/DeleteConfirmModal";
 import { ShareModal } from "@/features/dashboard/components/ShareModal";
@@ -21,6 +23,8 @@ import type { FolderItem, FileItem } from "@/features/files/schemas";
 import { toast } from "sonner";
 import { Box, Flex, Grid, Card, Heading, Text, Button, IconButton, DropdownMenu } from "@radix-ui/themes";
 import { FileCard } from "@/features/files/components/FileCard";
+import { useQueryClient } from "@tanstack/react-query";
+import { authKeys } from "@/features/auth/queries";
 
 interface FileExplorerProps {
     folderId?: string | null;
@@ -35,18 +39,33 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
 
     const { data: folderInfo } = useFolder(folderId || "");
     const { data: children, isLoading } = useFolderChildren(currentFolderId);
+    
+    // Upload Store
+    const storeItems = useUploadStore(state => state.items);
+    const isUploading = storeItems.some(i => i.status === "UPLOADING");
+
+    const queryClient = useQueryClient();
+
+    // ─── Refetch on upload success ──────────────────────────────────────────────
+    useEffect(() => {
+        const handleUploadSuccess = () => {
+            queryClient.invalidateQueries({ queryKey: fileKeys.all() });
+            queryClient.invalidateQueries({ queryKey: authKeys.storageUsage() });
+        };
+        window.addEventListener("upload-success", handleUploadSuccess);
+        return () => window.removeEventListener("upload-success", handleUploadSuccess);
+    }, [queryClient]);
 
     // ─── Mutations ──────────────────────────────────────────────────────────────
     const createFolderMutation = useCreateFolder();
     const updateFolderMutation = useUpdateFolder();
     const deleteFolderMutation = useDeleteFolder();
-    const uploadFileMutation = useUploadFile();
     const deleteFileMutation = useDeleteFile();
     const downloadFileMutation = useDownloadFile();
+    const renameFileMutation = useRenameFile();
 
     // ─── Local UI State ─────────────────────────────────────────────────────────
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-    const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
     const [isDragging, setIsDragging] = useState(false);
 
     // Folder Modal
@@ -55,6 +74,9 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
 
     // Delete Modal
     const [deleteTarget, setDeleteTarget] = useState<{ type: "folder" | "file"; id: string; name: string } | null>(null);
+
+    // File Rename Modal
+    const [renamingFile, setRenamingFile] = useState<FileItem | null>(null);
 
     // Share
     const [shareTarget, setShareTarget] = useState<FileItem | null>(null);
@@ -84,6 +106,17 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
             onError: (err) => toast.error(getApiErrorMessage(err)),
         });
     }, [updateFolderMutation, editingFolder]);
+
+    const handleRenameFileSubmit = useCallback((newName: string) => {
+        if (!renamingFile) return;
+        renameFileMutation.mutate({ fileId: renamingFile.id, newName }, {
+            onSuccess: () => {
+                setRenamingFile(null);
+                toast.success("Đổi tên tệp thành công");
+            },
+            onError: (err) => toast.error(getApiErrorMessage(err)),
+        });
+    }, [renameFileMutation, renamingFile]);
 
     const handleDeleteConfirm = useCallback(async () => {
         if (!deleteTarget) return;
@@ -135,9 +168,6 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
         }
 
         filesArray.forEach(file => {
-            const fileId = crypto.randomUUID();
-            setUploadProgress(prev => ({ ...prev, [fileId]: 0 }));
-
             let targetFolderId = currentFolderId;
             if (file.webkitRelativePath) {
                 const parts = file.webkitRelativePath.split('/');
@@ -149,31 +179,11 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
                     }
                 }
             }
-
-            uploadFileMutation.mutate({
-                file,
-                folderId: targetFolderId,
-                onProgress: (p) => setUploadProgress(prev => ({ ...prev, [fileId]: p }))
-            }, {
-                onSuccess: () => {
-                    setUploadProgress(prev => {
-                        const next = { ...prev };
-                        delete next[fileId];
-                        return next;
-                    });
-                    toast.success(`Đã tải lên tệp: ${file.name}`);
-                },
-                onError: (err) => {
-                    toast.error(getApiErrorMessage(err, "Lỗi upload file: " + file.name));
-                    setUploadProgress(prev => {
-                        const next = { ...prev };
-                        delete next[fileId];
-                        return next;
-                    });
-                },
-            });
+            useUploadStore.getState().addFiles([file], targetFolderId);
         });
-    }, [currentFolderId, uploadFileMutation]);
+        
+        toast.info(`Đã xếp hàng ${filesArray.length} tệp để tải lên.`);
+    }, [currentFolderId]);
 
     const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
@@ -205,8 +215,7 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
         });
     }, [downloadFileMutation]);
 
-    // ─── Uploading indicator ────────────────────────────────────────────────────
-    const isUploading = Object.keys(uploadProgress).length > 0;
+    // ─── Downloading indicator ────────────────────────────────────────────────────
 
     if (isLoading) {
         return (
@@ -230,7 +239,7 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
                             <Text size="2" weight="medium">{folderInfo.name}</Text>
                         </Flex>
                     )}
-                    <Heading size="8" style={{ letterSpacing: "-0.025em", display: "flex", alignItems: "center", gap: "12px" }}>
+                    <Heading size="6" weight="bold" style={{ letterSpacing: "-0.025em", display: "flex", alignItems: "center", gap: "12px" }}>
                         {!folderId || !folderInfo ? <Home style={{ width: 32, height: 32, color: "var(--violet-9)" }} /> : <FolderOpen style={{ width: 32, height: 32, color: "var(--amber-11)" }} />}
                         {folderId && folderInfo ? folderInfo.name : "Tệp của tôi"}
                     </Heading>
@@ -273,21 +282,6 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
                     </Flex>
                 </Flex>
             </Flex>
-
-            {/* Upload Progress */}
-            {isUploading && (
-                <Box px={{ initial: "4", sm: "6", lg: "8" }} py="3" style={{ backgroundColor: "var(--violet-a2)", borderBottom: "1px solid var(--violet-a4)" }}>
-                    {Object.entries(uploadProgress).map(([id, progress]) => (
-                        <Flex key={id} align="center" gap="3">
-                            <Loader2 className="w-4 h-4 animate-spin text-violet-9" style={{ color: "var(--violet-9)" }} />
-                            <Box style={{ flex: 1, height: "8px", backgroundColor: "var(--violet-a3)", borderRadius: "9999px", overflow: "hidden" }}>
-                                <Box style={{ height: "100%", backgroundColor: "var(--violet-9)", width: `${progress}%`, transition: "width 0.2s" }} />
-                            </Box>
-                            <Text size="2" style={{ fontFamily: "var(--font-geist-mono)", color: "var(--violet-11)" }}>{progress}%</Text>
-                        </Flex>
-                    ))}
-                </Box>
-            )}
 
             {/* Content  */}
             <Box p={{ initial: "4", sm: "6", lg: "8" }} style={{ flex: 1, overflowY: "auto", position: "relative", zIndex: 0 }}>
@@ -413,14 +407,15 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
                                 {viewMode === "grid" ? (
                                     <Grid columns={{ initial: "1", sm: "2", lg: "3", xl: "5" }} gap="4">
                                         {files.map(file => (
-                                            <FileCard
-                                                key={file.id}
-                                                file={file}
-                                                variant="grid"
-                                                onDownload={() => handleDownload(file.id, file.name)}
-                                                onShare={() => handleShare(file)}
-                                                onDelete={() => setDeleteTarget({ type: "file", id: file.id, name: file.name })}
-                                            />
+                                                <FileCard
+                                                    key={file.id}
+                                                    file={file}
+                                                    variant="grid"
+                                                    onDownload={() => handleDownload(file.id, file.name)}
+                                                    onShare={() => handleShare(file)}
+                                                    onRename={() => setRenamingFile(file)}
+                                                    onDelete={() => setDeleteTarget({ type: "file", id: file.id, name: file.name })}
+                                                />
                                         ))}
                                     </Grid>
                                 ) : (
@@ -461,6 +456,9 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
                                                                     </DropdownMenu.Item>
                                                                     <DropdownMenu.Item onClick={() => handleShare(file)} className="cursor-pointer">
                                                                         <LinkIcon className="w-4 h-4 mr-2" /> Chia sẻ
+                                                                    </DropdownMenu.Item>
+                                                                    <DropdownMenu.Item onClick={() => setRenamingFile(file)} className="cursor-pointer">
+                                                                        <Pencil className="w-4 h-4 mr-2" /> Đổi tên
                                                                     </DropdownMenu.Item>
                                                                     <DropdownMenu.Item color="red" onClick={() => setDeleteTarget({ type: "file", id: file.id, name: file.name })} className="cursor-pointer">
                                                                         <Trash2 className="w-4 h-4 mr-2" /> Xóa
@@ -506,6 +504,14 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
                 isOpen={!!shareTarget}
                 onClose={() => setShareTarget(null)}
                 file={shareTarget}
+            />
+
+            <RenameFileDialog
+                isOpen={!!renamingFile}
+                onClose={() => setRenamingFile(null)}
+                onSubmit={handleRenameFileSubmit}
+                file={renamingFile}
+                isLoading={renameFileMutation.isPending}
             />
         </Flex>
     );

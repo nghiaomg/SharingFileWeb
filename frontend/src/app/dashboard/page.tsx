@@ -55,7 +55,7 @@ export default function DashboardPage() {
             <Container size="4">
                 {/* Overview Header */}
                 <Box mb="6">
-                    <Heading size="8" mb="2">Tổng quan</Heading>
+                    <Heading size="6" mb="1" weight="bold">Tổng quan</Heading>
                     <Text size="3" color="gray">Xem nhanh tình trạng lưu trữ và các hoạt động gần đây.</Text>
                 </Box>
 

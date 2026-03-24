@@ -66,6 +66,11 @@ export async function getSharedFiles(): Promise<FileItem[]> {
   return res.data;
 }
 
+export async function renameFile(fileId: string, newName: string): Promise<FileItem> {
+  const res = await apiClient.put<FileItem>(`/files/${fileId}/rename`, { name: newName });
+  return res.data;
+}
+
 export async function deleteFile(fileId: string): Promise<void> {
   await apiClient.delete(`/files/${fileId}`);
 }
@@ -97,17 +102,51 @@ export async function getFileBlobUrl(fileId: string): Promise<string> {
 }
 
 // ─── Chunked Upload ──────────────────────────────────────────────────────────
+export async function getUploadStatus(uploadId: string): Promise<number[]> {
+  const res = await apiClient.get<number[]>("/files/upload/status", { params: { uploadId } });
+  return res.data;
+}
 const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB
+
+export interface UploadOptions {
+  existingUploadId?: string;
+  onProgress?: (progress: number) => void;
+  checkIsPaused?: () => boolean;
+  signal?: AbortSignal;
+}
 
 export async function uploadFileChunked(
   file: File,
   folderId: string,
-  onProgress?: (progress: number) => void
-): Promise<FileItem> {
+  options?: UploadOptions
+): Promise<{ fileItem?: FileItem; uploadId: string; }> {
   const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-  const uploadId = crypto.randomUUID();
+  const uploadId = options?.existingUploadId || crypto.randomUUID();
+  let uploadedChunks: number[] = [];
+
+  if (options?.existingUploadId) {
+    try {
+      uploadedChunks = await getUploadStatus(uploadId);
+    } catch (e) {
+      console.warn("Could not fetch upload status, starting fresh...", e);
+    }
+  }
+
+  let chunksUploadedSoFar = uploadedChunks.length;
+  // Report initial progress if resuming
+  if (options?.onProgress && chunksUploadedSoFar > 0) {
+     options.onProgress(Math.round((chunksUploadedSoFar / totalChunks) * 100));
+  }
 
   for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+    if (uploadedChunks.includes(chunkIndex)) {
+      continue; // Skip already uploaded chunk
+    }
+
+    if (options?.checkIsPaused && options.checkIsPaused()) {
+      throw new Error("UPLOAD_PAUSED"); // Dừng vòng lặp nếu bị Pause
+    }
+
     const start = chunkIndex * CHUNK_SIZE;
     const end = Math.min(start + CHUNK_SIZE, file.size);
     const chunk = file.slice(start, end);
@@ -122,10 +161,12 @@ export async function uploadFileChunked(
 
     await apiClient.post("/files/upload/chunk", formData, {
       headers: { "Content-Type": "multipart/form-data" },
+      signal: options?.signal,
     });
 
-    if (onProgress) {
-      onProgress(Math.round(((chunkIndex + 1) / totalChunks) * 100));
+    chunksUploadedSoFar++;
+    if (options?.onProgress) {
+      options.onProgress(Math.round((chunksUploadedSoFar / totalChunks) * 100));
     }
   }
 
@@ -141,9 +182,10 @@ export async function uploadFileChunked(
 
   const completeRes = await apiClient.post<FileItem>("/files/upload/complete", completeFormData, {
     headers: { "Content-Type": "multipart/form-data" },
+    signal: options?.signal,
   });
 
-  return completeRes.data;
+  return { fileItem: completeRes.data, uploadId };
 }
 
 // ─── Share APIs ──────────────────────────────────────────────────────────────

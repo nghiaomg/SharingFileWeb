@@ -1,43 +1,32 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { File as FileIcon, Trash2, RotateCcw, MoreVertical, LayoutGrid, List as ListIcon, Loader2, Sparkles, FolderOpen } from "lucide-react";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { useTrashItems } from "@/features/trash/queries";
-import { useRestoreItem, useDeletePermanent } from "@/features/trash/mutations";
+import { useRestoreItem, useDeletePermanent, useEmptyTrash } from "@/features/trash/mutations";
 import { formatBytes } from "@/lib/format";
 import { getApiErrorMessage } from "@/types/api";
 import { toast } from "sonner";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { Flex, Box, Heading, Text, Grid, IconButton, DropdownMenu, Card, Button } from "@radix-ui/themes";
+
 
 export default function TrashPage() {
     const { data: trashData, isLoading } = useTrashItems();
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-    const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<{ type: "folder" | "file", id: string } | null>(null);
     const restoreMutation = useRestoreItem();
     const deletePermanentMutation = useDeletePermanent();
+    const emptyTrashMutation = useEmptyTrash();
+    const [isConfirmEmptyOpen, setIsConfirmEmptyOpen] = useState(false);
 
-    useEffect(() => {
-        const handleClickOutside = () => setActiveMenuId(null);
-        document.addEventListener("click", handleClickOutside);
-        return () => document.removeEventListener("click", handleClickOutside);
-    }, []);
-
-    const handleRestore = (type: "folder" | "file", id: string, e: React.MouseEvent) => {
-        e.stopPropagation();
+    const handleRestore = (type: "folder" | "file", id: string) => {
         restoreMutation.mutate({ type, id }, {
             onSuccess: () => toast.success("Khôi phục thành công!"),
             onError: (error) => toast.error(getApiErrorMessage(error, "Lỗi khôi phục.")),
         });
-        setActiveMenuId(null);
-    };
-
-    const handleDeletePermanent = (type: "folder" | "file", id: string, e: React.MouseEvent) => {
-        e.stopPropagation();
-        setDeleteTarget({ type, id });
-        setActiveMenuId(null);
     };
 
     const confirmDeletePermanent = async () => {
@@ -51,19 +40,24 @@ export default function TrashPage() {
         });
     };
 
+    const handleEmptyTrash = () => {
+        emptyTrashMutation.mutate(undefined, {
+            onSuccess: () => {
+                setIsConfirmEmptyOpen(false);
+            }
+        });
+    };
+
     const formatDate = (dateString?: string) => {
-         if (!dateString) return "Không rõ";
-         return format(new Date(dateString), "dd MMM, yyyy - HH:mm", { locale: vi });
+        if (!dateString) return "Không rõ";
+        return format(new Date(dateString), "dd MMM, yyyy HH:mm", { locale: vi });
     };
 
     if (isLoading) {
         return (
-            <div className="flex-1 flex items-center justify-center bg-background/50 backdrop-blur-sm">
-                <div className="flex flex-col items-center gap-4">
-                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                    <p className="text-muted-foreground font-medium animate-pulse">Đang tải thùng rác...</p>
-                </div>
-            </div>
+            <Flex align="center" justify="center" style={{ flex: 1, padding: "3rem", height: "calc(100vh - 4rem)" }}>
+                <Loader2 className="w-8 h-8 animate-spin" style={{ color: "var(--violet-9)" }} />
+            </Flex>
         );
     }
 
@@ -72,234 +66,249 @@ export default function TrashPage() {
     const isEmpty = folders.length === 0 && files.length === 0;
 
     return (
-        <div className="flex-1 flex flex-col h-[calc(100vh-4rem)] lg:h-screen bg-background relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-32 opacity-5 pointer-events-none">
-                <Trash2 className="w-96 h-96" />
-            </div>
+        <Flex direction="column" style={{ height: "calc(100vh - 4rem)", backgroundColor: "var(--color-background)", overflow: "hidden" }} className="lg:h-[calc(100vh-4rem)]">
+            {/* Header */}
+            <Flex direction={{ initial: "column", sm: "row" }} align={{ initial: "stretch", sm: "end" }} justify="between" gap="4" px={{ initial: "4", sm: "6", lg: "8" }} py="5" className="relative z-10 bg-card/30 backdrop-blur-xl" style={{ borderBottom: "1px solid var(--gray-a4)", flexShrink: 0 }}>
+                <Box>
+                    <Heading size="6" weight="bold" style={{ letterSpacing: "-0.025em", display: "flex", alignItems: "center", gap: "12px" }}>
+                        <Trash2 style={{ width: 32, height: 32, color: "var(--violet-9)" }} />
+                        Thùng rác
+                    </Heading>
+                    <Text size="2" color="gray" mt="1" style={{ display: "block" }}>Nơi chứa các tệp đã xóa. Tự động dọn dẹp sau 30 ngày.</Text>
+                </Box>
 
-            <header className="px-8 py-6 flex items-end justify-between border-b border-border/50 bg-card/30 backdrop-blur-xl relative z-10">
-                <div>
-                   <h1 className="text-3xl font-bold tracking-tight mb-2">Thùng rác</h1>
-                   <p className="text-muted-foreground flex items-center gap-2">
-                       Nơi chứa các tệp đã xóa. Tự động dọn dẹp sau 30 ngày.
-                   </p>
-                </div>
+                <Flex align="center" gap="3" style={{ flexShrink: 0 }}>
+                    {!isEmpty && (
+                        <Button
+                            color="red"
+                            variant="soft"
+                            onClick={() => setIsConfirmEmptyOpen(true)}
+                            style={{ cursor: "pointer" }}
+                        >
+                            <Trash2 className="w-4 h-4 mr-2" /> Dọn sạch thùng rác
+                        </Button>
+                    )}
+                    <Flex align="center" gap="1" p="1" style={{ backgroundColor: "var(--color-card)", borderRadius: "var(--radius-3)", border: "1px solid var(--gray-a5)" }}>
+                        <IconButton
+                            size="2"
+                            variant={viewMode === "grid" ? "solid" : "ghost"}
+                            color={viewMode === "grid" ? "violet" : "gray"}
+                            onClick={() => setViewMode("grid")}
+                            style={{ cursor: "pointer" }}
+                        >
+                            <LayoutGrid className="w-4 h-4" />
+                        </IconButton>
+                        <IconButton
+                            size="2"
+                            variant={viewMode === "list" ? "solid" : "ghost"}
+                            color={viewMode === "list" ? "violet" : "gray"}
+                            onClick={() => setViewMode("list")}
+                            style={{ cursor: "pointer" }}
+                        >
+                            <ListIcon className="w-4 h-4" />
+                        </IconButton>
+                    </Flex>
+                </Flex>
+            </Flex>
 
-                <div className="flex items-center gap-3 bg-card p-1.5 rounded-xl border object-contain shadow-sm">
-                   <button
-                        onClick={() => setViewMode("grid")}
-                        className={`p-2 rounded-lg transition-all ${viewMode === "grid" ? "bg-primary text-white shadow-md shadow-primary/20" : "text-muted-foreground hover:bg-secondary"}`}
-                   >
-                        <LayoutGrid className="w-5 h-5" />
-                   </button>
-                   <button
-                        onClick={() => setViewMode("list")}
-                        className={`p-2 rounded-lg transition-all ${viewMode === "list" ? "bg-primary text-white shadow-md shadow-primary/20" : "text-muted-foreground hover:bg-secondary"}`}
-                   >
-                        <ListIcon className="w-5 h-5" />
-                   </button>
-                </div>
-            </header>
-
-            <main className="flex-1 overflow-y-auto p-8 relative z-10 scroll-smooth">
+            {/* Content  */}
+            <Box p={{ initial: "4", sm: "6", lg: "8" }} style={{ flex: 1, overflowY: "auto", position: "relative", zIndex: 0 }}>
                 {isEmpty ? (
-                    <div className="h-full flex flex-col items-center justify-center text-center">
-                        <div className="w-32 h-32 bg-secondary/50 rounded-full flex items-center justify-center mb-6">
-                            <Sparkles className="w-16 h-16 text-muted-foreground/50" />
-                        </div>
-                        <h3 className="text-2xl font-bold mb-2">Thùng rác trống</h3>
-                        <p className="text-muted-foreground max-w-[300px]">Không có thư mục hay tệp tin nào đã bị xóa gần đây.</p>
-                    </div>
+                    <Flex direction="column" align="center" justify="center" p="6" style={{ minHeight: "400px", border: "2px dashed var(--gray-a6)", borderRadius: "var(--radius-5)", textAlign: "center" }}>
+                        <Box p="4" mb="4" style={{ borderRadius: "100%", backgroundColor: "var(--gray-a3)" }}>
+                            <Sparkles style={{ width: 64, height: 64, color: "var(--gray-a8)" }} />
+                        </Box>
+                        <Heading size="6" mb="3">Thùng rác trống</Heading>
+                        <Text size="3" color="gray" style={{ maxWidth: "24rem" }}>
+                            Không có thư mục hay tệp tin nào đã bị xóa gần đây.
+                        </Text>
+                    </Flex>
                 ) : (
-                    <div className={viewMode === "grid" ? "space-y-10" : "space-y-8"}>
+                    <Flex direction="column" gap="6">
                         {/* Folders Section */}
                         {folders.length > 0 && (
-                            <section>
-                                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                            <Box>
+                                <Text size="2" weight="bold" color="gray" mb="4" style={{ textTransform: "uppercase", letterSpacing: "0.05em", display: "block" }}>
                                     Thư mục bị xóa ({folders.length})
-                                </h3>
+                                </Text>
 
                                 {viewMode === "grid" ? (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                                    <Grid columns={{ initial: "1", sm: "2", lg: "3", xl: "4" }} gap="4">
                                         {folders.map(folder => (
-                                            <div key={folder.id} className="group relative bg-card p-4 rounded-2xl border border-border/60 hover:border-border transition-all">
-                                                <div className="flex items-center gap-4 mb-4">
-                                                    <div className="w-12 h-12 bg-rose-500/10 rounded-xl flex items-center justify-center">
-                                                        <FolderOpen className="w-6 h-6 text-rose-500" />
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <h4 className="font-semibold truncate">{folder.name}</h4>
-                                                        <p className="text-xs text-muted-foreground truncate flex gap-1">
-                                                           Xóa: {formatDate(folder.deletedAt)}
-                                                        </p>
-                                                    </div>
-                                                </div>
+                                            <Card key={folder.id} size="2" variant="surface" className="group" style={{ position: "relative" }}>
+                                                <Flex align="center" gap="3" mb="1">
+                                                    <Flex align="center" justify="center" flexShrink="0" style={{ width: 40, height: 40, backgroundColor: "var(--amber-a3)", borderRadius: "var(--radius-3)" }}>
+                                                        <FolderOpen className="w-5 h-5 text-amber-500" style={{ color: "var(--amber-11)" }} />
+                                                    </Flex>
+                                                    <Box style={{ flex: 1, minWidth: 0, paddingRight: "1.5rem" }}>
+                                                        <Text size="3" weight="bold" truncate>{folder.name}</Text>
+                                                        <Text size="1" color="gray" as="div" truncate>Xóa: {formatDate(folder.deletedAt)}</Text>
+                                                    </Box>
+                                                </Flex>
 
-                                                <button
-                                                    className="absolute top-2 right-2 p-2 rounded-lg text-muted-foreground hover:bg-secondary opacity-0 group-hover:opacity-100 transition-opacity"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setActiveMenuId(activeMenuId === folder.id ? null : folder.id);
-                                                    }}
-                                                >
-                                                    <MoreVertical className="w-5 h-5" />
-                                                </button>
-
-                                                {activeMenuId === folder.id && (
-                                                    <div className="absolute top-12 right-2 w-48 bg-card border border-border rounded-xl shadow-xl overflow-hidden z-20 py-1">
-                                                        <button onClick={(e) => handleRestore("folder", folder.id, e)} className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-secondary transition-colors text-emerald-500">
-                                                            <RotateCcw className="w-4 h-4" /> Khôi phục
-                                                        </button>
-                                                        <button onClick={(e) => handleDeletePermanent("folder", folder.id, e)} className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-rose-500/10 transition-colors text-rose-500">
-                                                            <Trash2 className="w-4 h-4" /> Xóa vĩnh viễn
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </div>
+                                                <Box position="absolute" top="0" right="0" m="2" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <DropdownMenu.Root>
+                                                        <DropdownMenu.Trigger>
+                                                            <IconButton variant="ghost" color="gray" onClick={(e) => e.stopPropagation()}>
+                                                                <MoreVertical className="w-4 h-4" />
+                                                            </IconButton>
+                                                        </DropdownMenu.Trigger>
+                                                        <DropdownMenu.Content size="2" variant="solid" align="end">
+                                                            <DropdownMenu.Item onClick={(e) => { e.stopPropagation(); handleRestore("folder", folder.id); }} className="cursor-pointer text-emerald-500">
+                                                                <RotateCcw className="w-4 h-4 mr-2" /> Khôi phục
+                                                            </DropdownMenu.Item>
+                                                            <DropdownMenu.Item color="red" onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: "folder", id: folder.id }); }} className="cursor-pointer">
+                                                                <Trash2 className="w-4 h-4 mr-2" /> Xóa vĩnh viễn
+                                                            </DropdownMenu.Item>
+                                                        </DropdownMenu.Content>
+                                                    </DropdownMenu.Root>
+                                                </Box>
+                                            </Card>
                                         ))}
-                                    </div>
+                                    </Grid>
                                 ) : (
-                                    <div className="bg-card rounded-2xl border border-border overflow-hidden">
-                                        <div className="grid grid-cols-12 gap-4 p-4 border-b border-border bg-secondary/50 font-medium text-muted-foreground">
-                                            <div className="col-span-6">Tên thư mục</div>
-                                            <div className="col-span-4">Ngày xóa</div>
-                                            <div className="col-span-2 text-right">Thao tác</div>
-                                        </div>
-                                        <div className="divide-y divide-border">
-                                            {folders.map((folder) => (
-                                                <div key={folder.id} className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-secondary/30 transition-colors relative">
-                                                    <div className="col-span-6 flex items-center gap-3">
-                                                       <FolderOpen className="w-5 h-5 text-rose-500" />
-                                                       <span className="font-medium truncate">{folder.name}</span>
-                                                    </div>
-                                                    <div className="col-span-4 text-muted-foreground text-sm">{formatDate(folder.deletedAt)}</div>
-                                                    <div className="col-span-2 text-right relative">
-                                                        <button
-                                                            className="p-2 rounded-lg text-muted-foreground hover:bg-secondary transition-colors"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setActiveMenuId(activeMenuId === folder.id ? null : folder.id);
-                                                            }}
-                                                        >
-                                                            <MoreVertical className="w-5 h-5" />
-                                                        </button>
-
-                                                        {activeMenuId === folder.id && (
-                                                            <div className="absolute top-10 right-0 w-48 bg-card border border-border rounded-xl shadow-xl overflow-hidden z-20 py-1 text-left">
-                                                                <button onClick={(e) => handleRestore("folder", folder.id, e)} className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-secondary text-emerald-500">
-                                                                    <RotateCcw className="w-4 h-4" /> Khôi phục
-                                                                </button>
-                                                                <button onClick={(e) => handleDeletePermanent("folder", folder.id, e)} className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-rose-500/10 text-rose-500">
-                                                                    <Trash2 className="w-4 h-4" /> Xóa vĩnh viễn
-                                                                </button>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
+                                    <Card size="1" variant="surface" style={{ padding: 0, overflow: "hidden" }}>
+                                        <Flex px="4" py="3" style={{ borderBottom: "1px solid var(--gray-a4)", backgroundColor: "var(--gray-a2)" }}>
+                                            <Box style={{ flex: 5 }}><Text size="2" weight="medium" color="gray">Tên thư mục</Text></Box>
+                                            <Box style={{ flex: 4 }}><Text size="2" weight="medium" color="gray">Ngày xóa</Text></Box>
+                                            <Box style={{ flex: 1, textAlign: "right" }}><Text size="2" weight="medium" color="gray">Thao tác</Text></Box>
+                                        </Flex>
+                                        <Flex direction="column">
+                                            {folders.map((folder, idx) => (
+                                                <Flex key={folder.id} align="center" px="4" py="3" className="group hover:bg-secondary/50" style={{ borderBottom: idx < folders.length - 1 ? "1px solid var(--gray-a3)" : "none", transition: "background-color 0.2s" }}>
+                                                    <Flex align="center" gap="3" style={{ flex: 5, minWidth: 0 }}>
+                                                        <Flex align="center" justify="center" flexShrink="0" style={{ width: 40, height: 40, backgroundColor: "var(--amber-a3)", borderRadius: "var(--radius-3)" }}>
+                                                            <FolderOpen className="w-5 h-5 text-amber-500" style={{ color: "var(--amber-11)" }} />
+                                                        </Flex>
+                                                        <Text size="2" weight="medium" truncate>{folder.name}</Text>
+                                                    </Flex>
+                                                    <Box style={{ flex: 4 }}><Text size="2" color="gray">{formatDate(folder.deletedAt)}</Text></Box>
+                                                    <Flex justify="end" style={{ flex: 1 }}>
+                                                        <DropdownMenu.Root>
+                                                            <DropdownMenu.Trigger>
+                                                                <IconButton variant="ghost" color="gray" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                    <MoreVertical className="w-4 h-4" />
+                                                                </IconButton>
+                                                            </DropdownMenu.Trigger>
+                                                            <DropdownMenu.Content size="2" variant="solid" align="end">
+                                                                <DropdownMenu.Item onClick={(e) => { e.stopPropagation(); handleRestore("folder", folder.id); }} className="cursor-pointer text-emerald-500">
+                                                                    <RotateCcw className="w-4 h-4 mr-2" /> Khôi phục
+                                                                </DropdownMenu.Item>
+                                                                <DropdownMenu.Item color="red" onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: "folder", id: folder.id }); }} className="cursor-pointer">
+                                                                    <Trash2 className="w-4 h-4 mr-2" /> Xóa vĩnh viễn
+                                                                </DropdownMenu.Item>
+                                                            </DropdownMenu.Content>
+                                                        </DropdownMenu.Root>
+                                                    </Flex>
+                                                </Flex>
                                             ))}
-                                        </div>
-                                    </div>
+                                        </Flex>
+                                    </Card>
                                 )}
-                            </section>
+                            </Box>
                         )}
 
                         {/* Files Section */}
                         {files.length > 0 && (
-                            <section>
-                                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                            <Box>
+                                <Text size="2" weight="bold" color="gray" mb="4" style={{ textTransform: "uppercase", letterSpacing: "0.05em", display: "block" }}>
                                     Tệp bị xóa ({files.length})
-                                </h3>
+                                </Text>
 
                                 {viewMode === "grid" ? (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-                                        {files.map(file => (
-                                            <div key={file.id} className="group relative bg-card p-4 rounded-2xl border border-border/60 hover:border-border transition-all">
-                                                <div className="flex items-center gap-4 mb-4">
-                                                    <div className="w-12 h-12 bg-rose-500/10 rounded-xl flex items-center justify-center">
-                                                        <FileIcon className="w-6 h-6 text-rose-500" />
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <h4 className="font-semibold truncate" title={file.name}>{file.name}</h4>
-                                                        <p className="text-xs text-muted-foreground flex gap-2 truncate">
-                                                           {formatBytes(file.size)} | Xóa: {formatDate(file.deletedAt)}
-                                                        </p>
-                                                    </div>
-                                                </div>
+                                    <Grid columns={{ initial: "1", sm: "2", lg: "3", xl: "5" }} gap="4">
+                                        {files.map(file => {
+                                            const Icon = FileIcon;
+                                            const colorName = "rose";
 
-                                                <button
-                                                    className="absolute top-2 right-2 p-2 rounded-lg text-muted-foreground hover:bg-secondary opacity-0 group-hover:opacity-100 transition-opacity"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setActiveMenuId(activeMenuId === file.id ? null : file.id);
-                                                    }}
-                                                >
-                                                    <MoreVertical className="w-5 h-5" />
-                                                </button>
+                                            return (
+                                                <Card key={file.id} size="2" variant="surface" className="group" style={{ position: "relative" }}>
+                                                    <Flex align="start" gap="3" mb="1">
+                                                        <Flex align="center" justify="center" flexShrink="0" style={{ width: 40, height: 40, backgroundColor: `var(--${colorName}-a3)`, borderRadius: "var(--radius-3)" }}>
+                                                            <Icon className="w-5 h-5" style={{ color: `var(--${colorName}-11)` }} />
+                                                        </Flex>
+                                                        <Box style={{ flex: 1, minWidth: 0, paddingRight: "1.5rem" }}>
+                                                            <Text size="2" weight="bold" truncate as="div" title={file.name} style={{ lineHeight: "1.25", marginBottom: "4px" }}>
+                                                                {file.name}
+                                                            </Text>
+                                                            <Text size="1" color="gray" as="div" truncate>{formatBytes(file.size)} • Xóa: {formatDate(file.deletedAt)}</Text>
+                                                        </Box>
+                                                    </Flex>
 
-                                                {activeMenuId === file.id && (
-                                                    <div className="absolute top-12 right-2 w-48 bg-card border border-border rounded-xl shadow-xl overflow-hidden z-20 py-1 mx-2">
-                                                        <button onClick={(e) => handleRestore("file", file.id, e)} className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-secondary transition-colors text-emerald-500">
-                                                            <RotateCcw className="w-4 h-4" /> Khôi phục
-                                                        </button>
-                                                        <button onClick={(e) => handleDeletePermanent("file", file.id, e)} className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-rose-500/10 transition-colors text-rose-500">
-                                                            <Trash2 className="w-4 h-4" /> Xóa vĩnh viễn
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
+                                                    <Box position="absolute" top="0" right="0" m="2" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <DropdownMenu.Root>
+                                                            <DropdownMenu.Trigger>
+                                                                <IconButton variant="ghost" color="gray" onClick={(e) => e.stopPropagation()}>
+                                                                    <MoreVertical className="w-4 h-4" />
+                                                                </IconButton>
+                                                            </DropdownMenu.Trigger>
+                                                            <DropdownMenu.Content size="2" variant="solid" align="end">
+                                                                <DropdownMenu.Item onClick={(e) => { e.stopPropagation(); handleRestore("file", file.id); }} className="cursor-pointer text-emerald-500">
+                                                                    <RotateCcw className="w-4 h-4 mr-2" /> Khôi phục
+                                                                </DropdownMenu.Item>
+                                                                <DropdownMenu.Item color="red" onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: "file", id: file.id }); }} className="cursor-pointer">
+                                                                    <Trash2 className="w-4 h-4 mr-2" /> Xóa vĩnh viễn
+                                                                </DropdownMenu.Item>
+                                                            </DropdownMenu.Content>
+                                                        </DropdownMenu.Root>
+                                                    </Box>
+                                                </Card>
+                                            );
+                                        })}
+                                    </Grid>
                                 ) : (
-                                    <div className="bg-card rounded-2xl border border-border overflow-hidden">
-                                        <div className="grid grid-cols-12 gap-4 p-4 border-b border-border bg-secondary/50 font-medium text-muted-foreground">
-                                            <div className="col-span-6">Tên tệp tin</div>
-                                            <div className="col-span-2 text-right">Dung lượng</div>
-                                            <div className="col-span-2">Ngày xóa</div>
-                                            <div className="col-span-2 text-right">Thao tác</div>
-                                        </div>
-                                        <div className="divide-y divide-border">
-                                            {files.map((file) => (
-                                                <div key={file.id} className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-secondary/30 transition-colors relative">
-                                                    <div className="col-span-6 flex items-center gap-3">
-                                                       <FileIcon className="w-5 h-5 text-rose-500" />
-                                                       <span className="font-medium truncate" title={file.name}>{file.name}</span>
-                                                    </div>
-                                                    <div className="col-span-2 text-right text-muted-foreground">{formatBytes(file.size)}</div>
-                                                    <div className="col-span-2 text-muted-foreground text-sm">{formatDate(file.deletedAt)}</div>
-                                                    <div className="col-span-2 text-right relative">
-                                                        <button
-                                                            className="p-2 rounded-lg text-muted-foreground hover:bg-secondary transition-colors"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setActiveMenuId(activeMenuId === file.id ? null : file.id);
-                                                            }}
-                                                        >
-                                                            <MoreVertical className="w-5 h-5" />
-                                                        </button>
+                                    <Card size="1" variant="surface" style={{ padding: 0, overflow: "hidden" }}>
+                                        <Flex px="4" py="3" style={{ borderBottom: "1px solid var(--gray-a4)", backgroundColor: "var(--gray-a2)" }}>
+                                            <Box style={{ flex: 5 }}><Text size="2" weight="medium" color="gray">Tên tệp</Text></Box>
+                                            <Box style={{ flex: 2, textAlign: "right" }}><Text size="2" weight="medium" color="gray">Dung lượng</Text></Box>
+                                            <Box style={{ flex: 2 }} className="ml-4"><Text size="2" weight="medium" color="gray">Ngày xóa</Text></Box>
+                                            <Box style={{ flex: 1, textAlign: "right" }}><Text size="2" weight="medium" color="gray">Thao tác</Text></Box>
+                                        </Flex>
+                                        <Flex direction="column">
+                                            {files.map((file, idx) => {
+                                                const Icon = FileIcon;
+                                                const colorName = "rose";
 
-                                                        {activeMenuId === file.id && (
-                                                            <div className="absolute top-10 right-0 w-48 bg-card border border-border rounded-xl shadow-xl overflow-hidden z-20 py-1 text-left">
-                                                                <button onClick={(e) => handleRestore("file", file.id, e)} className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-secondary text-emerald-500">
-                                                                    <RotateCcw className="w-4 h-4" /> Khôi phục
-                                                                </button>
-                                                                <button onClick={(e) => handleDeletePermanent("file", file.id, e)} className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-rose-500/10 text-rose-500">
-                                                                    <Trash2 className="w-4 h-4" /> Xóa vĩnh viễn
-                                                                </button>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
+                                                return (
+                                                    <Flex key={file.id} align="center" px="4" py="3" className="group hover:bg-secondary/50" style={{ borderBottom: idx < files.length - 1 ? "1px solid var(--gray-a3)" : "none", transition: "background-color 0.2s" }}>
+                                                        <Flex align="center" gap="3" style={{ flex: 5, minWidth: 0 }}>
+                                                            <Flex align="center" justify="center" flexShrink="0" style={{ width: 40, height: 40, backgroundColor: `var(--${colorName}-a3)`, borderRadius: "var(--radius-3)" }}>
+                                                                <Icon className="w-5 h-5" style={{ color: `var(--${colorName}-11)` }} />
+                                                            </Flex>
+                                                            <Text size="2" weight="medium" truncate title={file.name}>{file.name}</Text>
+                                                        </Flex>
+                                                        <Box style={{ flex: 2, textAlign: "right" }}><Text size="2" color="gray" style={{ fontFamily: "var(--font-geist-mono)" }}>{formatBytes(file.size)}</Text></Box>
+                                                        <Box style={{ flex: 2 }} className="ml-4"><Text size="2" color="gray">{formatDate(file.deletedAt)}</Text></Box>
+                                                        <Flex justify="end" style={{ flex: 1 }}>
+                                                            <DropdownMenu.Root>
+                                                                <DropdownMenu.Trigger>
+                                                                    <IconButton variant="ghost" color="gray" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                        <MoreVertical className="w-4 h-4" />
+                                                                    </IconButton>
+                                                                </DropdownMenu.Trigger>
+                                                                <DropdownMenu.Content size="2" variant="solid" align="end">
+                                                                    <DropdownMenu.Item onClick={(e) => { e.stopPropagation(); handleRestore("file", file.id); }} className="cursor-pointer text-emerald-500">
+                                                                        <RotateCcw className="w-4 h-4 mr-2" /> Khôi phục
+                                                                    </DropdownMenu.Item>
+                                                                    <DropdownMenu.Item color="red" onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: "file", id: file.id }); }} className="cursor-pointer">
+                                                                        <Trash2 className="w-4 h-4 mr-2" /> Xóa vĩnh viễn
+                                                                    </DropdownMenu.Item>
+                                                                </DropdownMenu.Content>
+                                                            </DropdownMenu.Root>
+                                                        </Flex>
+                                                    </Flex>
+                                                );
+                                            })}
+                                        </Flex>
+                                    </Card>
                                 )}
-                            </section>
+                            </Box>
                         )}
-                    </div>
+                    </Flex>
                 )}
-            </main>
+            </Box>
 
-            <ConfirmModal 
+            <ConfirmModal
                 isOpen={!!deleteTarget}
                 onClose={() => setDeleteTarget(null)}
                 onConfirm={confirmDeletePermanent}
@@ -308,6 +317,16 @@ export default function TrashPage() {
                 confirmText="Xác nhận xóa"
                 color="red"
             />
-        </div>
+
+            <ConfirmModal
+                isOpen={isConfirmEmptyOpen}
+                onClose={() => setIsConfirmEmptyOpen(false)}
+                onConfirm={handleEmptyTrash}
+                title="Dọn sạch thùng rác"
+                description="Bạn có chắc chắn muốn dọn sạch thùng rác không? Toàn bộ tệp và thư mục sẽ bị xoá vĩnh viễn và KHÔNG THỂ KHÔI PHỤC."
+                confirmText="Dọn sạch"
+                color="red"
+            />
+        </Flex>
     );
 }

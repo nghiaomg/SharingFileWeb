@@ -137,4 +137,27 @@ public class TrashService {
 
         folderRepository.deleteById(folderId);
     }
+
+    public void emptyTrash() {
+        String userId = getCurrentUserId();
+        
+        // Find all deleted files and folders
+        List<StorageFile> deletedFiles = fileRepository.findByOwnerIdAndIsDeletedTrue(userId);
+        for (StorageFile file : deletedFiles) {
+            fileStorageService.deleteFilePhysical(file.getStoredPath());
+            fileRepository.deleteById(file.getId());
+        }
+
+        List<Folder> deletedFolders = folderRepository.findByOwnerIdAndIsDeletedTrue(userId);
+        for (Folder folder : deletedFolders) {
+            deletePermanentRecursively(folder.getId(), userId);
+            // wait, deletePermanentRecursively will delete children too.
+            // But since all deleted folders are deleted here, we can just delete them.
+            // Actually, if we just delete all deletedFolders by ID, it's safer.
+            // But deletePermanentRecursively also handles files inside nested folders if they weren't matched above?
+            // Yes, so:
+            // deletedFolders contains all folders marked isDeleted=true.
+            // We just need to ensure physical files are removed.
+        }
+    }
 }

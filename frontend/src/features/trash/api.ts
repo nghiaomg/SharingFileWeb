@@ -7,9 +7,13 @@ export async function getTrashItems(): Promise<TrashData> {
 }
 
 export async function restoreItem(type: "folder" | "file", id: string): Promise<void> {
-  await apiClient.post(`/trash/restore/${type}/${id}`);
+  await apiClient.put(`/trash/restore/${type}/${id}`);
 }
 
 export async function deletePermanent(type: "folder" | "file", id: string): Promise<void> {
-  await apiClient.delete(`/trash/${type}/${id}`);
+  await apiClient.delete(`/trash/permanent/${type}/${id}`);
+}
+
+export async function emptyTrash(): Promise<void> {
+  await apiClient.delete("/trash/empty");
 }

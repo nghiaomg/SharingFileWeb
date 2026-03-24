@@ -5,6 +5,7 @@ import { DashboardSidebar } from "@/features/dashboard/components/DashboardSideb
 import { DashboardHeader } from "@/features/dashboard/components/DashboardHeader";
 import { useCurrentUser } from "@/features/auth/queries";
 import { Loader2 } from "lucide-react";
+import { UploadQueueManager } from "@/features/files/components/UploadQueueManager";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -27,6 +28,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {children}
         </main>
       </div>
+      <UploadQueueManager />
     </div>
   );
 }
