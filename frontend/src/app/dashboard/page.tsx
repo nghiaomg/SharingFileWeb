@@ -104,7 +104,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Recent Files */}
-            <div className="bg-card border border-border/50 rounded-3xl overflow-hidden shadow-sm">
+            <div className="bg-card border border-border/50 rounded-3xl overflow-hidden">
                 <div className="p-6 border-b border-border/50 flex justify-between items-center">
                     <h3 className="text-lg font-bold flex items-center gap-2">
                         <Clock className="w-5 h-5 text-primary" /> Tệp gần đây

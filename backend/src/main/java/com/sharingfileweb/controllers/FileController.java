@@ -10,6 +10,7 @@ import com.sharingfileweb.models.StorageFile;
 import com.sharingfileweb.payload.response.FileResponse;
 import com.sharingfileweb.payload.response.MessageResponse;
 import com.sharingfileweb.payload.response.StandardResponse;
+import com.sharingfileweb.payload.request.ShareFileRequest;
 import com.sharingfileweb.repository.FileRepository;
 import com.sharingfileweb.repository.UserRepository;
 import com.sharingfileweb.security.services.FileStorageService;
@@ -99,11 +100,11 @@ public class FileController {
     }
   }
 
-  // Đổi trạng thái Public của File
+  // Đổi trạng thái Public/Share của File
   @PutMapping("/{id}/share")
-  public ResponseEntity<?> toggleShareFile(@PathVariable String id, @RequestBody java.util.Map<String, Boolean> payload) {
+  public ResponseEntity<?> shareFile(@PathVariable String id, @RequestBody ShareFileRequest payload) {
     try {
-        FileResponse response = fileService.toggleShareFile(id, payload);
+        FileResponse response = fileService.shareFile(id, payload);
         return ResponseEntity.ok(StandardResponse.success("File share status updated successfully", response));
     } catch (RuntimeException e) {
         if (e.getMessage().equals("File not found or unauthorized")) {

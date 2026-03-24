@@ -4,17 +4,20 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
     FolderOpen, Upload, Plus, LayoutGrid, List as ListIcon, MoreVertical,
-    Pencil, Trash2, Download, Link as LinkIcon, Check, Loader2, ChevronRight, Home
+    Pencil, Trash2, Download, Link as LinkIcon, Loader2, ChevronRight, Home,
+    FileText, FolderUp
 } from "lucide-react";
 import Link from "next/link";
 import { useFolderChildren, useRootFolder, useFolder } from "@/features/files/queries";
-import { useCreateFolder, useUpdateFolder, useDeleteFolder, useUploadFile, useDeleteFile, useShareFile, useDownloadFile } from "@/features/files/mutations";
+import { useCreateFolder, useUpdateFolder, useDeleteFolder, useUploadFile, useDeleteFile, useDownloadFile } from "@/features/files/mutations";
 import { FolderModal } from "@/features/dashboard/components/FolderModal";
 import { DeleteConfirmModal } from "@/features/dashboard/components/DeleteConfirmModal";
+import { ShareModal } from "@/features/dashboard/components/ShareModal";
 import { formatBytes } from "@/lib/format";
 import { determineFileType } from "@/lib/file-utils";
 import { getApiErrorMessage } from "@/types/api";
-import type { FolderItem } from "@/features/files/schemas";
+import type { FolderItem, FileItem } from "@/features/files/schemas";
+import { toast } from "sonner";
 
 interface FileExplorerProps {
     folderId?: string | null;
@@ -36,13 +39,14 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
     const deleteFolderMutation = useDeleteFolder();
     const uploadFileMutation = useUploadFile();
     const deleteFileMutation = useDeleteFile();
-    const shareFileMutation = useShareFile();
     const downloadFileMutation = useDownloadFile();
 
     // ─── Local UI State ─────────────────────────────────────────────────────────
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
     const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+    const [isUploadMenuOpen, setIsUploadMenuOpen] = useState(false);
     const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
+    const [isDragging, setIsDragging] = useState(false);
 
     // Folder Modal
     const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
@@ -52,16 +56,20 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
     const [deleteTarget, setDeleteTarget] = useState<{ type: "folder" | "file"; id: string; name: string } | null>(null);
 
     // Share
-    const [shareUrl, setShareUrl] = useState<{ id: string; url: string } | null>(null);
+    const [shareTarget, setShareTarget] = useState<FileItem | null>(null);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const folderInputRef = useRef<HTMLInputElement>(null);
 
     const folders = children?.folders || [];
     const files = children?.files || [];
 
     // Close menus on click outside
     useEffect(() => {
-        const handleClickOutside = () => setActiveMenuId(null);
+        const handleClickOutside = () => {
+            setActiveMenuId(null);
+            setIsUploadMenuOpen(false);
+        };
         document.addEventListener("click", handleClickOutside);
         return () => document.removeEventListener("click", handleClickOutside);
     }, []);
@@ -69,39 +77,46 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
     // ─── Handlers ───────────────────────────────────────────────────────────────
     const handleCreateFolder = useCallback((name: string) => {
         createFolderMutation.mutate({ name, parentId: currentFolderId }, {
-            onSuccess: () => setIsFolderModalOpen(false),
-            onError: (err) => alert(getApiErrorMessage(err)),
+            onSuccess: () => {
+                setIsFolderModalOpen(false);
+                toast.success(`Đã tạo thư mục "${name}"`);
+            },
+            onError: (err) => toast.error(getApiErrorMessage(err)),
         });
     }, [createFolderMutation, currentFolderId]);
 
     const handleUpdateFolder = useCallback((name: string) => {
         if (!editingFolder) return;
         updateFolderMutation.mutate({ id: editingFolder.id, data: { name } }, {
-            onSuccess: () => { setEditingFolder(null); setIsFolderModalOpen(false); },
-            onError: (err) => alert(getApiErrorMessage(err)),
+            onSuccess: () => { 
+                setEditingFolder(null); 
+                setIsFolderModalOpen(false); 
+                toast.success("Đổi tên thành công");
+            },
+            onError: (err) => toast.error(getApiErrorMessage(err)),
         });
     }, [updateFolderMutation, editingFolder]);
 
     const handleDeleteConfirm = useCallback(async () => {
         if (!deleteTarget) return;
-        if (deleteTarget.type === "folder") {
-            deleteFolderMutation.mutate(deleteTarget.id, {
-                onSuccess: () => setDeleteTarget(null),
-                onError: (err) => alert(getApiErrorMessage(err)),
-            });
-        } else {
-            deleteFileMutation.mutate(deleteTarget.id, {
-                onSuccess: () => setDeleteTarget(null),
-                onError: (err) => alert(getApiErrorMessage(err)),
-            });
+        try {
+            if (deleteTarget.type === "folder") {
+                await deleteFolderMutation.mutateAsync(deleteTarget.id);
+            } else {
+                await deleteFileMutation.mutateAsync(deleteTarget.id);
+            }
+            toast.success("Đã chuyển vào thùng rác");
+            setDeleteTarget(null);
+        } catch (err) {
+            toast.error(getApiErrorMessage(err));
+            throw err; // throw to let DeleteConfirmModal show the error inline
         }
     }, [deleteTarget, deleteFolderMutation, deleteFileMutation]);
 
-    const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        const selectedFiles = e.target.files;
-        if (!selectedFiles || !currentFolderId) return;
+    const processFiles = useCallback((filesToUpload: FileList | File[]) => {
+        if (!filesToUpload || filesToUpload.length === 0 || !currentFolderId) return;
 
-        Array.from(selectedFiles).forEach(file => {
+        Array.from(filesToUpload).forEach(file => {
             const fileId = crypto.randomUUID();
             setUploadProgress(prev => ({ ...prev, [fileId]: 0 }));
 
@@ -116,9 +131,10 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
                         delete next[fileId];
                         return next;
                     });
+                    toast.success(`Đã tải lên ${file.name}`);
                 },
                 onError: (err) => {
-                    alert(getApiErrorMessage(err, "Lỗi upload file"));
+                    toast.error(getApiErrorMessage(err, "Lỗi upload file"));
                     setUploadProgress(prev => {
                         const next = { ...prev };
                         delete next[fileId];
@@ -127,24 +143,43 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
                 },
             });
         });
-
-        e.target.value = "";
     }, [currentFolderId, uploadFileMutation]);
 
-    const handleShare = useCallback((fileId: string) => {
-        shareFileMutation.mutate({ fileId, isPublic: true }, {
-            onSuccess: () => {
-                const shareLink = `${window.location.origin}/api/files/public/${fileId}`;
-                setShareUrl({ id: fileId, url: shareLink });
-                navigator.clipboard.writeText(shareLink);
-            },
-            onError: (err) => alert(getApiErrorMessage(err)),
-        });
+    const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            processFiles(e.target.files);
+        }
+        e.target.value = "";
+    }, [processFiles]);
+
+    const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setIsDragging(true);
+    }, []);
+
+    const handleDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setIsDragging(false);
+    }, []);
+
+    const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setIsDragging(false);
+        if (e.dataTransfer.files) {
+            processFiles(e.dataTransfer.files);
+        }
+    }, [processFiles]);
+
+    const handleShare = useCallback((file: FileItem) => {
+        setShareTarget(file);
         setActiveMenuId(null);
-    }, [shareFileMutation]);
+    }, []);
 
     const handleDownload = useCallback((fileId: string, fileName: string) => {
-        downloadFileMutation.mutate({ fileId, fileName });
+        downloadFileMutation.mutate({ fileId, fileName }, {
+            onSuccess: () => toast.success("Đang tải xuống..."),
+            onError: (err) => toast.error(getApiErrorMessage(err, "Lỗi khi tải xuống"))
+        });
         setActiveMenuId(null);
     }, [downloadFileMutation]);
 
@@ -183,15 +218,45 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
 
                 <div className="flex items-center gap-3 shrink-0">
                     {/* Upload */}
-                    <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" multiple />
-                    <button
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isUploading}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl font-bold shadow-lg hover:shadow-primary/30 hover:bg-primary/90 transition-all text-sm disabled:opacity-60"
-                    >
-                        {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                        {isUploading ? "Đang tải lên..." : "Tải lên"}
-                    </button>
+                    <div className="relative">
+                        <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" multiple />
+                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                        <input type="file" ref={folderInputRef} onChange={handleFileUpload} className="hidden" multiple {...({webkitdirectory: "true", directory: "true"} as any)} />
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setTimeout(() => setIsUploadMenuOpen(prev => !prev), 0);
+                            }}
+                            disabled={isUploading}
+                            className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-colors text-sm disabled:opacity-60 border border-primary/40 hover:border-primary cursor-pointer"
+                        >
+                            {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                            {isUploading ? "Đang tải lên..." : "Tải lên"}
+                        </button>
+
+                        {isUploadMenuOpen && !isUploading && (
+                            <div className="absolute top-12 right-0 w-48 bg-card border border-border rounded-xl z-20 py-1 shadow-sm mt-2" onClick={(e) => e.stopPropagation()}>
+                                <button
+                                    onClick={() => {
+                                        setIsUploadMenuOpen(false);
+                                        fileInputRef.current?.click();
+                                    }}
+                                    className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-secondary transition-colors cursor-pointer"
+                                >
+                                    <FileText className="w-4 h-4" /> Tải tệp lên
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setIsUploadMenuOpen(false);
+                                        folderInputRef.current?.click();
+                                    }}
+                                    className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-secondary transition-colors cursor-pointer"
+                                >
+                                    <FolderUp className="w-4 h-4" /> Tải thư mục lên
+                                </button>
+                            </div>
+                        )}
+                    </div>
 
                     {/* New Folder */}
                     <button
@@ -205,16 +270,16 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
                     </button>
 
                     {/* View Toggle */}
-                    <div className="flex items-center bg-card p-1 rounded-xl border shadow-sm">
+                    <div className="flex items-center bg-card p-1 rounded-xl border border-border/60">
                         <button
                             onClick={() => setViewMode("grid")}
-                            className={`p-2 rounded-lg transition-all ${viewMode === "grid" ? "bg-primary text-white shadow-md shadow-primary/20" : "text-muted-foreground hover:bg-secondary"}`}
+                            className={`p-2 rounded-lg transition-colors ${viewMode === "grid" ? "bg-primary text-white border border-primary/30" : "text-muted-foreground hover:bg-secondary border border-transparent"}`}
                         >
                             <LayoutGrid className="w-5 h-5" />
                         </button>
                         <button
                             onClick={() => setViewMode("list")}
-                            className={`p-2 rounded-lg transition-all ${viewMode === "list" ? "bg-primary text-white shadow-md shadow-primary/20" : "text-muted-foreground hover:bg-secondary"}`}
+                            className={`p-2 rounded-lg transition-colors ${viewMode === "list" ? "bg-primary text-white border border-primary/30" : "text-muted-foreground hover:bg-secondary border border-transparent"}`}
                         >
                             <ListIcon className="w-5 h-5" />
                         </button>
@@ -238,12 +303,25 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
             )}
 
             {/* Content */}
-            <main className="flex-1 overflow-y-auto p-8 scroll-smooth">
+            <main className="flex-1 overflow-y-auto p-8 scroll-smooth z-0">
                 {folders.length === 0 && files.length === 0 ? (
-                    <div className="h-full flex flex-col items-center justify-center text-center">
-                        <FolderOpen className="w-24 h-24 text-muted-foreground/30 mb-6" />
-                        <h3 className="text-xl font-bold mb-2">Thư mục trống</h3>
-                        <p className="text-muted-foreground max-w-md">Tải lên tệp hoặc tạo thư mục mới để bắt đầu.</p>
+                    <div 
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                        className={`h-full min-h-[400px] flex flex-col items-center justify-center text-center rounded-3xl border-2 border-dashed transition-all duration-300 ${
+                            isDragging ? "border-primary bg-primary/5" : "border-border/60 hover:border-border hover:bg-card/50"
+                        }`}
+                    >
+                        <div className={`p-6 rounded-full mb-6 transition-colors duration-300 ${isDragging ? "bg-primary/20" : "bg-card border border-border"}`}>
+                            <FolderOpen className={`w-16 h-16 transition-colors duration-300 ${isDragging ? "text-primary" : "text-muted-foreground/40"}`} />
+                        </div>
+                        <h3 className={`text-2xl font-bold mb-3 transition-colors duration-300 ${isDragging ? "text-primary" : ""}`}>
+                            {isDragging ? "Thả tệp vào đây" : "Thư mục trống"}
+                        </h3>
+                        <p className="text-muted-foreground/80 font-medium max-w-sm leading-relaxed">
+                            {isDragging ? "Chúng tôi sẽ tự động tải lên không gian của bạn." : "Kéo thả tệp vào đây hoặc nhấn mũi tên tải lên ở góc trên cùng để bắt đầu."}
+                        </p>
                     </div>
                 ) : (
                     <div className="space-y-8">
@@ -259,7 +337,7 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
                                         <div
                                             key={folder.id}
                                             onClick={() => router.push(`/dashboard/files/${folder.id}`)}
-                                            className={`group relative cursor-pointer transition-all ${
+                                            className={`group relative cursor-pointer transition-all ${activeMenuId === folder.id ? "z-50" : "z-0"} ${
                                                 viewMode === "grid"
                                                     ? "bg-card border border-border/60 hover:border-border p-4 rounded-2xl"
                                                     : "bg-card border border-border/60 hover:border-border p-3 rounded-xl flex items-center gap-4"
@@ -274,17 +352,19 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
 
                                             {/* Context Menu */}
                                             <button
+                                                type="button"
                                                 className="absolute top-2 right-2 p-2 rounded-lg text-muted-foreground hover:bg-secondary opacity-0 group-hover:opacity-100 transition-opacity"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    setActiveMenuId(activeMenuId === folder.id ? null : folder.id);
+                                                    const newId = activeMenuId === folder.id ? null : folder.id;
+                                                    setTimeout(() => setActiveMenuId(newId), 0);
                                                 }}
                                             >
                                                 <MoreVertical className="w-5 h-5" />
                                             </button>
 
                                             {activeMenuId === folder.id && (
-                                                <div className="absolute top-12 right-2 w-52 bg-card border border-border rounded-xl shadow-xl overflow-hidden z-20 py-1" onClick={(e) => e.stopPropagation()}>
+                                                <div className="absolute top-12 right-2 w-52 bg-card border border-border rounded-xl z-20 py-1" onClick={(e) => e.stopPropagation()}>
                                                     <button
                                                         onClick={(e) => {
                                                             e.stopPropagation();
@@ -324,7 +404,7 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
                                             const fileMeta = determineFileType(file.type || "");
                                             const Icon = fileMeta.icon;
                                             return (
-                                                <div key={file.id} className="group relative bg-card border border-border/60 hover:border-border p-4 rounded-2xl transition-all">
+                                                <div key={file.id} className={`group relative bg-card border border-border/60 hover:border-border p-4 rounded-2xl transition-all ${activeMenuId === file.id ? "z-50" : "z-0"}`}>
                                                     <div className="flex items-center gap-4 mb-3">
                                                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${fileMeta.bg}`}>
                                                             <Icon className={`w-5 h-5 ${fileMeta.color}`} />
@@ -335,29 +415,24 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
                                                         </div>
                                                     </div>
 
-                                                    {/* Share URL indicator */}
-                                                    {shareUrl?.id === file.id && (
-                                                        <div className="absolute bottom-2 left-2 right-2 bg-emerald-500/10 text-emerald-600 text-xs p-2 rounded-lg flex items-center gap-1">
-                                                            <Check className="w-3 h-3" /> Link đã copy!
-                                                        </div>
-                                                    )}
-
                                                     <button
+                                                            type="button"
                                                         className="absolute top-2 right-2 p-2 rounded-lg text-muted-foreground hover:bg-secondary opacity-0 group-hover:opacity-100 transition-opacity"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            setActiveMenuId(activeMenuId === file.id ? null : file.id);
+                                                            const newId = activeMenuId === file.id ? null : file.id;
+                                                            setTimeout(() => setActiveMenuId(newId), 0);
                                                         }}
                                                     >
                                                         <MoreVertical className="w-5 h-5" />
                                                     </button>
 
                                                     {activeMenuId === file.id && (
-                                                        <div className="absolute top-12 right-2 w-52 bg-card border border-border rounded-xl shadow-xl overflow-hidden z-20 py-1">
+                                                        <div className="absolute top-12 right-2 w-52 bg-card border border-border rounded-xl shadow-xl overflow-hidden z-20 py-1" onClick={e => e.stopPropagation()}>
                                                             <button onClick={() => handleDownload(file.id, file.name)} className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-secondary transition-colors">
                                                                 <Download className="w-4 h-4" /> Tải xuống
                                                             </button>
-                                                            <button onClick={() => handleShare(file.id)} className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-secondary transition-colors">
+                                                            <button onClick={() => handleShare(file)} className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-secondary transition-colors">
                                                                 <LinkIcon className="w-4 h-4" /> Chia sẻ
                                                             </button>
                                                             <button
@@ -376,8 +451,8 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
                                         })}
                                     </div>
                                 ) : (
-                                    <div className="bg-card rounded-2xl border border-border overflow-hidden">
-                                        <div className="grid grid-cols-12 gap-4 p-4 border-b border-border bg-secondary/50 font-medium text-muted-foreground text-sm">
+                                    <div className="bg-card rounded-2xl border border-border">
+                                        <div className="grid grid-cols-12 gap-4 p-4 border-b border-border bg-secondary/50 font-medium text-muted-foreground text-sm rounded-t-2xl">
                                             <div className="col-span-5">Tên tệp</div>
                                             <div className="col-span-2">Loại</div>
                                             <div className="col-span-2 text-right">Dung lượng</div>
@@ -389,7 +464,7 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
                                                 const fileMeta = determineFileType(file.type || "");
                                                 const Icon = fileMeta.icon;
                                                 return (
-                                                    <div key={file.id} className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-secondary/30 transition-colors relative group">
+                                                    <div key={file.id} className={`grid grid-cols-12 gap-4 p-4 items-center hover:bg-secondary/30 transition-colors relative group ${activeMenuId === file.id ? "z-50" : "z-0"}`}>
                                                         <div className="col-span-5 flex items-center gap-3">
                                                             <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${fileMeta.bg}`}>
                                                                 <Icon className={`w-4 h-4 ${fileMeta.color}`} />
@@ -401,21 +476,23 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
                                                         <div className="col-span-2 text-muted-foreground text-sm">{new Date(file.createdAt).toLocaleDateString("vi-VN")}</div>
                                                         <div className="col-span-1 text-right relative">
                                                             <button
+                                                                type="button"
                                                                 className="p-2 rounded-lg text-muted-foreground hover:bg-secondary opacity-0 group-hover:opacity-100 transition-opacity"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
-                                                                    setActiveMenuId(activeMenuId === file.id ? null : file.id);
+                                                                    const newId = activeMenuId === file.id ? null : file.id;
+                                                                    setTimeout(() => setActiveMenuId(newId), 0);
                                                                 }}
                                                             >
                                                                 <MoreVertical className="w-5 h-5" />
                                                             </button>
 
                                                             {activeMenuId === file.id && (
-                                                                <div className="absolute top-10 right-0 w-52 bg-card border border-border rounded-xl shadow-xl overflow-hidden z-20 py-1 text-left">
+                                                                <div className="absolute top-10 right-0 w-52 bg-card border border-border rounded-xl overflow-hidden z-20 py-1 text-left" onClick={e => e.stopPropagation()}>
                                                                     <button onClick={() => handleDownload(file.id, file.name)} className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-secondary transition-colors">
                                                                         <Download className="w-4 h-4" /> Tải xuống
                                                                     </button>
-                                                                    <button onClick={() => handleShare(file.id)} className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-secondary transition-colors">
+                                                                    <button onClick={() => handleShare(file)} className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-secondary transition-colors">
                                                                         <LinkIcon className="w-4 h-4" /> Chia sẻ
                                                                     </button>
                                                                     <button
@@ -462,6 +539,13 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
                     type={deleteTarget.type}
                 />
             )}
+
+            <ShareModal
+                key={shareTarget?.id || 'empty-modal'}
+                isOpen={!!shareTarget}
+                onClose={() => setShareTarget(null)}
+                file={shareTarget}
+            />
         </div>
     );
 }

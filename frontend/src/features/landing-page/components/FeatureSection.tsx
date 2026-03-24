@@ -81,7 +81,7 @@ export function FeatureSection() {
                             viewport={{ once: true }}
                             transition={{ delay: idx * 0.1 }}
                             whileHover={{ y: -5 }}
-                            className="p-8 rounded-3xl border border-border bg-card hover:shadow-xl hover:shadow-primary/5 transition-all group"
+                            className="p-8 rounded-3xl border border-border bg-card hover:border-primary/50 transition-all group"
                         >
                             <div className={`w-14 h-14 rounded-2xl ${feature.bg} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
                                 <feature.icon className={`w-7 h-7 ${feature.color}`} />

@@ -35,7 +35,7 @@ export default function FileSharingPage() {
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                        <Link href="/login" className="px-8 py-4 bg-foreground text-background font-bold rounded-2xl hover:scale-[1.02] shadow-xl hover:shadow-2xl transition-all">
+                        <Link href="/login" className="px-8 py-4 bg-foreground text-background font-bold rounded-2xl hover:bg-foreground/90 transition-colors border border-foreground">
                             Dùng thử miễn phí
                         </Link>
                         <Link href="#how-it-works" className="px-8 py-4 bg-primary/10 text-primary font-bold rounded-2xl hover:bg-primary/20 transition-all border border-primary/20">
@@ -48,9 +48,9 @@ export default function FileSharingPage() {
             <section className="py-24 bg-card/30 relative" id="how-it-works">
                 <div className="container mx-auto px-4 max-w-6xl">
                     <div className="grid lg:grid-cols-2 gap-16 items-center">
-                        <div className="relative h-[500px] w-full bg-muted/50 rounded-3xl border border-border glass shadow-2xl flex items-center justify-center p-8 overflow-hidden">
+                        <div className="relative h-[500px] w-full bg-muted/50 rounded-3xl border border-border glass flex items-center justify-center p-8 overflow-hidden">
                             {/* Abstract UI representation of generating a share link */}
-                            <div className="w-full max-w-sm glass border border-white/20 p-6 rounded-2xl shadow-xl bg-card">
+                            <div className="w-full max-w-sm glass border border-white/20 p-6 rounded-2xl bg-card">
                                 <div className="flex items-center gap-3 mb-6 pb-6 border-b border-border">
                                     <div className="w-12 h-12 bg-sky-500/10 text-sky-500 rounded-xl flex items-center justify-center">
                                         <FastForward className="w-6 h-6" />
@@ -77,7 +77,7 @@ export default function FileSharingPage() {
 
                                     <div className="flex items-center gap-0 bg-primary/10 border border-primary/30 p-1.5 rounded-xl">
                                         <div className="pl-3 truncate w-full text-sm text-primary font-medium">fileflow.io/share/v9x...</div>
-                                        <button className="bg-primary text-white py-2 px-4 rounded-lg font-bold text-sm hover:scale-105 transition-transform flex-shrink-0">Copy</button>
+                                        <button className="bg-primary text-white py-2 px-4 rounded-lg font-bold text-sm transition-colors hover:bg-primary/90 flex-shrink-0 border border-transparent">Copy</button>
                                     </div>
                                 </div>
                             </div>

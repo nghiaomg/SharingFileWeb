@@ -22,7 +22,7 @@ export default function ContactPage() {
                         </p>
                     </div>
 
-                    <div className="grid md:grid-cols-5 gap-12 bg-card border border-border rounded-3xl overflow-hidden glass shadow-2xl">
+                    <div className="grid md:grid-cols-5 gap-12 bg-card border border-border rounded-3xl overflow-hidden glass">
                         {/* Contact Info (Left) */}
                         <div className="md:col-span-2 bg-primary text-white p-10 flex flex-col justify-between">
                             <div>
@@ -100,9 +100,9 @@ export default function ContactPage() {
                                     <textarea rows={4} placeholder="Hãy cho chúng tôi biết bạn cần hỗ trợ về vấn đề gì..." className="w-full px-4 py-3 rounded-xl bg-secondary/50 border border-border focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none resize-none"></textarea>
                                 </div>
 
-                                <button type="button" className="w-full py-4 bg-foreground text-background font-bold rounded-xl hover:scale-[1.02] transition-transform flex items-center justify-center gap-2 group">
+                                <button type="button" className="w-full py-4 bg-foreground text-background font-bold rounded-xl transition-colors hover:bg-foreground/90 flex items-center justify-center gap-2 group border border-transparent">
                                     Gửi yêu cầu
-                                    <Send className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                                    <Send className="w-4 h-4" />
                                 </button>
                             </form>
                         </div>

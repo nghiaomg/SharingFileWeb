@@ -52,10 +52,10 @@ export function Hero() {
                         <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
                             <Link
                                 href="/login"
-                                className="group w-full sm:w-auto px-8 py-4 bg-primary text-white font-semibold rounded-2xl hover:bg-primary/90 transition-all hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/30 flex items-center justify-center gap-2 shadow-lg"
+                                className="group w-full sm:w-auto px-8 py-4 bg-primary text-white font-semibold rounded-2xl transition-colors hover:bg-primary/90 flex items-center justify-center gap-2 border border-primary/40 hover:border-primary"
                             >
                                 Bắt đầu tải tệp lên
-                                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                <ArrowRight className="w-5 h-5" />
                             </Link>
                             <Link
                                 href="#features"
@@ -84,13 +84,13 @@ export function Hero() {
                         className="relative lg:h-[600px] w-full max-w-[600px] mx-auto perspective-1000"
                     >
                         {/* Main Mockup Card */}
-                        <div className="relative z-10 w-full h-[500px] mt-10 rounded-[2.5rem] overflow-hidden glass shadow-2xl border border-white/20 animate-float bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl flex flex-col items-center justify-center p-8">
+                        <div className="relative z-10 w-full h-[500px] mt-10 rounded-[2.5rem] overflow-hidden glass border border-white/20 animate-float bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl flex flex-col items-center justify-center p-8">
 
                             {/* Inner Drag and Drop Area */}
                             <div className="w-full h-full rounded-3xl border-2 border-dashed border-primary/40 bg-primary/5 flex flex-col items-center justify-center relative overflow-hidden group hover:bg-primary/10 transition-colors duration-500">
                                 <div className="absolute inset-0 bg-gradient-to-t from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                                <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center mb-6 shadow-inner shadow-primary/30 group-hover:scale-110 transition-transform duration-500">
+                                <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center mb-6 border border-primary/30 group-hover:scale-110 transition-transform duration-500">
                                     <UploadCloud className="w-12 h-12 text-primary" />
                                 </div>
                                 <h3 className="text-2xl font-bold mb-3 text-foreground tracking-tight">Kéo thả tệp vào đây</h3>
@@ -98,7 +98,7 @@ export function Hero() {
                                     Hỗ trợ tải lên siêu tốc với mã hóa đầu cuối. <br /> Kích thước tối đa: <span className="font-semibold text-foreground">50GB</span>
                                 </p>
 
-                                <button className="mt-8 px-6 py-3 bg-foreground text-background rounded-full font-medium shadow-xl hover:scale-105 transition-transform">
+                                <button className="mt-8 px-6 py-3 bg-foreground text-background rounded-full font-medium border border-border transition-colors hover:bg-foreground/90">
                                     Chọn tệp từ máy tính
                                 </button>
                             </div>
@@ -109,7 +109,7 @@ export function Hero() {
                             initial={{ opacity: 0, x: 50, y: -20 }}
                             animate={{ opacity: 1, x: 0, y: 0 }}
                             transition={{ delay: 0.8, duration: 0.8 }}
-                            className="absolute -right-8 top-20 z-20 w-72 p-5 rounded-2xl glass border border-white/30 shadow-2xl bg-white/60 dark:bg-black/40 backdrop-blur-2xl animate-float"
+                            className="absolute -right-8 top-20 z-20 w-72 p-5 rounded-2xl glass border border-white/30 bg-white/60 dark:bg-black/40 backdrop-blur-2xl animate-float"
                             style={{ animationDelay: '1s' }}
                         >
                             <div className="flex items-center gap-4 mb-4">
@@ -133,7 +133,7 @@ export function Hero() {
                             initial={{ opacity: 0, x: -50, y: 50 }}
                             animate={{ opacity: 1, x: 0, y: 0 }}
                             transition={{ delay: 1.2, duration: 0.8 }}
-                            className="absolute -left-12 bottom-20 z-20 w-80 p-5 rounded-3xl glass border border-white/30 shadow-2xl bg-white/60 dark:bg-black/40 backdrop-blur-2xl animate-float"
+                            className="absolute -left-12 bottom-20 z-20 w-80 p-5 rounded-3xl glass border border-white/30 bg-white/60 dark:bg-black/40 backdrop-blur-2xl animate-float"
                             style={{ animationDelay: '2s' }}
                         >
                             <div className="flex items-center justify-between mb-4">
@@ -146,7 +146,7 @@ export function Hero() {
                             <div className="flex items-center gap-3 bg-muted/50 p-3 rounded-xl border border-border">
                                 <LinkIcon className="w-5 h-5 text-muted-foreground shrink-0" />
                                 <span className="text-sm text-muted-foreground truncate flex-1">fileflow.io/s/x7a9...</span>
-                                <button className="bg-primary hover:bg-primary/90 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition-colors shadow-sm">
+                                <button className="bg-primary hover:bg-primary/90 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition-colors border border-primary/30">
                                     Sao chép
                                 </button>
                             </div>
@@ -157,7 +157,7 @@ export function Hero() {
                             initial={{ opacity: 0, y: 50 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 1.6, duration: 0.8 }}
-                            className="absolute right-12 bottom-4 z-0 w-48 p-4 rounded-3xl glass border border-white/20 shadow-xl bg-white/40 dark:bg-black/30 backdrop-blur-xl"
+                            className="absolute right-12 bottom-4 z-0 w-48 p-4 rounded-3xl glass border border-white/20 bg-white/40 dark:bg-black/30 backdrop-blur-xl"
                         >
                             <div className="flex justify-between items-center mb-2">
                                 <Folder className="w-5 h-5 text-primary" />

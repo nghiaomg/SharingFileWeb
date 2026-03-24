@@ -37,7 +37,7 @@ export function DeleteConfirmModal({ isOpen, onClose, onConfirm, name }: DeleteC
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
-            <div className="bg-card w-full max-w-md rounded-2xl shadow-xl border border-border overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-card w-full max-w-md rounded-2xl border border-border overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                 <div className="flex justify-between items-center p-5 border-b border-border/50">
                     <h3 className="text-xl font-bold text-rose-500 flex items-center gap-2">
                         <AlertTriangle className="w-5 h-5" /> Xác nhận xóa
@@ -65,7 +65,7 @@ export function DeleteConfirmModal({ isOpen, onClose, onConfirm, name }: DeleteC
                         <button
                             onClick={handleConfirm}
                             disabled={isLoading}
-                            className="px-5 py-2.5 rounded-xl font-bold bg-rose-500 text-white hover:bg-rose-600 transition-colors flex items-center gap-2 shadow-md shadow-rose-500/20"
+                            className="px-5 py-2.5 rounded-xl font-bold bg-rose-500 text-white hover:bg-rose-600 transition-colors flex items-center gap-2"
                         >
                             {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
                             Bỏ vào thùng rác

@@ -16,7 +16,7 @@ import com.sharingfileweb.models.StorageFile;
 @Service
 public class FileStorageService {
 
-  private final String UPLOAD_DIR = "uploads";
+  private final String UPLOAD_DIR = Paths.get("uploads").toAbsolutePath().normalize().toString();
   private final String TEMP_DIR = UPLOAD_DIR + File.separator + "temp";
   private final String FILES_DIR = UPLOAD_DIR + File.separator + "files";
 

@@ -1,5 +1,5 @@
 import apiClient from "@/lib/api-client";
-import type { FileItem, FolderItem, FolderChildren, CreateFolderInput, UpdateFolderInput } from "./schemas";
+import type { FileItem, FolderItem, FolderChildren, CreateFolderInput, UpdateFolderInput, ShareFileInput } from "./schemas";
 
 // ─── Folder APIs ─────────────────────────────────────────────────────────────
 export async function getRootFolder(): Promise<FolderItem> {
@@ -13,8 +13,15 @@ export async function getFolderById(folderId: string): Promise<FolderItem> {
 }
 
 export async function getFolderChildren(folderId: string): Promise<FolderChildren> {
-  const res = await apiClient.get<FolderChildren>(`/folders/${folderId}/children`);
-  return res.data;
+  const [foldersRes, filesRes] = await Promise.all([
+    apiClient.get<FolderItem[]>(`/folders/${folderId}/children`),
+    getFiles(folderId) // reusing the function below
+  ]);
+  
+  return {
+    folders: foldersRes.data || [],
+    files: filesRes || []
+  };
 }
 
 export async function createFolder(data: CreateFolderInput): Promise<FolderItem> {
@@ -33,35 +40,33 @@ export async function deleteFolder(folderId: string): Promise<void> {
 
 // ─── File APIs ───────────────────────────────────────────────────────────────
 export async function getFiles(folderId: string): Promise<FileItem[]> {
-  const res = await apiClient.get<FileItem[]>("/files/store", {
+  const res = await apiClient.get<FileItem[]>("/files", {
     params: { folderId },
   });
   return res.data;
 }
 
 export async function getRecentFiles(): Promise<FileItem[]> {
-  const res = await apiClient.get<FileItem[]>("/files/store/recent");
+  const res = await apiClient.get<FileItem[]>("/files/recent");
   return res.data;
 }
 
 export async function getSharedFiles(): Promise<FileItem[]> {
-  const res = await apiClient.get<FileItem[]>("/files/store/shared");
+  const res = await apiClient.get<FileItem[]>("/files/shared");
   return res.data;
 }
 
 export async function deleteFile(fileId: string): Promise<void> {
-  await apiClient.delete(`/files/store/${fileId}`);
+  await apiClient.delete(`/files/${fileId}`);
 }
 
-export async function shareFile(fileId: string, isPublic: boolean): Promise<FileItem> {
-  const res = await apiClient.patch<FileItem>(`/files/store/${fileId}/share`, null, {
-    params: { isPublic },
-  });
+export async function shareFile(fileId: string, payload: ShareFileInput): Promise<FileItem> {
+  const res = await apiClient.put<FileItem>(`/files/${fileId}/share`, payload);
   return res.data;
 }
 
 export async function downloadFile(fileId: string, fileName: string): Promise<void> {
-  const response = await apiClient.get(`/files/store/download/${fileId}`, {
+  const response = await apiClient.get(`/files/download/${fileId}`, {
     responseType: "blob",
   });
   const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -98,7 +103,7 @@ export async function uploadFileChunked(
     formData.append("folderId", folderId);
     formData.append("totalFileSize", file.size.toString());
 
-    await apiClient.post("/files/store/upload/chunk", formData, {
+    await apiClient.post("/files/upload/chunk", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
 
@@ -107,12 +112,18 @@ export async function uploadFileChunked(
     }
   }
 
-  const completeRes = await apiClient.post<FileItem>("/files/store/upload/complete", {
-    uploadId,
-    fileName: file.name,
-    folderId,
-    mimeType: file.type,
-    totalSize: file.size,
+  const completeFormData = new FormData();
+  completeFormData.append("uploadId", uploadId);
+  completeFormData.append("fileName", file.name);
+  completeFormData.append("totalChunks", totalChunks.toString());
+  completeFormData.append("fileType", file.type);
+  completeFormData.append("fileSize", file.size.toString());
+  if (folderId) {
+    completeFormData.append("folderId", folderId);
+  }
+
+  const completeRes = await apiClient.post<FileItem>("/files/upload/complete", completeFormData, {
+    headers: { "Content-Type": "multipart/form-data" },
   });
 
   return completeRes.data;

@@ -35,7 +35,7 @@ export function FolderModal({ isOpen, onClose, onSubmit, folder, isLoading = fal
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
-            <div className="bg-card w-full max-w-md rounded-2xl shadow-xl border border-border overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-card w-full max-w-md rounded-2xl border border-border overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                 <div className="flex justify-between items-center p-5 border-b border-border/50">
                     <h3 className="text-xl font-bold">{title}</h3>
                     <button onClick={onClose} disabled={isLoading} className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground hover:text-foreground">
@@ -65,7 +65,7 @@ export function FolderModal({ isOpen, onClose, onSubmit, folder, isLoading = fal
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="px-5 py-2.5 rounded-xl font-bold bg-primary text-white hover:bg-primary/90 transition-colors flex items-center gap-2 shadow-md"
+                            className="px-5 py-2.5 rounded-xl font-bold bg-primary text-white hover:bg-primary/90 transition-colors flex items-center gap-2"
                         >
                             {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
                             {submitText}

@@ -8,11 +8,14 @@ import { useTrashItems } from "@/features/trash/queries";
 import { useRestoreItem, useDeletePermanent } from "@/features/trash/mutations";
 import { formatBytes } from "@/lib/format";
 import { getApiErrorMessage } from "@/types/api";
+import { toast } from "sonner";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 
 export default function TrashPage() {
     const { data: trashData, isLoading } = useTrashItems();
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
     const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<{ type: "folder" | "file", id: string } | null>(null);
     const restoreMutation = useRestoreItem();
     const deletePermanentMutation = useDeletePermanent();
 
@@ -25,23 +28,27 @@ export default function TrashPage() {
     const handleRestore = (type: "folder" | "file", id: string, e: React.MouseEvent) => {
         e.stopPropagation();
         restoreMutation.mutate({ type, id }, {
-            onError: (error) => {
-                alert(getApiErrorMessage(error, "Lỗi khôi phục."));
-            },
+            onSuccess: () => toast.success("Khôi phục thành công!"),
+            onError: (error) => toast.error(getApiErrorMessage(error, "Lỗi khôi phục.")),
         });
         setActiveMenuId(null);
     };
 
     const handleDeletePermanent = (type: "folder" | "file", id: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        if (confirm(`Bạn có chắc muốn XÓA VĨNH VIỄN ${type === 'folder' ? 'Thư mục' : 'Tệp'} này? Không thể hoàn tác!`)) {
-            deletePermanentMutation.mutate({ type, id }, {
-                onError: () => {
-                    alert("Lỗi xóa vĩnh viễn.");
-                },
-            });
-        }
+        setDeleteTarget({ type, id });
         setActiveMenuId(null);
+    };
+
+    const confirmDeletePermanent = async () => {
+        if (!deleteTarget) return;
+        deletePermanentMutation.mutate(deleteTarget, {
+            onSuccess: () => {
+                toast.success("Đã xóa vĩnh viễn.");
+                setDeleteTarget(null);
+            },
+            onError: () => toast.error("Lỗi xóa vĩnh viễn."),
+        });
     };
 
     const formatDate = (dateString?: string) => {
@@ -291,6 +298,16 @@ export default function TrashPage() {
                     </div>
                 )}
             </main>
+
+            <ConfirmModal 
+                isOpen={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={confirmDeletePermanent}
+                title="Xóa vĩnh viễn"
+                description={`Bạn có chắc muốn XÓA VĨNH VIỄN ${deleteTarget?.type === 'folder' ? 'thư mục' : 'tệp'} này không? Hành động này không thể hoàn tác và dữ liệu sẽ mất vĩnh viễn!`}
+                confirmText="Xác nhận xóa"
+                confirmColor="bg-rose-500 hover:bg-rose-600 text-white"
+            />
         </div>
     );
 }

@@ -1,6 +1,7 @@
 package com.sharingfileweb.payload.response;
 
 import java.time.Instant;
+import java.util.List;
 
 public class FileResponse {
   private String id;
@@ -10,8 +11,11 @@ public class FileResponse {
   private String folderId;
   private Instant createdAt;
   private boolean isPublic;
+  private String accessMode;
+  private List<String> sharedEmails;
+  private Instant shareExpiresAt;
 
-  public FileResponse(String id, String name, String type, long size, String folderId, Instant createdAt, boolean isPublic) {
+  public FileResponse(String id, String name, String type, long size, String folderId, Instant createdAt, boolean isPublic, String accessMode, List<String> sharedEmails, Instant shareExpiresAt) {
     this.id = id;
     this.name = name;
     this.type = type;
@@ -19,6 +23,9 @@ public class FileResponse {
     this.folderId = folderId;
     this.createdAt = createdAt;
     this.isPublic = isPublic;
+    this.accessMode = accessMode;
+    this.sharedEmails = sharedEmails;
+    this.shareExpiresAt = shareExpiresAt;
   }
 
   public String getId() {
@@ -75,5 +82,29 @@ public class FileResponse {
 
   public void setPublic(boolean isPublic) {
     this.isPublic = isPublic;
+  }
+
+  public String getAccessMode() {
+    return accessMode;
+  }
+
+  public void setAccessMode(String accessMode) {
+    this.accessMode = accessMode;
+  }
+
+  public List<String> getSharedEmails() {
+    return sharedEmails;
+  }
+
+  public void setSharedEmails(List<String> sharedEmails) {
+    this.sharedEmails = sharedEmails;
+  }
+
+  public Instant getShareExpiresAt() {
+    return shareExpiresAt;
+  }
+
+  public void setShareExpiresAt(Instant shareExpiresAt) {
+    this.shareExpiresAt = shareExpiresAt;
   }
 }

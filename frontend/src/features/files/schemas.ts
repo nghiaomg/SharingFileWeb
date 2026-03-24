@@ -8,6 +8,9 @@ export const FileSchema = z.object({
   size: z.number(),
   folderId: z.string().nullable().optional(),
   isPublic: z.boolean().optional(),
+  accessMode: z.string().optional(),
+  sharedEmails: z.array(z.string()).optional(),
+  shareExpiresAt: z.string().optional().nullable(),
   createdAt: z.string(),
   updatedAt: z.string().optional(),
   deletedAt: z.string().optional().nullable(),
@@ -48,3 +51,12 @@ export const UpdateFolderSchema = z.object({
 });
 
 export type UpdateFolderInput = z.infer<typeof UpdateFolderSchema>;
+
+// ─── Share File ──────────────────────────────────────────────────────────────
+export const ShareFileSchema = z.object({
+  accessMode: z.enum(["PRIVATE", "PUBLIC", "RESTRICTED"]),
+  sharedEmails: z.array(z.string().email("Email không hợp lệ")).optional(),
+  expiresInDays: z.number().nullable().optional(),
+});
+
+export type ShareFileInput = z.infer<typeof ShareFileSchema>;

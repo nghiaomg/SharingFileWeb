@@ -61,6 +61,9 @@ public class FolderService {
 
     public List<FolderResponse> getFolderChildren(String id) {
         String userId = getCurrentUserId();
+        if ("root".equals(id)) {
+            return getRootFolders();
+        }
         List<Folder> folders = folderRepository.findByOwnerIdAndParentIdAndIsDeletedFalse(userId, id);
         return folders.stream().map(this::mapToResponse).collect(Collectors.toList());
     }
@@ -68,7 +71,7 @@ public class FolderService {
     public FolderResponse createFolder(CreateFolderRequest request) {
         String userId = getCurrentUserId();
         String parentId = request.getParentId();
-        if (parentId != null && parentId.trim().isEmpty()) {
+        if (parentId != null && (parentId.trim().isEmpty() || "root".equals(parentId))) {
             parentId = null;
         }
 

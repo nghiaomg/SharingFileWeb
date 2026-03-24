@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createFolder, updateFolder, deleteFolder, deleteFile, shareFile, uploadFileChunked, downloadFile } from "./api";
 import { fileKeys } from "./queries";
 import { authKeys } from "../auth/queries";
-import type { CreateFolderInput, UpdateFolderInput } from "./schemas";
+import type { CreateFolderInput, UpdateFolderInput, ShareFileInput } from "./schemas";
 
 // ─── Create Folder ───────────────────────────────────────────────────────────
 export function useCreateFolder() {
@@ -78,7 +78,7 @@ export function useShareFile() {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ fileId, isPublic }: { fileId: string; isPublic: boolean }) => shareFile(fileId, isPublic),
+    mutationFn: ({ fileId, payload }: { fileId: string; payload: ShareFileInput }) => shareFile(fileId, payload),
     onSettled: () => {
       qc.invalidateQueries({ queryKey: fileKeys.all() });
     },

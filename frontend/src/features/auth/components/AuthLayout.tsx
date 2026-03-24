@@ -15,7 +15,7 @@ export function AuthLayout({ children, title, subtitle }: { children: React.Reac
                 <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-8 duration-700">
                     <div className="text-center mb-10">
                         <Link href="/" className="inline-flex items-center gap-2 mb-8 group">
-                            <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform duration-300 shadow-xl shadow-primary/20">
+                            <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center transition-transform duration-300 border border-primary/30">
                                 <FileUp className="text-white w-7 h-7" />
                             </div>
                             <span className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
@@ -45,7 +45,7 @@ export function AuthLayout({ children, title, subtitle }: { children: React.Reac
                     {/* Detailed UI Mockup */}
                     <div className="relative w-full h-[380px] mt-8">
                         {/* Main App Window */}
-                        <div className="absolute inset-x-4 bottom-0 top-12 rounded-t-2xl border border-white/10 glass bg-card/60 backdrop-blur-2xl overflow-hidden shadow-2xl flex flex-col">
+                        <div className="absolute inset-x-4 bottom-0 top-12 rounded-t-2xl border border-white/10 glass bg-card/60 backdrop-blur-2xl overflow-hidden flex flex-col">
                             {/* Window Header */}
                             <div className="h-10 border-b border-border/50 flex items-center px-4 bg-muted/30 relative">
                                 <div className="flex gap-2 absolute left-4">
@@ -53,7 +53,7 @@ export function AuthLayout({ children, title, subtitle }: { children: React.Reac
                                     <div className="w-2.5 h-2.5 rounded-full bg-yellow-500 border border-yellow-600/20" />
                                     <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 border border-emerald-600/20" />
                                 </div>
-                                <div className="mx-auto flex items-center gap-2 bg-background/50 px-3 py-1 rounded-md text-[10px] text-muted-foreground border border-border shadow-inner">
+                                <div className="mx-auto flex items-center gap-2 bg-background/50 px-3 py-1 rounded-md text-[10px] text-muted-foreground border border-border">
                                     <Lock className="w-3 h-3" /> fileflow-dashboard.app
                                 </div>
                             </div>
@@ -84,14 +84,14 @@ export function AuthLayout({ children, title, subtitle }: { children: React.Reac
                                     </div>
                                     {/* Files */}
                                     <div className="grid grid-cols-2 gap-3">
-                                        <div className="p-3 border border-border/50 rounded-xl bg-background/50 flex flex-col gap-2 group hover:bg-white/10 transition-colors shadow-sm">
+                                        <div className="p-3 border border-border/50 rounded-xl bg-background/50 flex flex-col gap-2 group hover:bg-white/10 transition-colors">
                                             <div className="p-2 bg-sky-500/10 rounded-lg w-fit">
                                                 <ImageIcon className="w-5 h-5 text-sky-500" />
                                             </div>
                                             <div className="h-2 w-full bg-foreground/30 rounded-full mt-1" />
                                             <div className="h-1.5 w-1/2 bg-muted-foreground/30 rounded-full" />
                                         </div>
-                                        <div className="p-3 border border-border/50 rounded-xl bg-background/50 flex flex-col gap-2 shadow-sm">
+                                        <div className="p-3 border border-border/50 rounded-xl bg-background/50 flex flex-col gap-2">
                                             <div className="p-2 bg-violet-500/10 rounded-lg w-fit">
                                                 <FileText className="w-5 h-5 text-violet-500" />
                                             </div>
@@ -104,7 +104,7 @@ export function AuthLayout({ children, title, subtitle }: { children: React.Reac
                         </div>
 
                         {/* Floating Cards conveying 'Security' and 'Progress' */}
-                        <div className="absolute top-2 right-0 w-48 p-3 rounded-2xl glass border border-white/20 shadow-xl bg-card/80 backdrop-blur-xl animate-float" style={{ animationDelay: '1s' }}>
+                        <div className="absolute top-2 right-0 w-48 p-3 rounded-2xl glass border border-white/20 bg-card/80 backdrop-blur-xl animate-float" style={{ animationDelay: '1s' }}>
                             <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
                                     <ShieldCheck className="w-4 h-4 text-emerald-500" />
@@ -116,7 +116,7 @@ export function AuthLayout({ children, title, subtitle }: { children: React.Reac
                             </div>
                         </div>
 
-                        <div className="absolute bottom-16 -left-4 w-56 p-4 rounded-2xl glass border border-white/20 shadow-2xl bg-card/80 backdrop-blur-xl animate-float" style={{ animationDelay: '2.5s' }}>
+                        <div className="absolute bottom-16 -left-4 w-56 p-4 rounded-2xl glass border border-white/20 bg-card/80 backdrop-blur-xl animate-float" style={{ animationDelay: '2.5s' }}>
                             <div className="flex items-center gap-3 mb-3">
                                 <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/30">
                                     <UploadCloud className="w-4 h-4 text-primary" />

@@ -89,13 +89,13 @@ export function Pricing() {
                     <Tabs.List className="inline-flex p-1 bg-muted rounded-2xl mb-12 border border-border">
                         <Tabs.Trigger
                             value="monthly"
-                            className="px-6 py-2 rounded-xl text-sm font-semibold transition-all data-[state=active]:bg-white data-[state=active]:shadow-lg dark:data-[state=active]:bg-zinc-800"
+                            className="px-6 py-2 rounded-xl text-sm font-semibold transition-all text-muted-foreground hover:text-foreground data-[state=active]:text-foreground border border-transparent data-[state=active]:bg-background data-[state=active]:border-border"
                         >
                             Hàng tháng
                         </Tabs.Trigger>
                         <Tabs.Trigger
                             value="yearly"
-                            className="px-6 py-2 rounded-xl text-sm font-semibold transition-all data-[state=active]:bg-white data-[state=active]:shadow-lg dark:data-[state=active]:bg-zinc-800"
+                            className="px-6 py-2 rounded-xl text-sm font-semibold transition-all text-muted-foreground hover:text-foreground data-[state=active]:text-foreground border border-transparent data-[state=active]:bg-background data-[state=active]:border-border"
                         >
                             Hàng năm (Tiết kiệm)
                         </Tabs.Trigger>
@@ -135,11 +135,11 @@ export function Pricing() {
 function PricingCard({ plan }: { plan: { name: string, price: string, desc: string, features: string[], btn: string, popular: boolean, period?: string } }) {
     return (
         <div
-            className={`relative p-8 rounded-[2rem] border transition-all duration-300 flex flex-col h-full bg-card hover:shadow-2xl hover:shadow-primary/10 ${plan.popular ? "border-primary shadow-xl scale-105" : "border-border"
+            className={`relative p-8 rounded-[2rem] border transition-all duration-300 flex flex-col h-full bg-card hover:border-primary/60 ${plan.popular ? "border-primary scale-105" : "border-border"
                 }`}
         >
             {plan.popular && (
-                <span className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-primary text-white text-xs font-bold rounded-full shadow-lg">
+                <span className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-primary text-white text-xs font-bold rounded-full border border-primary/30">
                     PHỔ BIẾN NHẤT
                 </span>
             )}
@@ -164,12 +164,12 @@ function PricingCard({ plan }: { plan: { name: string, price: string, desc: stri
 
             <button
                 className={`w-full py-4 rounded-2xl font-bold transition-all flex items-center justify-center gap-2 group ${plan.popular
-                        ? "bg-primary text-white hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/30"
+                        ? "bg-primary text-white hover:bg-primary/90 border border-primary/40 hover:border-primary"
                         : "bg-muted text-foreground hover:bg-muted/80"
                     }`}
             >
                 {plan.btn}
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-4 h-4" />
             </button>
         </div>
     );

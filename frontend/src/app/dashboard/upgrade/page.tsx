@@ -5,30 +5,36 @@ import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { upgradePlan } from "@/features/auth/api";
 import { authKeys, useCurrentUser } from "@/features/auth/queries";
+import { toast } from "sonner";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { useState } from "react";
 
 export default function UpgradePage() {
     const router = useRouter();
     const queryClient = useQueryClient();
     const { data: user } = useCurrentUser();
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
     const isPro = user?.subscriptionPlan === "PRO";
 
     const upgradeMutation = useMutation({
         mutationFn: upgradePlan,
         onSuccess: () => {
-            alert("Nâng cấp thành công! Chào mừng bạn đến với FileFlow Pro.");
+            toast.success("Nâng cấp thành công! Chào mừng bạn đến với FileFlow Pro.");
             queryClient.invalidateQueries({ queryKey: authKeys.all() });
             router.push("/dashboard");
         },
-        onError: (error: any) => {
-            alert("Có lỗi xảy ra khi nâng cấp: " + error.message);
+        onError: (error: Error) => {
+            toast.error("Có lỗi xảy ra khi nâng cấp: " + error.message);
         }
     });
 
     const handleUpgrade = () => {
-        if (confirm("Chấp nhận thanh toán 99.000đ/tháng để nâng cấp lên PRO?")) {
-            upgradeMutation.mutate();
-        }
+        setIsConfirmOpen(true);
+    };
+
+    const confirmUpgrade = async () => {
+        upgradeMutation.mutate();
     };
 
     return (
@@ -133,6 +139,27 @@ export default function UpgradePage() {
                 </div>
 
             </div>
+
+            <ConfirmModal 
+                isOpen={isConfirmOpen}
+                onClose={() => setIsConfirmOpen(false)}
+                onConfirm={confirmUpgrade}
+                title="Xác nhận nâng cấp gói PRO"
+                description={
+                    <div className="space-y-3">
+                        <p>Bạn đang tiến hành nâng cấp lên <strong>FileFlow Pro</strong> với giá <strong>99.000đ/tháng</strong>.</p>
+                        <ul className="text-sm list-disc pl-5 text-muted-foreground">
+                            <li>Lưu trữ không giới hạn không gian 2TB</li>
+                            <li>Tăng kích thước tải lên thành không giới hạn</li>
+                            <li>Băng thông bảo mật AES 256 tối đa</li>
+                        </ul>
+                        <p className="text-emerald-500 font-medium">Ấn Xác nhận để tiến hành thanh toán (Mock).</p>
+                    </div>
+                }
+                confirmText="Tiến hành nâng cấp"
+                confirmColor="bg-primary hover:bg-primary/90 text-white"
+                icon={<Crown className="w-6 h-6 text-primary" />}
+            />
         </div>
     );
 }

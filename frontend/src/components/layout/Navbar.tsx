@@ -13,7 +13,7 @@ export function Navbar() {
         <header className="fixed top-0 w-full z-50 glass border-b border-white/10">
             <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                 <Link href="/" className="flex items-center gap-2 group">
-                    <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform duration-300 shadow-lg shadow-primary/20">
+                    <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center border border-primary/30">
                         <FileUp className="text-white w-6 h-6" />
                     </div>
                     <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
@@ -28,7 +28,7 @@ export function Navbar() {
                             <NavigationMenu.Trigger className="group flex items-center h-full gap-1 px-4 py-2 text-sm font-medium hover:text-primary transition-colors">
                                 Sản phẩm <ChevronDown className="w-4 h-4 group-data-[state=open]:rotate-180 transition-transform duration-200" />
                             </NavigationMenu.Trigger>
-                            <NavigationMenu.Content className="absolute top-full left-0 mt-2 p-4 glass rounded-2xl w-48 shadow-xl animate-in fade-in slide-in-from-top-2">
+                            <NavigationMenu.Content className="absolute top-full left-0 mt-2 p-4 glass rounded-2xl w-48 border border-border animate-in fade-in slide-in-from-top-2">
                                 <ul className="flex flex-col gap-2">
                                     <li><Link href="/products/file-sharing" className="block p-2 text-sm hover:bg-primary/10 rounded-lg">Chia sẻ file</Link></li>
                                     <li><Link href="#" className="block p-2 text-sm hover:bg-primary/10 rounded-lg">Quản lý phiên bản</Link></li>
@@ -41,7 +41,7 @@ export function Navbar() {
                             <NavigationMenu.Trigger className="group flex items-center h-full gap-1 px-4 py-2 text-sm font-medium hover:text-primary transition-colors">
                                 Giải pháp <ChevronDown className="w-4 h-4 group-data-[state=open]:rotate-180 transition-transform duration-200" />
                             </NavigationMenu.Trigger>
-                            <NavigationMenu.Content className="absolute top-full left-0 mt-2 p-4 glass rounded-2xl w-48 shadow-xl animate-in fade-in slide-in-from-top-2">
+                            <NavigationMenu.Content className="absolute top-full left-0 mt-2 p-4 glass rounded-2xl w-48 border border-border animate-in fade-in slide-in-from-top-2">
                                 <ul className="flex flex-col gap-2">
                                     <li><Link href="#" className="block p-2 text-sm hover:bg-primary/10 rounded-lg">Cá nhân</Link></li>
                                     <li><Link href="#" className="block p-2 text-sm hover:bg-primary/10 rounded-lg">Doanh nghiệp</Link></li>
@@ -80,7 +80,7 @@ export function Navbar() {
                     <Link href="/login" className="whitespace-nowrap text-sm font-medium hover:text-primary transition-colors px-4 py-2">
                         Đăng nhập
                     </Link>
-                    <Link href="/signup" className="whitespace-nowrap bg-primary text-white text-sm font-medium px-6 py-2 rounded-full hover:bg-primary/90 transition-all hover:shadow-lg hover:shadow-primary/30">
+                    <Link href="/signup" className="whitespace-nowrap bg-primary text-white text-sm font-medium px-6 py-2 rounded-full border border-primary/40 hover:bg-primary/90 hover:border-primary transition-all">
                         Bắt đầu ngay
                     </Link>
                 </div>

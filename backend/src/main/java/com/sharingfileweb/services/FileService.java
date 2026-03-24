@@ -4,6 +4,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -14,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.sharingfileweb.models.StorageFile;
 import com.sharingfileweb.models.User;
+import com.sharingfileweb.payload.request.ShareFileRequest;
 import com.sharingfileweb.payload.response.FileResponse;
 import com.sharingfileweb.repository.FileRepository;
 import com.sharingfileweb.repository.UserRepository;
@@ -45,7 +48,10 @@ public class FileService {
                 file.getSize(),
                 file.getFolderId(),
                 file.getCreatedAt(),
-                file.isPublic()
+                file.isPublic(),
+                file.getAccessMode() != null ? file.getAccessMode() : "PRIVATE",
+                file.getSharedEmails() != null ? file.getSharedEmails() : new java.util.ArrayList<>(),
+                file.getShareExpiresAt()
         );
     }
 
@@ -53,7 +59,7 @@ public class FileService {
         String userId = getCurrentUserId();
         List<StorageFile> files;
 
-        if (folderId == null || folderId.trim().isEmpty()) {
+        if (folderId == null || folderId.trim().isEmpty() || "root".equals(folderId)) {
             files = fileRepository.findByOwnerIdAndIsDeletedFalse(userId).stream()
                     .filter(f -> f.getFolderId() == null || f.getFolderId().isEmpty())
                     .collect(Collectors.toList());
@@ -74,7 +80,7 @@ public class FileService {
 
     public List<FileResponse> getSharedFiles() {
         String userId = getCurrentUserId();
-        List<StorageFile> sharedFiles = fileRepository.findByOwnerIdAndIsPublicTrueAndIsDeletedFalse(userId);
+        List<StorageFile> sharedFiles = fileRepository.findSharedFiles(userId);
 
         return sharedFiles.stream().map(this::mapToResponse).collect(Collectors.toList());
     }
@@ -95,7 +101,7 @@ public class FileService {
 
     public FileResponse completeUpload(String uploadId, String fileName, int totalChunks, String fileType, long fileSize, String folderId) throws Exception {
         String userId = getCurrentUserId();
-        String normalizedFolderId = (folderId != null && folderId.trim().isEmpty()) ? null : folderId;
+        String normalizedFolderId = (folderId != null && (folderId.trim().isEmpty() || "root".equals(folderId))) ? null : folderId;
 
         User user = userRepository.findById(userId).orElseThrow();
 
@@ -132,13 +138,23 @@ public class FileService {
         fileRepository.save(file);
     }
 
-    public FileResponse toggleShareFile(String id, Map<String, Boolean> payload) {
+    public FileResponse shareFile(String id, ShareFileRequest payload) {
         String userId = getCurrentUserId();
         StorageFile file = fileRepository.findByIdAndOwnerIdAndIsDeletedFalse(id, userId)
                 .orElseThrow(() -> new RuntimeException("File not found or unauthorized"));
 
-        boolean isPublic = payload.getOrDefault("isPublic", false);
-        file.setPublic(isPublic);
+        String mode = payload.getAccessMode() != null ? payload.getAccessMode() : "PRIVATE";
+        file.setAccessMode(mode);
+        file.setPublic("PUBLIC".equals(mode));
+        
+        file.setSharedEmails(payload.getSharedEmails() != null ? payload.getSharedEmails() : new java.util.ArrayList<>());
+
+        if (payload.getExpiresInDays() != null) {
+            file.setShareExpiresAt(Instant.now().plus(payload.getExpiresInDays(), ChronoUnit.DAYS));
+        } else {
+            file.setShareExpiresAt(null);
+        }
+
         fileRepository.save(file);
 
         return mapToResponse(file);
@@ -161,8 +177,31 @@ public class FileService {
     public FileResponse getPublicFileMetadata(String id) {
         StorageFile file = fileRepository.findById(id).orElse(null);
 
-        if (file == null || !file.isPublic() || file.isDeleted()) {
-            throw new RuntimeException("Public file not found");
+        if (file == null || file.isDeleted()) {
+            throw new RuntimeException("File not found");
+        }
+        
+        // Cũ: chỉ kiểm tra isPublic. Mới: nếu PRIVATE thì chặn, PUBLIC thì ok, RESTRICTED thì logic sau.
+        // Hết hạn: block
+        if (file.getShareExpiresAt() != null && file.getShareExpiresAt().isBefore(Instant.now())) {
+            throw new RuntimeException("Share link expired");
+        }
+        
+        String mode = file.getAccessMode() != null ? file.getAccessMode() : (file.isPublic() ? "PUBLIC" : "PRIVATE");
+        if ("PRIVATE".equals(mode)) {
+            throw new RuntimeException("File not shared");
+        }
+        
+        if ("RESTRICTED".equals(mode)) {
+            // Cần check Auth
+            org.springframework.security.core.Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+                throw new RuntimeException("Unauthorized: Login is required to view this file");
+            }
+            UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+            if (file.getSharedEmails() == null || !file.getSharedEmails().contains(userDetails.getEmail())) {
+                throw new RuntimeException("Forbidden: You are not invited to view this file");
+            }
         }
 
         return mapToResponse(file);
@@ -172,8 +211,28 @@ public class FileService {
         StorageFile file = fileRepository.findById(id)
                 .orElseThrow(() -> new Exception("File not found"));
 
-        if (!file.isPublic() || file.isDeleted()) {
+        if (file.isDeleted()) {
             throw new Exception("File not found");
+        }
+        
+        if (file.getShareExpiresAt() != null && file.getShareExpiresAt().isBefore(Instant.now())) {
+            throw new Exception("Share link expired");
+        }
+        
+        String mode = file.getAccessMode() != null ? file.getAccessMode() : (file.isPublic() ? "PUBLIC" : "PRIVATE");
+        if ("PRIVATE".equals(mode)) {
+            throw new Exception("File not shared");
+        }
+        
+        if ("RESTRICTED".equals(mode)) {
+            org.springframework.security.core.Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+                throw new Exception("Unauthorized: Login is required to download this file");
+            }
+            UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+            if (file.getSharedEmails() == null || !file.getSharedEmails().contains(userDetails.getEmail())) {
+                throw new Exception("Forbidden: You are not invited to download this file");
+            }
         }
 
         return file;

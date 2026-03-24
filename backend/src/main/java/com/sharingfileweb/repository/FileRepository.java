@@ -14,7 +14,9 @@ import java.util.Optional;
 public interface FileRepository extends MongoRepository<StorageFile, String> {
   List<StorageFile> findByOwnerIdAndFolderIdAndIsDeletedFalse(String ownerId, String folderId);
   List<StorageFile> findByOwnerIdAndIsDeletedFalse(String ownerId);
-  List<StorageFile> findByOwnerIdAndIsPublicTrueAndIsDeletedFalse(String ownerId);
+
+  @Query("{ 'ownerId': ?0, 'isDeleted': false, $or: [ { 'isPublic': true }, { 'accessMode': { $ne: 'PRIVATE' } } ] }")
+  List<StorageFile> findSharedFiles(String ownerId);
 
   org.springframework.data.domain.Page<StorageFile> findByOwnerIdAndIsDeletedFalseOrderByCreatedAtDesc(String ownerId, org.springframework.data.domain.Pageable pageable);
   Optional<StorageFile> findByIdAndOwnerIdAndIsDeletedFalse(String id, String ownerId);
