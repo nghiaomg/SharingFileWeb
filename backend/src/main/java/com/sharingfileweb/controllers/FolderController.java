@@ -96,4 +96,25 @@ public class FolderController {
         return ResponseEntity.notFound().build();
     }
   }
+
+  @Autowired
+  private com.sharingfileweb.repository.FolderRepository folderRepository;
+
+  @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+  @GetMapping("/admin/all")
+  public ResponseEntity<?> getAllFoldersForAdmin() {
+      List<Folder> folders = folderRepository.findAll();
+      return ResponseEntity.ok(StandardResponse.success("Fetched all folders", folders));
+  }
+
+  @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+  @DeleteMapping("/admin/{id}")
+  public ResponseEntity<?> deleteFolderPermanentlyByAdmin(@PathVariable String id) {
+      if (!folderRepository.existsById(id)) {
+          return ResponseEntity.notFound().build();
+      }
+      folderRepository.deleteById(id);
+      return ResponseEntity.ok(StandardResponse.success("Folder deleted permanently", null));
+  }
 }
+

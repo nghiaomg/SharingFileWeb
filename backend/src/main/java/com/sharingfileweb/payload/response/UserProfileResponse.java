@@ -1,5 +1,6 @@
 package com.sharingfileweb.payload.response;
 
+import java.time.Instant;
 import java.util.List;
 
 public class UserProfileResponse {
@@ -10,9 +11,13 @@ public class UserProfileResponse {
   private String subscriptionPlan;
   private long maxStorage;
   private long maxFileSize;
+  private Instant createdAt;
+  private Instant lastLogin;
+  private boolean twoFactorEnabled;
 
   public UserProfileResponse(String id, String username, String email, List<String> roles,
-                             String subscriptionPlan, long maxStorage, long maxFileSize) {
+                             String subscriptionPlan, long maxStorage, long maxFileSize,
+                             Instant createdAt, Instant lastLogin, boolean twoFactorEnabled) {
     this.id = id;
     this.username = username;
     this.email = email;
@@ -20,6 +25,9 @@ public class UserProfileResponse {
     this.subscriptionPlan = subscriptionPlan;
     this.maxStorage = maxStorage;
     this.maxFileSize = maxFileSize;
+    this.createdAt = createdAt;
+    this.lastLogin = lastLogin;
+    this.twoFactorEnabled = twoFactorEnabled;
   }
 
   public String getId() {
@@ -76,5 +84,29 @@ public class UserProfileResponse {
 
   public void setMaxFileSize(long maxFileSize) {
     this.maxFileSize = maxFileSize;
+  }
+
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
+
+  public void setCreatedAt(Instant createdAt) {
+    this.createdAt = createdAt;
+  }
+
+  public Instant getLastLogin() {
+    return lastLogin;
+  }
+
+  public void setLastLogin(Instant lastLogin) {
+    this.lastLogin = lastLogin;
+  }
+
+  public boolean isTwoFactorEnabled() {
+    return twoFactorEnabled;
+  }
+
+  public void setTwoFactorEnabled(boolean twoFactorEnabled) {
+    this.twoFactorEnabled = twoFactorEnabled;
   }
 }

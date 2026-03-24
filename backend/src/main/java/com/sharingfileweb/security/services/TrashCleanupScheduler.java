@@ -49,4 +49,16 @@ public class TrashCleanupScheduler {
              System.out.println("Đã tự động xóa vĩnh viễn thư mục rác (cấp cha): " + folder.getId());
         }
     }
+
+    // Chạy mỗi 6 tiếng (0h, 6h, 12h, 18h)
+    @Scheduled(cron = "0 0 */6 * * ?")
+    public void cleanupStaleTempUploads() {
+        System.out.println("[TempCleanup] Bắt đầu quét và dọn dẹp thư mục temp upload không hoạt động >= 48 giờ...");
+        int deleted = fileStorageService.cleanupStaleTempFolders(48);
+        if (deleted == 0) {
+            System.out.println("[TempCleanup] Không có thư mục temp stale nào cần dọn dẹp.");
+        } else {
+            System.out.println("[TempCleanup] Hoàn tất. Đã xóa " + deleted + " thư mục temp stale.");
+        }
+    }
 }

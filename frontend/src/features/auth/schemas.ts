@@ -2,13 +2,16 @@ import { z } from "zod";
 
 // ─── User ────────────────────────────────────────────────────────────────────
 export const UserSchema = z.object({
-  id: z.number(),
+  id: z.union([z.string(), z.number()]),
   username: z.string(),
   email: z.string().email(),
   roles: z.array(z.string()),
   subscriptionPlan: z.string().optional(),
   maxStorage: z.number().optional(),
   maxFileSize: z.number().optional(),
+  createdAt: z.string().optional(),
+  lastLogin: z.string().optional(),
+  twoFactorEnabled: z.boolean().optional(),
   accessToken: z.string().optional(),
   refreshToken: z.string().optional(),
   tokenType: z.string().optional(),

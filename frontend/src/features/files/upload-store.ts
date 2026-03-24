@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { uploadFileChunked } from './api';
+import { get, set } from 'idb-keyval';
 
 export type UploadStatus = "PENDING" | "UPLOADING" | "PAUSED" | "SUCCESS" | "ERROR" | "CANCELED";
 
@@ -40,6 +41,19 @@ interface UploadStore {
 
 // Global reference để gọi processQueue liên tục (hoặc trigger từ effect)
 let isProcessing = false;
+const DB_KEY = 'sharingfileweb-upload-store';
+
+async function saveQueueToDB(items: UploadItem[]) {
+  try {
+    const toSave = items.map(it => ({
+      ...it,
+      abortController: undefined // AbortController is not structured-clonable
+    }));
+    await set(DB_KEY, toSave);
+  } catch(e) {
+    console.warn('Failed to save upload queue to IndexedDB:', e);
+  }
+}
 
 export const useUploadStore = create<UploadStore>((set, get) => {
   const processQueue = async () => {
@@ -64,12 +78,17 @@ export const useUploadStore = create<UploadStore>((set, get) => {
     ));
 
     try {
-      const { uploadId } = await uploadFileChunked(
+      await uploadFileChunked(
         pendingItem.file, 
         pendingItem.folderId, 
         {
           existingUploadId: pendingItem.uploadId,
           signal: abortController.signal,
+          onUploadIdGenerated: (uploadId) => {
+            _setItems(prev => prev.map(it => 
+              it.id === pendingItem.id ? { ...it, uploadId } : it
+            ));
+          },
           checkIsPaused: () => {
             const currentItem = get().items.find(it => it.id === pendingItem.id);
             return currentItem?.status === "PAUSED" || currentItem?.status === "CANCELED";
@@ -81,11 +100,6 @@ export const useUploadStore = create<UploadStore>((set, get) => {
           }
         }
       );
-
-      // Save the uploadId in case we pause and need to resume
-      _setItems(prev => prev.map(it => 
-        it.id === pendingItem.id ? { ...it, uploadId } : it
-      ));
 
       // After a short wait for the final response (uploadFileChunked completes it)
       const finalItem = get().items.find(it => it.id === pendingItem.id);
@@ -134,51 +148,61 @@ export const useUploadStore = create<UploadStore>((set, get) => {
         progress: 0,
         status: "PENDING" as UploadStatus
       }));
-      set(state => ({ items: [...state.items, ...newItems] }));
+      set(state => {
+        const nextItems = [...state.items, ...newItems];
+        saveQueueToDB(nextItems);
+        return { items: nextItems };
+      });
       get()._processQueue();
     },
 
     pauseUpload: (id: string) => {
-      set(state => ({
-        items: state.items.map(item => {
+      set(state => {
+        const nextItems = state.items.map(item => {
           if (item.id === id) {
             item.abortController?.abort();
-            return { ...item, status: "PAUSED" };
+            return { ...item, status: "PAUSED" as UploadStatus };
           }
           return item;
-        })
-      }));
+        });
+        saveQueueToDB(nextItems);
+        return { items: nextItems };
+      });
       get()._processQueue(); // to start the next one
     },
 
     retryUpload: (id: string) => {
-      set(state => ({
-        items: state.items.map(item => 
-          item.id === id ? { ...item, status: "PENDING", errorMessage: undefined } : item
-        )
-      }));
+      set(state => {
+        const nextItems = state.items.map(item => 
+          item.id === id ? { ...item, status: "PENDING" as UploadStatus, errorMessage: undefined } : item
+        );
+        saveQueueToDB(nextItems);
+        return { items: nextItems };
+      });
       get()._processQueue();
     },
 
     resumeUpload: (id: string) => {
-      set(state => ({
-        items: state.items.map(item => 
-          item.id === id ? { ...item, status: "PENDING" } : item
-        )
-      }));
+      set(state => {
+        const nextItems = state.items.map(item => 
+          item.id === id ? { ...item, status: "PENDING" as UploadStatus } : item
+        );
+        saveQueueToDB(nextItems);
+        return { items: nextItems };
+      });
       get()._processQueue();
     },
 
     cancelUpload: (id: string) => {
-      set(state => ({
-        items: state.items.map(item => {
-          if (item.id === id) {
-            item.abortController?.abort();
-            return { ...item, status: "CANCELED" };
-          }
-          return item;
-        })
-      }));
+      set(state => {
+        const itemToCancel = state.items.find(it => it.id === id);
+        if (itemToCancel) {
+          itemToCancel.abortController?.abort();
+        }
+        const nextItems = state.items.filter(item => item.id !== id);
+        saveQueueToDB(nextItems);
+        return { items: nextItems };
+      });
       get()._processQueue();
     },
 
@@ -209,9 +233,31 @@ export const useUploadStore = create<UploadStore>((set, get) => {
     },
 
     clearCompleted: () => {
-      set(state => ({
-        items: state.items.filter(item => item.status !== "SUCCESS" && item.status !== "CANCELED")
-      }));
+      set(state => {
+        const nextItems = state.items.filter(item => item.status !== "SUCCESS" && item.status !== "CANCELED");
+        saveQueueToDB(nextItems);
+        return { items: nextItems };
+      });
     }
   };
 });
+
+export async function initUploadStore() {
+  if (typeof window === "undefined") return;
+  try {
+    const stored = await get<UploadItem[]>(DB_KEY);
+    if (stored && stored.length > 0) {
+      const restored = stored.map(item => {
+        // Any previously UPLOADING items were interrupted and are naturally paused.
+        if (item.status === 'UPLOADING') {
+          return { ...item, status: "PAUSED" as UploadStatus };
+        }
+        return item;
+      });
+      useUploadStore.setState({ items: restored });
+      useUploadStore.getState()._processQueue();
+    }
+  } catch (err) {
+    console.warn("Failed to initialize upload store from DB", err);
+  }
+}

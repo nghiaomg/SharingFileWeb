@@ -88,7 +88,7 @@ public class AuthService {
                 );
                 newUser.setSubscriptionPlan("BASIC");
                 newUser.setMaxStorage(5L * 1024 * 1024 * 1024);
-                newUser.setMaxFileSize(100L * 1024 * 1024);
+                newUser.setMaxFileSize(1024L * 1024 * 1024); // 1GB
 
                 Role userRole = roleRepository.findByName(ERole.ROLE_USER)
                         .orElseThrow(() -> new RuntimeException("Role not found"));
@@ -165,7 +165,7 @@ public class AuthService {
         // Thiết lập mặc định
         user.setSubscriptionPlan("BASIC");
         user.setMaxStorage(5L * 1024 * 1024 * 1024); // 5GB
-        user.setMaxFileSize(100L * 1024 * 1024); // 100MB
+        user.setMaxFileSize(1024L * 1024 * 1024); // 1GB
 
         Set<String> strRoles = signUpRequest.getRole();
         Set<Role> roles = new HashSet<>();

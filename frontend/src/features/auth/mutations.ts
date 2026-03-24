@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { login, register, logout, updateProfile } from "./api";
 import { authKeys } from "./queries";
-import type { LoginInput, SignupInput, UpdateProfileInput } from "./schemas";
+import type { LoginInput, SignupInput, UpdateProfileInput, User } from "./schemas";
 
 // ─── Login ───────────────────────────────────────────────────────────────────
 export function useLogin() {
@@ -54,7 +54,24 @@ export function useUpdateProfile() {
 
   return useMutation({
     mutationFn: (input: UpdateProfileInput) => updateProfile(input),
-    onSuccess: () => {
+
+    onMutate: async (newProfile) => {
+      await qc.cancelQueries({ queryKey: authKeys.me() });
+      const previous = qc.getQueryData<User>(authKeys.me());
+
+      qc.setQueryData<User>(authKeys.me(), (old) => {
+        if (!old) return old;
+        return { ...old, ...newProfile };
+      });
+
+      return { previous };
+    },
+
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.previous) qc.setQueryData(authKeys.me(), ctx.previous);
+    },
+
+    onSettled: () => {
       qc.invalidateQueries({ queryKey: authKeys.me() });
     },
   });

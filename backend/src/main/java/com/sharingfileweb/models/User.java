@@ -1,5 +1,6 @@
 package com.sharingfileweb.models;
 
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -34,7 +35,11 @@ public class User {
 
   private String subscriptionPlan = "BASIC";
   private long maxStorage = 5L * 1024 * 1024 * 1024; // 5GB default
-  private long maxFileSize = 100L * 1024 * 1024; // 100MB default
+  private long maxFileSize = 1024L * 1024 * 1024; // 1GB default
+
+  private Instant createdAt = Instant.now();
+  private Instant lastLogin;
+  private boolean twoFactorEnabled = false;
 
   public User() {
   }
@@ -107,5 +112,29 @@ public class User {
 
   public void setMaxFileSize(long maxFileSize) {
     this.maxFileSize = maxFileSize;
+  }
+
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
+
+  public void setCreatedAt(Instant createdAt) {
+    this.createdAt = createdAt;
+  }
+
+  public Instant getLastLogin() {
+    return lastLogin;
+  }
+
+  public void setLastLogin(Instant lastLogin) {
+    this.lastLogin = lastLogin;
+  }
+
+  public boolean isTwoFactorEnabled() {
+    return twoFactorEnabled;
+  }
+
+  public void setTwoFactorEnabled(boolean twoFactorEnabled) {
+    this.twoFactorEnabled = twoFactorEnabled;
   }
 }

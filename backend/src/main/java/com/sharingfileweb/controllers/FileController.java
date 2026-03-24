@@ -175,4 +175,25 @@ public class FileController {
        return ResponseEntity.notFound().build();
     }
   }
+
+  @Autowired
+  private com.sharingfileweb.repository.FileRepository fileRepository;
+
+  @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+  @GetMapping("/admin/all")
+  public ResponseEntity<?> getAllFilesForAdmin() {
+      List<StorageFile> files = fileRepository.findAll();
+      return ResponseEntity.ok(StandardResponse.success("Fetched all files", files));
+  }
+
+  @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+  @DeleteMapping("/admin/{id}")
+  public ResponseEntity<?> deleteFilePermanentlyByAdmin(@PathVariable String id) {
+      if (!fileRepository.existsById(id)) {
+          return ResponseEntity.notFound().build();
+      }
+      fileRepository.deleteById(id);
+      return ResponseEntity.ok(StandardResponse.success("File deleted permanently", null));
+  }
 }
+

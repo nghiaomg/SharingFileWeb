@@ -53,4 +53,69 @@ public class UserController {
     Map<String, Object> response = userService.getStorageUsage();
     return ResponseEntity.ok(StandardResponse.success("Fetched storage usage successfully", response));
   }
+
+  @Autowired
+  private com.sharingfileweb.repository.UserRepository userRepository;
+
+  @Autowired
+  private com.sharingfileweb.repository.RoleRepository roleRepository;
+
+  @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+  @GetMapping("/admin/users")
+  public ResponseEntity<?> getAllUsers() {
+      List<User> users = userRepository.findAll();
+      users.forEach(u -> u.setPassword(null));
+      return ResponseEntity.ok(StandardResponse.success("Fetched all users", users));
+  }
+
+  @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+  @GetMapping("/admin/users/{id}")
+  public ResponseEntity<?> getUser(@org.springframework.web.bind.annotation.PathVariable String id) {
+      return userRepository.findById(id)
+              .map(user -> {
+                  user.setPassword(null);
+                  return ResponseEntity.ok(StandardResponse.success("Fetched user", user));
+              })
+              .orElse(ResponseEntity.notFound().build());
+  }
+
+  @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+  @PutMapping("/admin/users/{id}")
+  public ResponseEntity<?> updateUser(@org.springframework.web.bind.annotation.PathVariable String id, @RequestBody Map<String, Object> updates) {
+      return userRepository.findById(id).map(user -> {
+          if (updates.containsKey("roles")) {
+              List<String> strRoles = (List<String>) updates.get("roles");
+              java.util.Set<com.sharingfileweb.models.Role> roles = new java.util.HashSet<>();
+              for (String role : strRoles) {
+                  com.sharingfileweb.models.Role mappedRole = roleRepository.findByName(com.sharingfileweb.models.ERole.valueOf(role))
+                          .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                  roles.add(mappedRole);
+              }
+              user.setRoles(roles);
+          }
+          if (updates.containsKey("subscriptionPlan")) {
+              user.setSubscriptionPlan((String) updates.get("subscriptionPlan"));
+          }
+          if (updates.containsKey("maxStorage")) {
+              user.setMaxStorage(((Number) updates.get("maxStorage")).longValue());
+          }
+          if (updates.containsKey("maxFileSize")) {
+              user.setMaxFileSize(((Number) updates.get("maxFileSize")).longValue());
+          }
+          userRepository.save(user);
+          user.setPassword(null);
+          return ResponseEntity.ok(StandardResponse.success("User updated", user));
+      }).orElse(ResponseEntity.notFound().build());
+  }
+
+  @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+  @org.springframework.web.bind.annotation.DeleteMapping("/admin/users/{id}")
+  public ResponseEntity<?> deleteUser(@org.springframework.web.bind.annotation.PathVariable String id) {
+      if (!userRepository.existsById(id)) {
+          return ResponseEntity.notFound().build();
+      }
+      userRepository.deleteById(id);
+      return ResponseEntity.ok(StandardResponse.success("User deleted", null));
+  }
 }
+

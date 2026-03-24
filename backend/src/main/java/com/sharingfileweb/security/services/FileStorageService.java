@@ -5,6 +5,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
 import java.nio.file.*;
+import java.nio.file.attribute.FileTime;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import java.util.ArrayList;
@@ -71,16 +74,20 @@ public class FileStorageService {
     String chunkDirPath = TEMP_DIR + File.separator + uploadId;
     Path chunkDir = Paths.get(chunkDirPath);
 
-    if (!Files.exists(chunkDir)) {
+    if (totalChunks > 0 && !Files.exists(chunkDir)) {
       throw new RuntimeException("Temporary chunk directory not found.");
     }
 
     String ownerDirPath = FILES_DIR + File.separator + ownerId;
     createDirectory(ownerDirPath);
 
-    // Generate unique name to prevent collisions
     String uniqueFileName = System.currentTimeMillis() + "_" + fileName;
     Path mergedFilePath = Paths.get(ownerDirPath, uniqueFileName);
+
+    if (totalChunks == 0) {
+        Files.createFile(mergedFilePath);
+        return mergedFilePath.toString();
+    }
 
     try (OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(mergedFilePath.toFile(), true))) {
       for (int i = 0; i < totalChunks; i++) {
@@ -129,5 +136,49 @@ public class FileStorageService {
             .forEach(File::delete);
       }
     }
+  }
+
+  /**
+   * Quét tất cả sub-folder trong uploads/temp/ và xóa những folder
+   * có lastModifiedTime không được cập nhật trong >= thresholdHours giờ.
+   *
+   * @param thresholdHours số giờ tối thiểu không hoạt động để bị coi là "stale"
+   * @return số lượng folder đã xóa
+   */
+  public int cleanupStaleTempFolders(long thresholdHours) {
+    Path tempDir = Paths.get(TEMP_DIR);
+    if (!Files.exists(tempDir)) return 0;
+
+    Instant cutoff = Instant.now().minus(thresholdHours, ChronoUnit.HOURS);
+    int deleted = 0;
+
+    try (Stream<Path> entries = Files.list(tempDir)) {
+      List<Path> staleFolders = entries
+          .filter(Files::isDirectory)
+          .filter(folder -> {
+            try {
+              FileTime lastModified = Files.getLastModifiedTime(folder);
+              return lastModified.toInstant().isBefore(cutoff);
+            } catch (IOException e) {
+              System.err.println("Không đọc được lastModifiedTime của: " + folder + " — " + e.getMessage());
+              return false;
+            }
+          })
+          .collect(java.util.stream.Collectors.toList());
+
+      for (Path folder : staleFolders) {
+        try {
+          deleteDirectoryRecursively(folder);
+          System.out.println("[TempCleanup] Đã xóa thư mục temp stale: " + folder.getFileName());
+          deleted++;
+        } catch (IOException e) {
+          System.err.println("[TempCleanup] Không thể xóa: " + folder + " — " + e.getMessage());
+        }
+      }
+    } catch (IOException e) {
+      System.err.println("[TempCleanup] Lỗi khi quét thư mục temp: " + e.getMessage());
+    }
+
+    return deleted;
   }
 }

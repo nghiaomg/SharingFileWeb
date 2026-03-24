@@ -110,6 +110,7 @@ const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB
 
 export interface UploadOptions {
   existingUploadId?: string;
+  onUploadIdGenerated?: (uploadId: string) => void;
   onProgress?: (progress: number) => void;
   checkIsPaused?: () => boolean;
   signal?: AbortSignal;
@@ -130,6 +131,11 @@ export async function uploadFileChunked(
     } catch (e) {
       console.warn("Could not fetch upload status, starting fresh...", e);
     }
+  }
+
+  // Yield uploadId early so caller can save it for resuming
+  if (options?.onUploadIdGenerated) {
+    options.onUploadIdGenerated(uploadId);
   }
 
   let chunksUploadedSoFar = uploadedChunks.length;

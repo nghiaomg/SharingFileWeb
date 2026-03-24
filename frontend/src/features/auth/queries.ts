@@ -1,6 +1,5 @@
-"use client";
 
-import { useQuery, queryOptions } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { getMe, getStorageUsage } from "./api";
 
 // ─── Query Key Factory ───────────────────────────────────────────────────────
@@ -29,6 +28,14 @@ export function useCurrentUser() {
   return useQuery(currentUserQueryOptions);
 }
 
+export function useSuspenseCurrentUser() {
+  return useSuspenseQuery(currentUserQueryOptions);
+}
+
 export function useStorageUsage() {
   return useQuery(storageUsageQueryOptions);
+}
+
+export function useSuspenseStorageUsage() {
+  return useSuspenseQuery(storageUsageQueryOptions);
 }

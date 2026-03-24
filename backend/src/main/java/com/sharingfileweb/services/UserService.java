@@ -37,6 +37,9 @@ public class UserService {
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());
 
+        User user = userRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new RuntimeException("User not found!"));
+
         return new UserProfileResponse(
                 userDetails.getId(),
                 userDetails.getUsername(),
@@ -44,7 +47,10 @@ public class UserService {
                 roles,
                 userDetails.getSubscriptionPlan(),
                 userDetails.getMaxStorage(),
-                userDetails.getMaxFileSize()
+                userDetails.getMaxFileSize(),
+                user.getCreatedAt(),
+                user.getLastLogin(),
+                user.isTwoFactorEnabled()
         );
     }
 

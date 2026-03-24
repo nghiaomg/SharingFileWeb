@@ -2,12 +2,14 @@
 
 import { useUploadStore } from "../upload-store";
 import { Box, Flex, Card, Text, IconButton, Button, Progress } from "@radix-ui/themes";
-import { Play, Pause, X, ChevronUp, ChevronDown, CheckCircle2, AlertCircle, XCircle, RefreshCw } from "lucide-react";
+import { Play, Pause, X, ChevronUp, ChevronDown, CheckCircle2, AlertCircle, XCircle, RefreshCw, GripHorizontal } from "lucide-react";
 import { useState, useEffect } from "react";
+import { motion, useDragControls } from "framer-motion";
 
 export function UploadQueueManager() {
     const { items, pauseUpload, resumeUpload, cancelUpload, retryUpload, moveUp, moveDown, clearCompleted } = useUploadStore();
     const [isMinimized, setIsMinimized] = useState(false);
+    const dragControls = useDragControls();
 
     const totalFiles = items.length;
     const completedFiles = items.filter(i => i.status === "SUCCESS").length;
@@ -27,11 +29,17 @@ export function UploadQueueManager() {
     if (items.length === 0) return null;
 
     return (
-        <Box 
-            position="fixed" 
-            bottom="6" 
-            right="6" 
-            style={{ zIndex: 50, transition: "all 0.3s" }}
+        <motion.div 
+            drag
+            dragControls={dragControls}
+            dragListener={false}
+            dragMomentum={false}
+            style={{ 
+                position: "fixed", 
+                bottom: 24, 
+                right: 24, 
+                zIndex: 9999
+            }}
         >
             {isMinimized ? (
                 // Chế độ Bong bóng (Bubble) khi bị thu nhỏ bằng dấu X
@@ -40,6 +48,7 @@ export function UploadQueueManager() {
                     variant="solid" 
                     color="violet"
                     onClick={() => setIsMinimized(false)}
+                    onPointerDown={(e) => dragControls.start(e)}
                     style={{ 
                         width: "60px", 
                         height: "60px", 
@@ -50,21 +59,31 @@ export function UploadQueueManager() {
                         justifyContent: "center",
                         alignItems: "center",
                         boxShadow: "var(--shadow-5)",
-                        cursor: "pointer"
+                        cursor: "grab",
+                        touchAction: "none"
                     }}
                 >
-                    <ChevronUp className="w-5 h-5" />
-                    <Text size="1" weight="bold">{completedFiles}/{totalFiles}</Text>
+                    <ChevronUp className="w-5 h-5 pointer-events-none" />
+                    <Text size="1" weight="bold" className="pointer-events-none">{completedFiles}/{totalFiles}</Text>
                 </Button>
             ) : (
                 // Chế độ hiển thị chi tiết đầy đủ 
                 <Card size="2" variant="surface" style={{ width: "380px", boxShadow: "var(--shadow-5)", display: "flex", flexDirection: "column", maxHeight: "400px" }}>
-                    {/* Header */}
-                    <Flex align="center" justify="between" mb="4">
-                        <Text size="3" weight="bold">
-                            Đang tải lên {completedFiles}/{totalFiles}
-                        </Text>
-                        <Flex gap="2">
+                    {/* Header with Drag Handle */}
+                    <Flex 
+                        align="center" 
+                        justify="between" 
+                        mb="4" 
+                        onPointerDown={(e) => dragControls.start(e)}
+                        style={{ cursor: "grab", touchAction: "none" }}
+                    >
+                        <Flex align="center" gap="2">
+                            <GripHorizontal className="w-4 h-4 text-gray-400" />
+                            <Text size="3" weight="bold">
+                                Đang tải lên {completedFiles}/{totalFiles}
+                            </Text>
+                        </Flex>
+                        <Flex gap="2" onPointerDown={(e) => e.stopPropagation()}>
                             {isAllDone && (
                                 <Button size="1" variant="ghost" color="gray" onClick={(e) => { e.stopPropagation(); clearCompleted(); }}>
                                     Xóa tất cả
@@ -109,7 +128,7 @@ export function UploadQueueManager() {
                                         </Box>
 
                                         {/* Actions */}
-                                        <Flex gap="1">
+                                        <Flex gap="1" align="center">
                                             {(isPending || isPaused) && !isCanceled && (
                                                 <IconButton size="1" variant="ghost" color="violet" onClick={() => resumeUpload(item.id)} title="Tiếp tục">
                                                     <Play className="w-4 h-4" />
@@ -130,8 +149,8 @@ export function UploadQueueManager() {
                                                     <XCircle className="w-4 h-4" />
                                                 </IconButton>
                                             )}
-                                            {isSuccess && <CheckCircle2 className="w-4 h-4 text-green-500 mt-1" />}
-                                            {isError && <AlertCircle className="w-4 h-4 text-red-500 mt-1" />}
+                                            {isSuccess && <CheckCircle2 className="w-4 h-4 text-green-500" />}
+                                            {isError && <AlertCircle className="w-4 h-4 text-red-500" />}
                                         </Flex>
                                     </Flex>
 
@@ -160,6 +179,6 @@ export function UploadQueueManager() {
                     </Flex>
                 </Card>
             )}
-        </Box>
+        </motion.div>
     );
 }

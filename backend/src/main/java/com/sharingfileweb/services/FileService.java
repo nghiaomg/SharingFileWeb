@@ -22,6 +22,7 @@ import com.sharingfileweb.payload.response.FileResponse;
 import com.sharingfileweb.repository.FileRepository;
 import com.sharingfileweb.repository.UserRepository;
 import com.sharingfileweb.security.services.FileStorageService;
+import com.sharingfileweb.security.services.UploadLimitService;
 import com.sharingfileweb.security.services.UserDetailsImpl;
 
 @Service
@@ -29,6 +30,9 @@ public class FileService {
 
     @Autowired
     FileStorageService fileStorageService;
+
+    @Autowired
+    UploadLimitService uploadLimitService;
 
     @Autowired
     FileRepository fileRepository;
@@ -87,8 +91,22 @@ public class FileService {
     }
 
     public void storeChunk(MultipartFile file, int chunkIndex, String uploadId, Long totalFileSize) throws Exception {
+        String userId = getCurrentUserId();
+
+        if (!uploadLimitService.tryRegister(userId, uploadId)) {
+            throw new RuntimeException("Bạn đang có " + uploadLimitService.getActiveCount(userId) + " luồng tải lên đồng thời. Vui lòng chờ hoàn tất trước khi bắt đầu thêm.");
+        }
+
         if (totalFileSize != null) {
-            User user = userRepository.findById(getCurrentUserId()).orElseThrow();
+            User user = userRepository.findById(userId).orElseThrow();
+            
+            // Auto-upgrade legacy BASIC plan limits
+            if ("BASIC".equals(user.getSubscriptionPlan()) && user.getMaxFileSize() < 1024L * 1024 * 1024) {
+                user.setMaxFileSize(1024L * 1024 * 1024);
+                userRepository.save(user);
+            // End auto-upgrade
+            }
+
             if (totalFileSize > user.getMaxFileSize()) {
                 throw new RuntimeException("Kích thước tệp vượt quá giới hạn " + (user.getMaxFileSize() / 1024 / 1024) + "MB của gói " + user.getSubscriptionPlan() + ".");
             }
@@ -106,6 +124,12 @@ public class FileService {
 
         User user = userRepository.findById(userId).orElseThrow();
 
+        // Auto-upgrade legacy BASIC plan limits
+        if ("BASIC".equals(user.getSubscriptionPlan()) && user.getMaxFileSize() < 1024L * 1024 * 1024) {
+            user.setMaxFileSize(1024L * 1024 * 1024);
+            userRepository.save(user);
+        }
+
         if (fileSize > user.getMaxFileSize()) {
             throw new RuntimeException("Kích thước tệp vượt quá giới hạn " + (user.getMaxFileSize() / 1024 / 1024) + "MB của gói " + user.getSubscriptionPlan() + ".");
         }
@@ -121,12 +145,15 @@ public class FileService {
             throw new RuntimeException("Lỗi: Đã tồn tại tệp có cùng tên trong thư mục này.");
         }
 
-        String storedPath = fileStorageService.mergeChunks(uploadId, fileName, totalChunks, userId);
-
-        StorageFile storageFile = new StorageFile(fileName, fileType, fileSize, userId, normalizedFolderId, storedPath);
-        StorageFile savedFile = fileRepository.save(storageFile);
-
-        return mapToResponse(savedFile);
+        try {
+            String storedPath = fileStorageService.mergeChunks(uploadId, fileName, totalChunks, userId);
+            StorageFile storageFile = new StorageFile(fileName, fileType, fileSize, userId, normalizedFolderId, storedPath);
+            StorageFile savedFile = fileRepository.save(storageFile);
+            return mapToResponse(savedFile);
+        } finally {
+            // Always release the slot, even on error
+            uploadLimitService.release(userId, uploadId);
+        }
     }
 
     public void deleteFile(String id) {

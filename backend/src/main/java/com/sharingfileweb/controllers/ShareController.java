@@ -143,4 +143,25 @@ public class ShareController {
             return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
         }
     }
+
+    @Autowired
+    private com.sharingfileweb.repository.ShareLinkRepository shareLinkRepository;
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/links")
+    public ResponseEntity<?> getAllShareLinksForAdmin() {
+        List<com.sharingfileweb.models.ShareLink> shareLinks = shareLinkRepository.findAll();
+        shareLinks.forEach(link -> link.setPassword(null));
+        return ResponseEntity.ok(StandardResponse.success("Fetched all share links", shareLinks));
+    }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/admin/links/{id}")
+    public ResponseEntity<?> revokeShareLinkByAdmin(@PathVariable String id) {
+        if (!shareLinkRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        shareLinkRepository.deleteById(id);
+        return ResponseEntity.ok(StandardResponse.success("Share link revoked permanently", null));
+    }
 }
