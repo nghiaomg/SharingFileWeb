@@ -146,8 +146,10 @@ public class FileService {
         }
 
         try {
-            String storedPath = fileStorageService.mergeChunks(uploadId, fileName, totalChunks, userId);
-            StorageFile storageFile = new StorageFile(fileName, fileType, fileSize, userId, normalizedFolderId, storedPath);
+            FileStorageService.MergedFileResult mergedResult = fileStorageService.mergeChunks(uploadId, fileName, totalChunks, userId);
+            
+            // Lớp 1 & Lớp 4: Lưu Type thật và Size thật (sau re-encode) thay vì tin client
+            StorageFile storageFile = new StorageFile(fileName, mergedResult.getRealMimeType(), mergedResult.getFinalSize(), userId, normalizedFolderId, mergedResult.getStoredPath());
             StorageFile savedFile = fileRepository.save(storageFile);
             return mapToResponse(savedFile);
         } finally {

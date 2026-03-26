@@ -15,6 +15,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 import com.sharingfileweb.models.StorageFile;
+import java.util.UUID;
+import org.apache.tika.Tika;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.awt.Graphics2D;
 
 @Service
 public class FileStorageService {
@@ -70,7 +75,22 @@ public class FileStorageService {
     return uploadedChunks;
   }
 
-  public String mergeChunks(String uploadId, String fileName, int totalChunks, String ownerId) throws IOException {
+  public static class MergedFileResult {
+      private String storedPath;
+      private String realMimeType;
+      private long finalSize;
+      
+      public MergedFileResult(String storedPath, String realMimeType, long finalSize) {
+          this.storedPath = storedPath;
+          this.realMimeType = realMimeType;
+          this.finalSize = finalSize;
+      }
+      public String getStoredPath() { return storedPath; }
+      public String getRealMimeType() { return realMimeType; }
+      public long getFinalSize() { return finalSize; }
+  }
+
+  public MergedFileResult mergeChunks(String uploadId, String fileName, int totalChunks, String ownerId) throws IOException {
     String chunkDirPath = TEMP_DIR + File.separator + uploadId;
     Path chunkDir = Paths.get(chunkDirPath);
 
@@ -81,12 +101,17 @@ public class FileStorageService {
     String ownerDirPath = FILES_DIR + File.separator + ownerId;
     createDirectory(ownerDirPath);
 
-    String uniqueFileName = System.currentTimeMillis() + "_" + fileName;
+    String extension = "";
+    int extIndex = fileName.lastIndexOf('.');
+    if (extIndex > 0) {
+        extension = fileName.substring(extIndex);
+    }
+    String uniqueFileName = UUID.randomUUID().toString() + extension;
     Path mergedFilePath = Paths.get(ownerDirPath, uniqueFileName);
 
     if (totalChunks == 0) {
         Files.createFile(mergedFilePath);
-        return mergedFilePath.toString();
+        return new MergedFileResult(mergedFilePath.toString(), "application/octet-stream", 0);
     }
 
     try (OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(mergedFilePath.toFile(), true))) {
@@ -102,7 +127,42 @@ public class FileStorageService {
     // Clean up temporary chunks
     deleteDirectoryRecursively(chunkDir);
 
-    return mergedFilePath.toString();
+    // Lớp 1: Đọc Magic Bytes bằng Tika
+    Tika tika = new Tika();
+    String realMimeType = tika.detect(mergedFilePath.toFile());
+
+    // Lớp 4: Xóa metadata/EXIF ảnh an toàn bằng ImageIO re-encode
+    if (realMimeType != null && (realMimeType.startsWith("image/jpeg") || realMimeType.startsWith("image/png"))) {
+        try {
+            BufferedImage originalImage = ImageIO.read(mergedFilePath.toFile());
+            if (originalImage != null) {
+                BufferedImage newImage = new BufferedImage(
+                        originalImage.getWidth(),
+                        originalImage.getHeight(),
+                        BufferedImage.TYPE_INT_RGB);
+                if (realMimeType.equals("image/png")) {
+                    newImage = new BufferedImage(
+                        originalImage.getWidth(),
+                        originalImage.getHeight(),
+                        BufferedImage.TYPE_INT_ARGB);
+                }
+                Graphics2D g = newImage.createGraphics();
+                g.drawImage(originalImage, 0, 0, null);
+                g.dispose();
+
+                String formatName = realMimeType.equals("image/png") ? "png" : "jpeg";
+                ImageIO.write(newImage, formatName, mergedFilePath.toFile());
+            } else {
+                throw new RuntimeException("Image is invalid or corrupted.");
+            }
+        } catch (Exception e) {
+            System.err.println("Could not re-encode image: " + e.getMessage());
+            throw new RuntimeException("Upload failed due to invalid image file content.");
+        }
+    }
+
+    long finalSize = Files.size(mergedFilePath);
+    return new MergedFileResult(mergedFilePath.toString(), realMimeType, finalSize);
   }
 
   public Resource loadFileAsResource(StorageFile file) throws Exception {
