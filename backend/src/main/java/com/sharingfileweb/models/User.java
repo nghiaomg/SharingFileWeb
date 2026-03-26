@@ -41,6 +41,9 @@ public class User {
   private Instant lastLogin;
   private boolean twoFactorEnabled = false;
 
+  private Integer failedLoginAttempts = 0;
+  private Instant lockoutEnd;
+
   public User() {
   }
 
@@ -136,5 +139,21 @@ public class User {
 
   public void setTwoFactorEnabled(boolean twoFactorEnabled) {
     this.twoFactorEnabled = twoFactorEnabled;
+  }
+
+  public Integer getFailedLoginAttempts() {
+    return failedLoginAttempts;
+  }
+
+  public void setFailedLoginAttempts(Integer failedLoginAttempts) {
+    this.failedLoginAttempts = failedLoginAttempts;
+  }
+
+  public Instant getLockoutEnd() {
+    return lockoutEnd;
+  }
+
+  public void setLockoutEnd(Instant lockoutEnd) {
+    this.lockoutEnd = lockoutEnd;
   }
 }

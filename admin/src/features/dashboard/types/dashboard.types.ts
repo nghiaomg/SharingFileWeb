@@ -1,7 +1,7 @@
 export interface StorageCategory {
-  category: string;
-  fileCount: number;
-  totalSize: number;
+  title: string;
+  files: number;
+  size: number;
 }
 
 export interface RecentFile {

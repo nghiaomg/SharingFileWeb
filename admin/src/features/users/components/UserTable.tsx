@@ -76,6 +76,7 @@ export const UserTable: React.FC = () => {
   return (
     <>
       <Table
+        scroll={{ x: 'max-content' }}
         dataSource={users}
         columns={columns}
         rowKey="id"

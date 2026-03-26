@@ -13,12 +13,18 @@ import java.util.Optional;
 @Repository
 public interface FileRepository extends MongoRepository<StorageFile, String> {
   List<StorageFile> findByOwnerIdAndFolderIdAndIsDeletedFalse(String ownerId, String folderId);
+  List<StorageFile> findByFolderIdAndIsDeletedFalse(String folderId);
   List<StorageFile> findByOwnerIdAndIsDeletedFalse(String ownerId);
 
   @Query("{ 'ownerId': ?0, 'isDeleted': false, $or: [ { 'isPublic': true }, { 'accessMode': { $ne: 'PRIVATE' } } ] }")
   List<StorageFile> findSharedFiles(String ownerId);
 
   org.springframework.data.domain.Page<StorageFile> findByOwnerIdAndIsDeletedFalseOrderByCreatedAtDesc(String ownerId, org.springframework.data.domain.Pageable pageable);
+  
+  // Cho admin dashboard
+  List<StorageFile> findByIsDeletedFalse();
+  org.springframework.data.domain.Page<StorageFile> findByIsDeletedFalseOrderByCreatedAtDesc(org.springframework.data.domain.Pageable pageable);
+
   Optional<StorageFile> findByIdAndOwnerIdAndIsDeletedFalse(String id, String ownerId);
   Boolean existsByNameAndOwnerIdAndFolderIdAndIsDeletedFalse(String name, String ownerId, String folderId);
   void deleteByOwnerIdAndFolderId(String ownerId, String folderId); // To delete files when a folder is deleted

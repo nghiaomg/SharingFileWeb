@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Eye, EyeOff, Loader, Check } from "lucide-react";
+import { Turnstile } from "@marsidev/react-turnstile";
 import { useRegister } from "@/features/auth/mutations";
 import { getApiErrorMessage } from "@/types/api";
 
@@ -12,6 +13,7 @@ export function SignupForm() {
     email: "",
     password: "",
     confirmPassword: "",
+    turnstileToken: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [localError, setLocalError] = useState("");
@@ -30,6 +32,7 @@ export function SignupForm() {
       username: formData.username,
       email: formData.email,
       password: formData.password,
+      turnstileToken: formData.turnstileToken,
     });
   };
 
@@ -117,9 +120,18 @@ export function SignupForm() {
         </span>
       </div>
 
+      <div className="flex justify-center mb-4">
+        <Turnstile
+          siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+          onSuccess={(token) => setFormData({ ...formData, turnstileToken: token })}
+          onError={() => setFormData({ ...formData, turnstileToken: "" })}
+          onExpire={() => setFormData({ ...formData, turnstileToken: "" })}
+        />
+      </div>
+
       <button
         type="submit"
-        disabled={registerMutation.isPending}
+        disabled={registerMutation.isPending || !formData.turnstileToken}
         className="w-full py-3.5 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all shadow-lg hover:shadow-primary/30 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
       >
         {registerMutation.isPending ? (

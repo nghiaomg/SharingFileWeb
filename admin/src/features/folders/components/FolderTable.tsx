@@ -48,6 +48,7 @@ export const FolderTable: React.FC = () => {
 
   return (
     <Table
+      scroll={{ x: 'max-content' }}
       dataSource={folders}
       columns={columns}
       rowKey="id"

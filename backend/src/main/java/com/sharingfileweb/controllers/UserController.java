@@ -1,43 +1,42 @@
 package com.sharingfileweb.controllers;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.sharingfileweb.models.User;
 import com.sharingfileweb.payload.request.UpdateProfileRequest;
-import com.sharingfileweb.payload.response.MessageResponse;
+import com.sharingfileweb.payload.request.ChangePasswordRequest;
 import com.sharingfileweb.payload.response.StandardResponse;
 import com.sharingfileweb.payload.response.UserProfileResponse;
 import com.sharingfileweb.services.UserService;
 import java.util.Map;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api")
+@Tag(name = "User Profile", description = "Các API quản lý thông tin tài khoản và dung lượng người dùng.")
 public class UserController {
 
   @Autowired
   UserService userService;
 
+  @Operation(summary = "Lấy thông tin người dùng", description = "Lấy Profile của người dùng đang đăng nhập.")
   @GetMapping("/auth/me")
   public ResponseEntity<?> getCurrentUser() {
     UserProfileResponse response = userService.getCurrentUserProfile();
     return ResponseEntity.ok(StandardResponse.success("Fetched user profile successfully", response));
   }
 
+  @Operation(summary = "Cập nhật Profile", description = "Cập nhật tên và ảnh đại diện.")
   @PutMapping("/user/profile")
   public ResponseEntity<?> updateProfile(@Valid @RequestBody UpdateProfileRequest request) {
     try {
@@ -48,6 +47,18 @@ public class UserController {
     }
   }
 
+  @Operation(summary = "Đổi mật khẩu", description = "Đổi mật khẩu tài khoản đang đăng nhập.")
+  @PutMapping("/user/password")
+  public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+    try {
+        userService.changePassword(request);
+        return ResponseEntity.ok(StandardResponse.success("Đổi mật khẩu thành công!", null));
+    } catch (RuntimeException e) {
+        return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
+    }
+  }
+
+  @Operation(summary = "Lấy thông tin dung lượng", description = "Lấy trạng thái sử dụng dung lượng lưu trữ hiện tại.")
   @GetMapping("/user/storage")
   public ResponseEntity<?> getStorageUsage() {
     Map<String, Object> response = userService.getStorageUsage();
@@ -60,17 +71,21 @@ public class UserController {
   @Autowired
   private com.sharingfileweb.repository.RoleRepository roleRepository;
 
+  // GET /api/users → Admin: lấy toàn bộ người dùng
+  @Operation(summary = "Lấy tất cả người dùng (Quyền Admin)", description = "Lấy danh sách người dùng trên hệ thống.")
   @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
-  @GetMapping("/admin/users")
+  @GetMapping("/users")
   public ResponseEntity<?> getAllUsers() {
       List<User> users = userRepository.findAll();
       users.forEach(u -> u.setPassword(null));
       return ResponseEntity.ok(StandardResponse.success("Fetched all users", users));
   }
 
+  // GET /api/users/{id} → Admin: lấy người dùng theo id
+  @Operation(summary = "Chi tiết người dùng (Quyền Admin)", description = "Lấy thông tin chi tiết một người dùng.")
   @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
-  @GetMapping("/admin/users/{id}")
-  public ResponseEntity<?> getUser(@org.springframework.web.bind.annotation.PathVariable String id) {
+  @GetMapping("/users/{id}")
+  public ResponseEntity<?> getUser(@Parameter(description = "ID người dùng") @PathVariable String id) {
       return userRepository.findById(id)
               .map(user -> {
                   user.setPassword(null);
@@ -79,9 +94,11 @@ public class UserController {
               .orElse(ResponseEntity.notFound().build());
   }
 
+  // PUT /api/users/{id} → Admin: cập nhật người dùng
+  @Operation(summary = "Cập nhật người dùng (Quyền Admin)", description = "Thay đổi quyền, gói cước và giới hạn dung lượng.")
   @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
-  @PutMapping("/admin/users/{id}")
-  public ResponseEntity<?> updateUser(@org.springframework.web.bind.annotation.PathVariable String id, @RequestBody Map<String, Object> updates) {
+  @PutMapping("/users/{id}")
+  public ResponseEntity<?> updateUser(@Parameter(description = "ID người dùng") @PathVariable String id, @RequestBody Map<String, Object> updates) {
       return userRepository.findById(id).map(user -> {
           if (updates.containsKey("roles")) {
               List<String> strRoles = (List<String>) updates.get("roles");
@@ -108,9 +125,11 @@ public class UserController {
       }).orElse(ResponseEntity.notFound().build());
   }
 
+  // DELETE /api/users/{id} → Admin: xóa người dùng
+  @Operation(summary = "Xóa người dùng (Quyền Admin)", description = "Xóa hoàn toàn tài khoản người dùng.")
   @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
-  @org.springframework.web.bind.annotation.DeleteMapping("/admin/users/{id}")
-  public ResponseEntity<?> deleteUser(@org.springframework.web.bind.annotation.PathVariable String id) {
+  @DeleteMapping("/users/{id}")
+  public ResponseEntity<?> deleteUser(@Parameter(description = "ID người dùng cần xóa") @PathVariable String id) {
       if (!userRepository.existsById(id)) {
           return ResponseEntity.notFound().build();
       }
@@ -118,4 +137,3 @@ public class UserController {
       return ResponseEntity.ok(StandardResponse.success("User deleted", null));
   }
 }
-

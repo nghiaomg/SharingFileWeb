@@ -124,28 +124,69 @@ public class AuthService {
     }
 
     public JwtResponse authenticateUser(LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+        User user = userRepository.findByUsername(loginRequest.getUsername())
+             .orElseThrow(() -> new RuntimeException("Tài khoản không tồn tại."));
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtUtils.generateJwtToken(authentication);
+        if (user.getLockoutEnd() != null && user.getLockoutEnd().isAfter(java.time.Instant.now())) {
+             long minutes = java.time.Duration.between(java.time.Instant.now(), user.getLockoutEnd()).toMinutes();
+             if (minutes <= 0) minutes = 1;
+             throw new RuntimeException("Tài khoản đang tạm khóa do sai mật khẩu quá nhiều lần. Vui lòng thử lại sau " + minutes + " phút.");
+        }
 
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(item -> item.getAuthority())
-                .collect(Collectors.toList());
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
-        RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
+            // Khôi phục nếu đăng nhập thành công
+            if (user.getFailedLoginAttempts() != null && user.getFailedLoginAttempts() > 0) {
+                user.setFailedLoginAttempts(0);
+                user.setLockoutEnd(null);
+                userRepository.save(user);
+            }
 
-        return new JwtResponse(jwt,
-                refreshToken.getToken(),
-                userDetails.getId(),
-                userDetails.getUsername(),
-                userDetails.getEmail(),
-                roles,
-                userDetails.getSubscriptionPlan(),
-                userDetails.getMaxStorage(),
-                userDetails.getMaxFileSize());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String jwt = jwtUtils.generateJwtToken(authentication);
+
+            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+            List<String> roles = userDetails.getAuthorities().stream()
+                    .map(item -> item.getAuthority())
+                    .collect(Collectors.toList());
+
+            RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
+
+            return new JwtResponse(jwt,
+                    refreshToken.getToken(),
+                    userDetails.getId(),
+                    userDetails.getUsername(),
+                    userDetails.getEmail(),
+                    roles,
+                    userDetails.getSubscriptionPlan(),
+                    userDetails.getMaxStorage(),
+                    userDetails.getMaxFileSize());
+                    
+        } catch (org.springframework.security.authentication.BadCredentialsException e) {
+            int attempts = (user.getFailedLoginAttempts() == null ? 0 : user.getFailedLoginAttempts()) + 1;
+            user.setFailedLoginAttempts(attempts);
+            
+            long lockMinutes = fibonacci(attempts);
+            user.setLockoutEnd(java.time.Instant.now().plusSeconds(lockMinutes * 60));
+            userRepository.save(user);
+            
+            throw new RuntimeException("Sai mật khẩu. Lỗi " + attempts + " lần. " +
+               "Tài khoản bị khóa " + lockMinutes + " phút.");
+        }
+    }
+
+    private long fibonacci(int n) {
+        if (n <= 0) return 0;
+        if (n == 1 || n == 2) return 1;
+        long a = 1, b = 1;
+        for (int i = 3; i <= n; i++) {
+             long temp = a + b;
+             a = b;
+             b = temp;
+        }
+        return b;
     }
 
     public void registerUser(SignupRequest signUpRequest) {

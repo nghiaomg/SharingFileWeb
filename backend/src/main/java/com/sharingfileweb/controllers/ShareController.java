@@ -18,9 +18,14 @@ import com.sharingfileweb.payload.response.StandardResponse;
 import com.sharingfileweb.services.ShareLinkService;
 import com.sharingfileweb.services.SharedAccessService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/share")
+@Tag(name = "Sharing", description = "Các API chia sẻ tệp/thư mục nội bộ và tạo link chia sẻ công khai.")
 public class ShareController {
 
     @Autowired
@@ -31,6 +36,7 @@ public class ShareController {
 
     // ─── Internal Share ────────────────────────────────────────────────────────
 
+    @Operation(summary = "Chia sẻ nội bộ cho nhiều người", description = "Chia sẻ quyền truy cập tệp/thư mục cho các email người dùng khác trong hệ thống.")
     @PostMapping("/internal")
     public ResponseEntity<?> shareWithUsers(@RequestBody InternalShareRequest request) {
         try {
@@ -42,18 +48,21 @@ public class ShareController {
         }
     }
 
+    @Operation(summary = "Được chia sẻ với tôi", description = "Danh sách các tệp/thư mục người khác chia sẻ cho tôi.")
     @GetMapping("/with-me")
     public ResponseEntity<?> getSharedWithMe() {
         List<SharedAccessResponse> results = sharedAccessService.getSharedWithMe();
         return ResponseEntity.ok(StandardResponse.success("Fetched shared-with-me files", results));
     }
 
+    @Operation(summary = "Tôi đã chia sẻ", description = "Danh sách các tệp/thư mục mà tôi đã chia sẻ cho người khác.")
     @GetMapping("/by-me")
     public ResponseEntity<?> getSharedByMe() {
         List<SharedAccessResponse> results = sharedAccessService.getSharedByMe();
         return ResponseEntity.ok(StandardResponse.success("Fetched shared-by-me files", results));
     }
 
+    @Operation(summary = "Danh sách người được chia sẻ của 1 tệp", description = "Danh sách chi tiết các người dùng đang có quyền truy cập tệp/thư mục này.")
     @GetMapping("/access/file/{fileId}")
     public ResponseEntity<?> getAccessesForFile(@PathVariable String fileId) {
         try {
@@ -106,6 +115,7 @@ public class ShareController {
 
     // ─── Share Link ────────────────────────────────────────────────────────────
 
+    @Operation(summary = "Tạo link chia sẻ công khai", description = "Tạo một link để chia sẻ tệp/thư mục ra ngoài (có thể cài mật khẩu, ngày hết hạn).")
     @PostMapping("/link")
     public ResponseEntity<?> createLink(@RequestBody CreateShareLinkRequest request) {
         try {
@@ -147,16 +157,18 @@ public class ShareController {
     @Autowired
     private com.sharingfileweb.repository.ShareLinkRepository shareLinkRepository;
 
+    // GET /api/share/links → Admin: lấy toàn bộ share links
     @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/admin/links")
+    @GetMapping("/links")
     public ResponseEntity<?> getAllShareLinksForAdmin() {
         List<com.sharingfileweb.models.ShareLink> shareLinks = shareLinkRepository.findAll();
         shareLinks.forEach(link -> link.setPassword(null));
         return ResponseEntity.ok(StandardResponse.success("Fetched all share links", shareLinks));
     }
 
+    @Operation(summary = "Thu hồi link chia sẻ (Quyền Admin)", description = "Admin xóa các link chia sẻ rác.")
     @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/admin/links/{id}")
+    @DeleteMapping("/links/{id}")
     public ResponseEntity<?> revokeShareLinkByAdmin(@PathVariable String id) {
         if (!shareLinkRepository.existsById(id)) {
             return ResponseEntity.notFound().build();

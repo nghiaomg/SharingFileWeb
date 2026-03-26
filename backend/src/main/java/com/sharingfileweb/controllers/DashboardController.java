@@ -17,27 +17,35 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/dashboard")
+@Tag(name = "Dashboard", description = "Các API thống kê, phân tích dữ liệu cho Dashboard.")
 public class DashboardController {
 
     @Autowired
     private DashboardService dashboardService;
 
+    @Operation(summary = "Thống kê dung lượng File", description = "Thống kê dung lượng đã dùng theo từng loại File (Image, Video, Document...).")
     @GetMapping("/categories")
     @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
     public ResponseEntity<?> getCategories() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        List<StorageCategoryDTO> categories = dashboardService.getDashboardCategories(userDetails.getId());
+        boolean isAdmin = userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        List<StorageCategoryDTO> categories = dashboardService.getDashboardCategories(userDetails.getId(), isAdmin);
         return ResponseEntity.ok(StandardResponse.success("Fetched dashboard categories successfully", categories));
     }
 
+    @Operation(summary = "Tệp hoạt động gần đây", description = "Lấy danh sách các tệp được tải lên/truy cập gần đây nhất.")
     @GetMapping("/recent-files")
     @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
     public ResponseEntity<?> getRecentFiles() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        List<RecentFileDTO> recentFiles = dashboardService.getDashboardRecentFiles(userDetails.getId());
+        boolean isAdmin = userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        List<RecentFileDTO> recentFiles = dashboardService.getDashboardRecentFiles(userDetails.getId(), isAdmin);
         return ResponseEntity.ok(StandardResponse.success("Fetched recent files successfully", recentFiles));
     }
 }

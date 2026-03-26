@@ -56,6 +56,7 @@ export const TrashTable: React.FC = () => {
     <Tabs defaultActiveKey="file" type="card">
       <Tabs.TabPane tab="Tệp tin" key="file">
         <Table
+          scroll={{ x: 'max-content' }}
           dataSource={trashItems?.files || []}
           columns={columns('file')}
           rowKey="id"
@@ -64,6 +65,7 @@ export const TrashTable: React.FC = () => {
       </Tabs.TabPane>
       <Tabs.TabPane tab="Thư mục" key="folder">
         <Table
+          scroll={{ x: 'max-content' }}
           dataSource={trashItems?.folders || []}
           columns={columns('folder')}
           rowKey="id"

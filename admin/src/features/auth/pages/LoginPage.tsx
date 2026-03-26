@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, Form, Input, Button, Typography } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { Turnstile } from '@marsidev/react-turnstile';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, Controller } from 'react-hook-form';
 import { loginSchema } from '../types/auth.types';
@@ -12,7 +13,7 @@ const { Title } = Typography;
 const LoginPage: React.FC = () => {
   const { control, handleSubmit, formState: { errors } } = useForm<LoginRequest>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { username: '', password: '' },
+    defaultValues: { username: '', password: '', turnstileToken: '' },
   });
 
   const loginMutation = useLoginMutation();
@@ -63,6 +64,25 @@ const LoginPage: React.FC = () => {
                   size="large"
                   prefix={<LockOutlined />}
                   placeholder="Mật khẩu"
+                />
+              )}
+            />
+          </Form.Item>
+
+          <Form.Item
+            validateStatus={errors.turnstileToken ? 'error' : ''}
+            help={errors.turnstileToken?.message}
+            style={{ display: 'flex', justifyContent: 'center' }}
+          >
+            <Controller
+              name="turnstileToken"
+              control={control}
+              render={({ field }) => (
+                <Turnstile
+                  siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+                  onSuccess={(token) => field.onChange(token)}
+                  onError={() => field.onChange('')}
+                  onExpire={() => field.onChange('')}
                 />
               )}
             />

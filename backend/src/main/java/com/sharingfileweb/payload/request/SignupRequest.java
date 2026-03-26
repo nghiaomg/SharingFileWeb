@@ -20,6 +20,9 @@ public class SignupRequest {
   @Size(min = 6, max = 40)
   private String password;
 
+  @NotBlank(message = "Captcha token is required")
+  private String turnstileToken;
+
   public String getUsername() {
     return username;
   }
@@ -50,5 +53,13 @@ public class SignupRequest {
 
   public void setRole(Set<String> role) {
     this.role = role;
+  }
+
+  public String getTurnstileToken() {
+    return turnstileToken;
+  }
+
+  public void setTurnstileToken(String turnstileToken) {
+    this.turnstileToken = turnstileToken;
   }
 }

@@ -19,9 +19,11 @@ public class DashboardService {
     @Autowired
     private FileRepository fileRepository;
 
-    public List<StorageCategoryDTO> getDashboardCategories(String ownerId) {
+    public List<StorageCategoryDTO> getDashboardCategories(String ownerId, boolean isAdmin) {
         // 1. Fetch all files to aggregate categories
-        List<StorageFile> allFiles = fileRepository.findByOwnerIdAndIsDeletedFalse(ownerId);
+        List<StorageFile> allFiles = isAdmin 
+            ? fileRepository.findByIsDeletedFalse()
+            : fileRepository.findByOwnerIdAndIsDeletedFalse(ownerId);
         
         long countDocs = 0, sizeDocs = 0;
         long countImgs = 0, sizeImgs = 0;
@@ -59,10 +61,12 @@ public class DashboardService {
         return categories;
     }
 
-    public List<RecentFileDTO> getDashboardRecentFiles(String ownerId) {
+    public List<RecentFileDTO> getDashboardRecentFiles(String ownerId, boolean isAdmin) {
         // 2. Fetch Recent Files (Limit 5)
         Pageable pageable = PageRequest.of(0, 5);
-        List<StorageFile> recentFilesRaw = fileRepository.findByOwnerIdAndIsDeletedFalseOrderByCreatedAtDesc(ownerId, pageable).getContent();
+        List<StorageFile> recentFilesRaw = isAdmin
+            ? fileRepository.findByIsDeletedFalseOrderByCreatedAtDesc(pageable).getContent()
+            : fileRepository.findByOwnerIdAndIsDeletedFalseOrderByCreatedAtDesc(ownerId, pageable).getContent();
         
         List<RecentFileDTO> recentFiles = recentFilesRaw.stream()
             .map(f -> new RecentFileDTO(f.getId(), f.getName(), f.getSize(), f.getType(), f.getCreatedAt()))

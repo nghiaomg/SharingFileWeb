@@ -63,6 +63,7 @@ export const ShareLinkTable: React.FC = () => {
 
   return (
     <Table
+      scroll={{ x: 'max-content' }}
       dataSource={shareLinks}
       columns={columns}
       rowKey="id"

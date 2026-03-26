@@ -17,9 +17,14 @@ import com.sharingfileweb.services.ShareLinkService;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/public/share")
+@Tag(name = "Public Sharing", description = "Các API truy cập tệp/thư mục qua link chia sẻ công khai (Không yêu cầu đăng nhập).")
 public class PublicShareController {
 
     @Autowired
@@ -31,10 +36,11 @@ public class PublicShareController {
     @Autowired
     private FileStorageService fileStorageService;
 
+    @Operation(summary = "Lấy thông tin tệp qua Link", description = "Lấy tên tệp, kích thước... từ mã token của link chia sẻ.")
     @GetMapping("/{token}")
     public ResponseEntity<?> getFileMetadataByToken(
-            @PathVariable String token,
-            @RequestParam(required = false) String password) {
+            @Parameter(description = "Mã token của link chia sẻ") @PathVariable String token,
+            @Parameter(description = "Mật khẩu (nếu có yêu cầu)") @RequestParam(required = false) String password) {
         try {
             ShareLink link = shareLinkService.validateLink(token, password);
             StorageFile file = fileRepository.findById(link.getFileId()).orElse(null);
@@ -59,10 +65,11 @@ public class PublicShareController {
         }
     }
 
+    @Operation(summary = "Tải xuống tệp qua Link", description = "Tải xuống tệp thực tế từ link chia sẻ, yêu cầu mật khẩu nếu link có bảo mật.")
     @GetMapping("/{token}/download")
     public ResponseEntity<?> downloadFileByToken(
-            @PathVariable String token,
-            @RequestParam(required = false) String password) {
+            @Parameter(description = "Mã token của link chia sẻ") @PathVariable String token,
+            @Parameter(description = "Mật khẩu (nếu có yêu cầu)") @RequestParam(required = false) String password) {
         try {
             ShareLink link = shareLinkService.validateLink(token, password);
 
@@ -92,10 +99,11 @@ public class PublicShareController {
         }
     }
 
+    @Operation(summary = "Lấy nội dung thư mục public", description = "Lấy danh sách các tệp/thư mục con bên trong thư mục được chia sẻ công khai.")
     @GetMapping("/{token}/folder")
     public ResponseEntity<?> getPublicFolderContent(
-            @PathVariable String token,
-            @RequestParam(required = false) String password) {
+            @Parameter(description = "Mã token của thư mục") @PathVariable String token,
+            @Parameter(description = "Mật khẩu (nếu có yêu cầu)") @RequestParam(required = false) String password) {
         try {
             List<FileResponse> results = shareLinkService.getPublicFolderContent(token, password);
             return ResponseEntity.ok(StandardResponse.success("Fetched folder content", results));

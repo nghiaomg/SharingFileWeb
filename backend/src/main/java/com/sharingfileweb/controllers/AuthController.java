@@ -40,21 +40,34 @@ import com.sharingfileweb.models.RefreshToken;
 import com.sharingfileweb.exception.TokenRefreshException;
 
 import com.sharingfileweb.services.AuthService;
+import com.sharingfileweb.services.TurnstileService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/auth")
+@Tag(name = "Authentication", description = "Các API xác thực, đăng nhập và đăng ký người dùng")
 public class AuthController {
   
   @Autowired
   AuthService authService;
 
+  @Autowired
+  TurnstileService turnstileService;
+
+  @Operation(summary = "Đăng nhập", description = "Đăng nhập bằng username và mật khẩu để nhận Access Token và Refresh Token.")
   @PostMapping("/signin")
   public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+    if (!turnstileService.verifyToken(loginRequest.getTurnstileToken())) {
+        return ResponseEntity.badRequest().body(StandardResponse.error("Xác minh Captcha thất bại. Vui lòng thử lại.", null));
+    }
     JwtResponse response = authService.authenticateUser(loginRequest);
     return ResponseEntity.ok(StandardResponse.success("Login successful", response));
   }
 
+  @Operation(summary = "Đăng nhập Google", description = "Đăng nhập sử dụng Google ID Token.")
   @PostMapping("/google")
   public ResponseEntity<?> googleLogin(@Valid @RequestBody GoogleLoginRequest request) {
     try {
@@ -65,8 +78,12 @@ public class AuthController {
     }
   }
 
+  @Operation(summary = "Đăng ký tải khoản", description = "Tạo tài khoản mới trong hệ thống.")
   @PostMapping("/signup")
   public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
+    if (!turnstileService.verifyToken(signUpRequest.getTurnstileToken())) {
+        return ResponseEntity.badRequest().body(StandardResponse.error("Xác minh Captcha thất bại. Vui lòng thử lại.", null));
+    }
     try {
         authService.registerUser(signUpRequest);
         return ResponseEntity.ok(StandardResponse.success("User registered successfully!", null));
@@ -75,6 +92,7 @@ public class AuthController {
     }
   }
 
+  @Operation(summary = "Làm mới Access Token", description = "Sử dụng Refresh Token để lấy lại Access Token mới khi JWT hết hạn.")
   @PostMapping("/refreshtoken")
   public ResponseEntity<?> refreshtoken(@Valid @RequestBody TokenRefreshRequest request) {
     try {
@@ -85,6 +103,7 @@ public class AuthController {
     }
   }
   
+  @Operation(summary = "Đăng xuất", description = "Đăng xuất người dùng hiện tại (xóa Refresh Token).")
   @PostMapping("/logout")
   public ResponseEntity<?> logoutUser() {
     authService.logoutUser();

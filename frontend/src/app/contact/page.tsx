@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { Mail, Phone, MapPin, Send } from "lucide-react";
+import { Mail, Phone, MapPin } from "lucide-react";
+import { ContactForm } from "./_components/ContactForm";
 
 export const metadata = {
     title: "Liên Hệ | FileFlow",
@@ -68,43 +69,7 @@ export default function ContactPage() {
 
                         {/* Contact Form (Right) */}
                         <div className="md:col-span-3 p-10">
-                            <form className="space-y-6">
-                                <div className="grid grid-cols-2 gap-6">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-semibold">Tên của bạn</label>
-                                        <input type="text" placeholder="Nguyễn Văn A" className="w-full px-4 py-3 rounded-xl bg-secondary/50 border border-border focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-semibold">Công ty / Tổ chức</label>
-                                        <input type="text" placeholder="Tên doanh nghiệp" className="w-full px-4 py-3 rounded-xl bg-secondary/50 border border-border focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-sm font-semibold">Địa chỉ Email</label>
-                                    <input type="email" placeholder="email@congty.com" className="w-full px-4 py-3 rounded-xl bg-secondary/50 border border-border focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-sm font-semibold">Mục đích liên hệ</label>
-                                    <select className="w-full px-4 py-3 rounded-xl bg-secondary/50 border border-border focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none appearance-none">
-                                        <option>Đăng ký gói Doanh nghiệp (Enterprise)</option>
-                                        <option>Hỗ trợ kỹ thuật / Báo lỗi</option>
-                                        <option>Tích hợp API và Hệ thống</option>
-                                        <option>Yêu cầu khác</option>
-                                    </select>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-sm font-semibold">Nội dung chi tiết</label>
-                                    <textarea rows={4} placeholder="Hãy cho chúng tôi biết bạn cần hỗ trợ về vấn đề gì..." className="w-full px-4 py-3 rounded-xl bg-secondary/50 border border-border focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none resize-none"></textarea>
-                                </div>
-
-                                <button type="button" className="w-full py-4 bg-foreground text-background font-bold rounded-xl transition-colors hover:bg-foreground/90 flex items-center justify-center gap-2 group border border-transparent">
-                                    Gửi yêu cầu
-                                    <Send className="w-4 h-4" />
-                                </button>
-                            </form>
+                            <ContactForm />
                         </div>
                     </div>
                 </div>

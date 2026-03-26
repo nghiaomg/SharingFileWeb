@@ -4,11 +4,11 @@ import type { StandardResponse } from '@/shared/api/api.types';
 
 export const shareLinksApi = {
   getShareLinks: async (): Promise<ShareLink[]> => {
-    const response = await axiosInstance.get<StandardResponse<ShareLink[]>>('/api/share/admin/links');
+    const response = await axiosInstance.get<StandardResponse<ShareLink[]>>('/api/share/links');
     return response.data.data;
   },
   deleteShareLink: async (id: string): Promise<void> => {
-    await axiosInstance.delete(`/api/share/admin/links/${id}`);
+    await axiosInstance.delete(`/api/share/links/${id}`);
   },
 };
 

@@ -7,3 +7,13 @@ export interface Folder {
   updatedAt: string;
   isDeleted: boolean;
 }
+
+export interface FolderFile {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  ownerId: string;
+  folderId: string;
+  createdAt: string;
+}

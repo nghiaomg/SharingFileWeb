@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.sharingfileweb.models.User;
 import com.sharingfileweb.payload.request.UpdateProfileRequest;
+import com.sharingfileweb.payload.request.ChangePasswordRequest;
 import com.sharingfileweb.payload.response.UserProfileResponse;
 import com.sharingfileweb.repository.FileRepository;
 import com.sharingfileweb.repository.UserRepository;
@@ -25,6 +26,22 @@ public class UserService {
 
     @Autowired
     FileRepository fileRepository;
+
+    @Autowired
+    org.springframework.security.crypto.password.PasswordEncoder encoder;
+
+    public void changePassword(ChangePasswordRequest request) {
+        UserDetailsImpl userDetails = getCurrentUserDetails();
+        User user = userRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new RuntimeException("User not found!"));
+
+        if (!encoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new RuntimeException("Mật khẩu hiện tại không chính xác!");
+        }
+
+        user.setPassword(encoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+    }
 
     private UserDetailsImpl getCurrentUserDetails() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

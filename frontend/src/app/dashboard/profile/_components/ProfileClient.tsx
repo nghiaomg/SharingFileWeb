@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useSuspenseCurrentUser, useSuspenseStorageUsage } from "@/features/auth/queries";
 import { useUpdateProfile } from "@/features/auth/mutations";
 import { getApiErrorMessage } from "@/types/api";
+import { ChangePasswordModal } from "./ChangePasswordModal";
 
 function formatBytes(bytes: number, decimals = 2) {
     if (!+bytes) return '0 Bytes';
@@ -32,6 +33,7 @@ export function ProfileClient() {
     const updateProfileMutation = useUpdateProfile();
     
     const [isEditing, setIsEditing] = useState(false);
+    const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
     const [editEmail, setEditEmail] = useState("");
     const [successMsg, setSuccessMsg] = useState("");
 
@@ -117,9 +119,14 @@ export function ProfileClient() {
                                 </button>
                             </>
                         ) : (
-                            <button onClick={handleStartEdit} className="px-6 py-2.5 bg-secondary text-foreground font-bold rounded-xl border border-transparent hover:border-gray-200 transition-colors text-sm flex items-center gap-2">
-                                <Edit2 className="w-4 h-4 inline" /> Chỉnh sửa hồ sơ
-                            </button>
+                            <>
+                                <button onClick={() => setIsChangePasswordModalOpen(true)} className="px-5 py-2.5 bg-background border border-border text-foreground font-bold rounded-xl hover:border-primary transition-colors text-sm flex items-center gap-2 whitespace-nowrap">
+                                    <ShieldCheck className="w-4 h-4 inline text-primary" /> Đổi mật khẩu
+                                </button>
+                                <button onClick={handleStartEdit} className="px-6 py-2.5 bg-secondary text-foreground font-bold rounded-xl border border-transparent hover:border-gray-200 transition-colors text-sm flex items-center gap-2 whitespace-nowrap">
+                                    <Edit2 className="w-4 h-4 inline" /> Chỉnh sửa
+                                </button>
+                            </>
                         )}
                     </div>
                 </div>
@@ -251,6 +258,8 @@ export function ProfileClient() {
                     </div>
                 </div>
             </div>
+            
+            <ChangePasswordModal isOpen={isChangePasswordModalOpen} onClose={() => setIsChangePasswordModalOpen(false)} />
         </div>
     );
 }

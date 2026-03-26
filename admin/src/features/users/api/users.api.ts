@@ -4,18 +4,18 @@ import type { StandardResponse } from '@/shared/api/api.types';
 
 export const usersApi = {
   getUsers: async (): Promise<User[]> => {
-    const response = await axiosInstance.get<StandardResponse<User[]>>('/api/admin/users');
+    const response = await axiosInstance.get<StandardResponse<User[]>>('/api/users');
     return response.data.data;
   },
   getUser: async (id: string): Promise<User> => {
-    const response = await axiosInstance.get<StandardResponse<User>>(`/api/admin/users/${id}`);
+    const response = await axiosInstance.get<StandardResponse<User>>(`/api/users/${id}`);
     return response.data.data;
   },
   updateUser: async (id: string, data: UpdateUserRequest): Promise<User> => {
-    const response = await axiosInstance.put<StandardResponse<User>>(`/api/admin/users/${id}`, data);
+    const response = await axiosInstance.put<StandardResponse<User>>(`/api/users/${id}`, data);
     return response.data.data;
   },
   deleteUser: async (id: string): Promise<void> => {
-    await axiosInstance.delete(`/api/admin/users/${id}`);
+    await axiosInstance.delete(`/api/users/${id}`);
   },
 };

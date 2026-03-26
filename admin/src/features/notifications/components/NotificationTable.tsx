@@ -45,6 +45,7 @@ export const NotificationTable: React.FC = () => {
 
   return (
     <Table
+      scroll={{ x: 'max-content' }}
       dataSource={notifications}
       columns={columns}
       rowKey="id"

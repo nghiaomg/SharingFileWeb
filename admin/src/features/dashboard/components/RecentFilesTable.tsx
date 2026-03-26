@@ -24,6 +24,7 @@ export const RecentFilesTable: React.FC = () => {
   return (
     <Card title="Tệp tin tải lên gần đây" style={{ marginTop: 24 }}>
       <Table
+        scroll={{ x: 'max-content' }}
         dataSource={recentFiles}
         columns={columns}
         rowKey="id"

@@ -17,17 +17,17 @@ export const StorageCategoryChart: React.FC = () => {
 
   if (isLoading) return <Card loading={true} />;
 
-  const totalSize = categories?.reduce((acc, cat) => acc + cat.totalSize, 0) || 0;
+  const totalSize = categories?.reduce((acc, cat) => acc + cat.size, 0) || 0;
 
   return (
     <Card title="Thống kê lưu trữ theo loại file">
       {categories?.map((cat) => {
-        const percent = totalSize > 0 ? Math.round((cat.totalSize / totalSize) * 100) : 0;
+        const percent = totalSize > 0 ? Math.round((cat.size / totalSize) * 100) : 0;
         return (
-          <div key={cat.category} style={{ marginBottom: 16 }}>
+          <div key={cat.title} style={{ marginBottom: 16 }}>
             <Row justify="space-between" style={{ marginBottom: 4 }}>
-              <Col><Text strong>{cat.category}</Text></Col>
-              <Col><Text type="secondary">{formatBytes(cat.totalSize)} ({cat.fileCount} tệp)</Text></Col>
+              <Col><Text strong>{cat.title}</Text></Col>
+              <Col><Text type="secondary">{formatBytes(cat.size)} ({cat.files} tệp)</Text></Col>
             </Row>
             <Progress percent={percent} strokeColor="#1677ff" />
           </div>

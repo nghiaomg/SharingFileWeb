@@ -29,7 +29,7 @@ export const DashboardStats: React.FC = () => {
   const totalFiles = files?.length || 0;
   // Fallback to active links if isRevoked exists
   const activeLinks = shareLinks?.filter(link => !link.isRevoked).length || 0;
-  const totalStorage = categories?.reduce((acc, cat) => acc + cat.totalSize, 0) || 0;
+  const totalStorage = categories?.reduce((acc, cat) => acc + cat.size, 0) || 0;
 
   return (
     <Row gutter={[24, 24]} style={{ marginBottom: 24 }}>

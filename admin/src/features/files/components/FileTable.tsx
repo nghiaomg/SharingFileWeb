@@ -67,6 +67,7 @@ export const FileTable: React.FC = () => {
 
   return (
     <Table
+      scroll={{ x: 'max-content' }}
       dataSource={files}
       columns={columns}
       rowKey="id"

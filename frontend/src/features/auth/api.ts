@@ -1,6 +1,6 @@
 import apiClient from "@/lib/api-client";
 import Cookies from "js-cookie";
-import type { User, LoginInput, SignupInput, UpdateProfileInput, StorageUsage } from "./schemas";
+import type { User, LoginInput, SignupInput, UpdateProfileInput, StorageUsage, ChangePasswordInput } from "./schemas";
 
 export async function login(data: LoginInput): Promise<User> {
   const response = await apiClient.post("/auth/signin", data);
@@ -73,4 +73,8 @@ export async function upgradePlan(): Promise<User> {
   await apiClient.post("/subscription/upgrade");
   // Sau khi upgrade, nên lấy lại info mới
   return getMe();
+}
+
+export async function changePassword(data: Omit<ChangePasswordInput, 'confirmPassword'>): Promise<void> {
+  await apiClient.put("/user/password", data);
 }

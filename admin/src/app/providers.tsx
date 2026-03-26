@@ -9,8 +9,14 @@ export const AppProviders: React.FC<{ children: React.ReactNode }> = ({ children
       <ConfigProvider
         theme={{
           token: {
-            colorPrimary: '#1677ff',
+            colorPrimary: '#000000',
             borderRadius: 6,
+          },
+          components: {
+            Menu: {
+              itemSelectedBg: '#000000',
+              itemSelectedColor: '#ffffff',
+            },
           },
         }}
       >

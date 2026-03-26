@@ -1,11 +1,18 @@
 import React from 'react';
-import { Layout, Dropdown, Space, Avatar } from 'antd';
-import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
+import { Layout, Dropdown, Space, Avatar, Button } from 'antd';
+import type { MenuProps } from 'antd';
+import { UserOutlined, LogoutOutlined, MenuFoldOutlined, MenuUnfoldOutlined, LockOutlined } from '@ant-design/icons';
 import { useAuthStore, useLogoutMutation } from '@/features/auth';
+import { ChangePasswordModal } from '@/features/auth/components/ChangePasswordModal';
 
 const { Header } = Layout;
 
-export const AdminHeader: React.FC = () => {
+interface AdminHeaderProps {
+  collapsed: boolean;
+  setCollapsed: (val: boolean) => void;
+}
+
+export const AdminHeader: React.FC<AdminHeaderProps> = ({ collapsed, setCollapsed }) => {
   const user = useAuthStore((state) => state.user);
   const logoutMutation = useLogoutMutation();
 
@@ -13,7 +20,18 @@ export const AdminHeader: React.FC = () => {
     logoutMutation.mutate();
   };
 
-  const items = [
+  const [isChangePasswordModalVisible, setIsChangePasswordModalVisible] = React.useState(false);
+
+  const items: MenuProps['items'] = [
+    {
+      key: 'change-password',
+      label: 'Đổi mật khẩu',
+      icon: <LockOutlined />,
+      onClick: () => setIsChangePasswordModalVisible(true),
+    },
+    {
+      type: 'divider',
+    },
     {
       key: 'logout',
       label: 'Đăng xuất',
@@ -24,13 +42,28 @@ export const AdminHeader: React.FC = () => {
   ];
 
   return (
-    <Header style={{ padding: '0 24px', background: '#fff', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', boxShadow: '0 1px 4px rgba(0,21,41,0.08)', zIndex: 1 }}>
+    <Header style={{ padding: '0 16px', background: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 4px rgba(0,21,41,0.08)', zIndex: 1 }}>
+      <Button
+        type="text"
+        icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+        onClick={() => setCollapsed(!collapsed)}
+        style={{
+          fontSize: '16px',
+          width: 48,
+          height: 48,
+        }}
+      />
       <Dropdown menu={{ items }} placement="bottomRight">
         <Space style={{ cursor: 'pointer' }}>
           <Avatar icon={<UserOutlined />} />
           <span style={{ fontWeight: 500 }}>{user?.username || 'Admin'}</span>
         </Space>
       </Dropdown>
+      
+      <ChangePasswordModal 
+        open={isChangePasswordModalVisible} 
+        onCancel={() => setIsChangePasswordModalVisible(false)} 
+      />
     </Header>
   );
 };

@@ -9,6 +9,9 @@ public class LoginRequest {
   @NotBlank
   private String password;
 
+  @NotBlank(message = "Captcha token is required")
+  private String turnstileToken;
+
   public String getUsername() {
     return username;
   }
@@ -23,5 +26,13 @@ public class LoginRequest {
 
   public void setPassword(String password) {
     this.password = password;
+  }
+
+  public String getTurnstileToken() {
+    return turnstileToken;
+  }
+
+  public void setTurnstileToken(String turnstileToken) {
+    this.turnstileToken = turnstileToken;
   }
 }
