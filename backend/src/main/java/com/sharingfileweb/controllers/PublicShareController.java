@@ -11,11 +11,12 @@ import com.sharingfileweb.models.StorageFile;
 import com.sharingfileweb.payload.response.FileResponse;
 import com.sharingfileweb.payload.response.StandardResponse;
 import com.sharingfileweb.repository.FileRepository;
-import com.sharingfileweb.security.services.FileStorageService;
+import com.sharingfileweb.services.B2StorageService;
 import com.sharingfileweb.services.ShareLinkService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -34,7 +35,7 @@ public class PublicShareController {
     private FileRepository fileRepository;
 
     @Autowired
-    private FileStorageService fileStorageService;
+    private B2StorageService b2StorageService;
 
     @Operation(summary = "Lấy thông tin tệp qua Link", description = "Lấy tên tệp, kích thước... từ mã token của link chia sẻ.")
     @GetMapping("/{token}")
@@ -65,7 +66,10 @@ public class PublicShareController {
         }
     }
 
-    @Operation(summary = "Tải xuống tệp qua Link", description = "Tải xuống tệp thực tế từ link chia sẻ, yêu cầu mật khẩu nếu link có bảo mật.")
+    /**
+     * Download qua share link: trả presigned URL thay vì stream qua server.
+     */
+    @Operation(summary = "Tải xuống tệp qua Link", description = "Lấy presigned URL để tải xuống tệp qua link chia sẻ trực tiếp từ cloud storage.")
     @GetMapping("/{token}/download")
     public ResponseEntity<?> downloadFileByToken(
             @Parameter(description = "Mã token của link chia sẻ") @PathVariable String token,
@@ -83,19 +87,24 @@ public class PublicShareController {
                 return ResponseEntity.notFound().build();
             }
 
-            org.springframework.core.io.Resource resource = fileStorageService.loadFileAsResource(file);
+            // Tạo presigned URL từ B2
+            if (file.getB2FileName() == null || file.getB2FileName().isEmpty()) {
+                return ResponseEntity.status(500).body(StandardResponse.error("File chưa được migrate lên cloud storage.", null));
+            }
 
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
-                    .contentType(MediaType.parseMediaType(file.getType()))
-                    .body(resource);
+            String downloadUrl = b2StorageService.getPresignedDownloadUrl(file.getB2FileName());
+
+            return ResponseEntity.ok(StandardResponse.success("Download URL", Map.of(
+                "url", downloadUrl,
+                "fileName", file.getName(),
+                "fileType", file.getType(),
+                "fileSize", file.getSize()
+            )));
         } catch (RuntimeException e) {
             if ("REQUIRES_PASSWORD".equals(e.getMessage())) {
                 return ResponseEntity.status(403).body(StandardResponse.error("REQUIRES_PASSWORD", null));
             }
             return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(StandardResponse.error("Lỗi khi tải xuống: " + e.getMessage(), null));
         }
     }
 

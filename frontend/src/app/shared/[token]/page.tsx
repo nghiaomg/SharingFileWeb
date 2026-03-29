@@ -84,8 +84,10 @@ export default function SharedTokenPage() {
                 const downloadUrl = `${API_BASE_URL}/public/share/${token}/download${query}`;
                 const res = await fetch(downloadUrl);
                 if (res.ok) {
-                    const blob = await res.blob();
-                    setPreviewUrl(window.URL.createObjectURL(blob));
+                    const data = await res.json();
+                    if (data?.data?.url) {
+                        setPreviewUrl(data.data.url);
+                    }
                 }
             }
         } catch (err) {
@@ -149,15 +151,18 @@ export default function SharedTokenPage() {
                 return;
             }
 
-            const blob = await res.blob();
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.setAttribute("download", fileData.name);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            window.URL.revokeObjectURL(url);
+            const resJSON = await res.json();
+            if (resJSON?.data?.url) {
+                const link = document.createElement("a");
+                link.href = resJSON.data.url;
+                link.target = "_blank"; // Support cross-origin download trigger
+                link.setAttribute("download", fileData.name);
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+            } else {
+                alert("Không lấy được đường dẫn URL");
+            }
         } catch {
             alert("Lỗi khi tải xuống");
         }

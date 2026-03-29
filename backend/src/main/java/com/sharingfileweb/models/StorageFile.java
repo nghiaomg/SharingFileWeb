@@ -22,7 +22,11 @@ public class StorageFile {
 
   private String folderId; // null or empty means root folder
 
-  private String storedPath; // Physical path or relative path on server
+  private String storedPath; // DEPRECATED — giữ lại cho backward compatibility với data cũ
+
+  private String b2FileId;   // Backblaze B2 file ID
+
+  private String b2FileName; // Backblaze B2 file name (path in bucket: {ownerId}/{uuid}.ext)
 
   private Instant createdAt;
 
@@ -41,6 +45,7 @@ public class StorageFile {
   public StorageFile() {
   }
 
+  // Constructor legacy (disk storage)
   public StorageFile(String name, String type, long size, String ownerId, String folderId, String storedPath) {
     this.name = name;
     this.type = type;
@@ -48,6 +53,23 @@ public class StorageFile {
     this.ownerId = ownerId;
     this.folderId = folderId;
     this.storedPath = storedPath;
+    this.createdAt = Instant.now();
+    this.isPublic = false;
+    this.accessMode = "PRIVATE";
+    this.sharedEmails = new ArrayList<>();
+    this.shareExpiresAt = null;
+    this.isDeleted = false;
+  }
+
+  // Constructor mới cho B2 storage
+  public StorageFile(String name, String type, long size, String ownerId, String folderId, String b2FileId, String b2FileName) {
+    this.name = name;
+    this.type = type;
+    this.size = size;
+    this.ownerId = ownerId;
+    this.folderId = folderId;
+    this.b2FileId = b2FileId;
+    this.b2FileName = b2FileName;
     this.createdAt = Instant.now();
     this.isPublic = false;
     this.accessMode = "PRIVATE";
@@ -166,5 +188,21 @@ public class StorageFile {
 
   public void setShareExpiresAt(Instant shareExpiresAt) {
     this.shareExpiresAt = shareExpiresAt;
+  }
+
+  public String getB2FileId() {
+    return b2FileId;
+  }
+
+  public void setB2FileId(String b2FileId) {
+    this.b2FileId = b2FileId;
+  }
+
+  public String getB2FileName() {
+    return b2FileName;
+  }
+
+  public void setB2FileName(String b2FileName) {
+    this.b2FileName = b2FileName;
   }
 }

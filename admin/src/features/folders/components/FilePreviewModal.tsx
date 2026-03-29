@@ -34,12 +34,21 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({ file, onClos
       try {
         const isExcel = file.type.includes('spreadsheet') || file.type.includes('excel');
         
-        const response = await axiosInstance.get(`/api/files/download/${file.id}`, {
-          responseType: isExcel ? 'arraybuffer' : 'blob'
-        });
+        // Bước 1: Gọi API Backend để lấy Presigned Download URL
+        const response = await axiosInstance.get(`/api/files/download/${file.id}`);
+        const presignedUrl = response.data?.data?.url;
+
+        if (!presignedUrl) {
+           throw new Error("Không lấy được link file");
+        }
 
         if (isExcel) {
-          const workbook = XLSX.read(response.data, { type: 'buffer' });
+          // Bước 2: Dùng URL đó fetch file dạng ArrayBuffer cho Excel
+          const fileRes = await fetch(presignedUrl);
+          if (!fileRes.ok) throw new Error("Fetch failed");
+          const arrayBuffer = await fileRes.arrayBuffer();
+
+          const workbook = XLSX.read(arrayBuffer, { type: 'buffer' });
           const firstSheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[firstSheetName];
           const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as unknown[][];
@@ -62,10 +71,11 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({ file, onClos
             setExcelData(rows);
           }
         } else {
-          objectUrl = URL.createObjectURL(new Blob([response.data], { type: file.type }));
-          setFileUrl(objectUrl);
+          // Image / PDF: Set thẳng URL
+          setFileUrl(presignedUrl);
         }
-      } catch {
+      } catch (err) {
+        console.error(err);
         message.error('Không thể tải tệp preview, lỗi mạng hoặc lỗi CORS');
       } finally {
         setLoading(false);
@@ -86,15 +96,14 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({ file, onClos
 
   const handleDownload = () => {
     if (fileUrl) {
-      const a = document.createElement('a');
-      a.href = fileUrl;
-      a.download = file?.name || 'download';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      window.open(fileUrl, '_blank');
     } else if (file) {
-      // fallback
-      window.open(`/api/files/download/${file.id}`);
+      // fallback if fileUrl is not available (e.g., excel mode where fileUrl is not set)
+      axiosInstance.get(`/api/files/download/${file.id}`).then(res => {
+         if (res.data?.data?.url) {
+            window.open(res.data.data.url, '_blank');
+         }
+      }).catch(() => message.error("Lỗi khi tải file"));
     }
   };
 

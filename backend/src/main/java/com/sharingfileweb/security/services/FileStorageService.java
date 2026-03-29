@@ -1,5 +1,6 @@
 package com.sharingfileweb.security.services;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -8,14 +9,14 @@ import java.nio.file.*;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Stream;
-import com.sharingfileweb.models.StorageFile;
 import java.util.UUID;
+import java.util.stream.Stream;
+
+import com.sharingfileweb.services.B2StorageService;
+
 import org.apache.tika.Tika;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -26,11 +27,12 @@ public class FileStorageService {
 
   private final String UPLOAD_DIR = Paths.get("uploads").toAbsolutePath().normalize().toString();
   private final String TEMP_DIR = UPLOAD_DIR + File.separator + "temp";
-  private final String FILES_DIR = UPLOAD_DIR + File.separator + "files";
+
+  @Autowired
+  private B2StorageService b2StorageService;
 
   public FileStorageService() {
     createDirectory(TEMP_DIR);
-    createDirectory(FILES_DIR);
   }
 
   private void createDirectory(String path) {
@@ -40,6 +42,8 @@ public class FileStorageService {
       throw new RuntimeException("Could not create directory: " + path, e);
     }
   }
+
+  // ─── Chunk Management (giữ nguyên trên temp disk) ─────────────────────────
 
   public void storeChunk(String uploadId, int chunkIndex, MultipartFile file) throws IOException {
     if (file.isEmpty()) {
@@ -75,22 +79,36 @@ public class FileStorageService {
     return uploadedChunks;
   }
 
-  public static class MergedFileResult {
-      private String storedPath;
+  // ─── Merge + Upload to B2 ─────────────────────────────────────────────────
+
+  /**
+   * Kết quả merge + upload B2.
+   * Thay thế MergedFileResult cũ — giờ chứa thông tin B2 thay vì disk path.
+   */
+  public static class B2MergedResult {
+      private String b2FileId;
+      private String b2FileName;
       private String realMimeType;
       private long finalSize;
       
-      public MergedFileResult(String storedPath, String realMimeType, long finalSize) {
-          this.storedPath = storedPath;
+      public B2MergedResult(String b2FileId, String b2FileName, String realMimeType, long finalSize) {
+          this.b2FileId = b2FileId;
+          this.b2FileName = b2FileName;
           this.realMimeType = realMimeType;
           this.finalSize = finalSize;
       }
-      public String getStoredPath() { return storedPath; }
+      public String getB2FileId() { return b2FileId; }
+      public String getB2FileName() { return b2FileName; }
       public String getRealMimeType() { return realMimeType; }
       public long getFinalSize() { return finalSize; }
   }
 
-  public MergedFileResult mergeChunks(String uploadId, String fileName, int totalChunks, String ownerId) throws IOException {
+  /**
+   * Merge chunks → validate (Tika + image re-encode) → upload B2 → cleanup local.
+   * 
+   * Flow: temp chunks → merged file → Tika detect → image re-encode nếu cần → upload B2 → xóa file local
+   */
+  public B2MergedResult mergeChunksAndUploadB2(String uploadId, String fileName, int totalChunks, String ownerId) throws IOException {
     String chunkDirPath = TEMP_DIR + File.separator + uploadId;
     Path chunkDir = Paths.get(chunkDirPath);
 
@@ -98,8 +116,9 @@ public class FileStorageService {
       throw new RuntimeException("Temporary chunk directory not found.");
     }
 
-    String ownerDirPath = FILES_DIR + File.separator + ownerId;
-    createDirectory(ownerDirPath);
+    // Tạo thư mục temp tạm để merge (sẽ xóa sau khi upload B2)
+    String tempMergeDir = TEMP_DIR + File.separator + "merge_" + uploadId;
+    createDirectory(tempMergeDir);
 
     String extension = "";
     int extIndex = fileName.lastIndexOf('.');
@@ -107,13 +126,19 @@ public class FileStorageService {
         extension = fileName.substring(extIndex);
     }
     String uniqueFileName = UUID.randomUUID().toString() + extension;
-    Path mergedFilePath = Paths.get(ownerDirPath, uniqueFileName);
+    Path mergedFilePath = Paths.get(tempMergeDir, uniqueFileName);
 
     if (totalChunks == 0) {
         Files.createFile(mergedFilePath);
-        return new MergedFileResult(mergedFilePath.toString(), "application/octet-stream", 0);
+        // Upload empty file to B2
+        String b2FileName = ownerId + "/" + uniqueFileName;
+        B2StorageService.B2UploadResult result = b2StorageService.uploadFile(mergedFilePath, b2FileName, "application/octet-stream");
+        // Cleanup local
+        deleteDirectoryRecursively(Paths.get(tempMergeDir));
+        return new B2MergedResult(result.getB2FileId(), result.getB2FileName(), "application/octet-stream", 0);
     }
 
+    // Merge chunks vào file tạm
     try (OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(mergedFilePath.toFile(), true))) {
       for (int i = 0; i < totalChunks; i++) {
         Path chunkPath = Paths.get(chunkDirPath, String.valueOf(i));
@@ -124,7 +149,7 @@ public class FileStorageService {
       }
     }
 
-    // Clean up temporary chunks
+    // Cleanup chunk directory
     deleteDirectoryRecursively(chunkDir);
 
     // Lớp 1: Đọc Magic Bytes bằng Tika
@@ -157,36 +182,38 @@ public class FileStorageService {
             }
         } catch (Exception e) {
             System.err.println("Could not re-encode image: " + e.getMessage());
+            // Cleanup temp merge dir trước khi throw
+            deleteDirectoryRecursively(Paths.get(tempMergeDir));
             throw new RuntimeException("Upload failed due to invalid image file content.");
         }
     }
 
     long finalSize = Files.size(mergedFilePath);
-    return new MergedFileResult(mergedFilePath.toString(), realMimeType, finalSize);
+
+    // Upload lên B2
+    String b2FileName = ownerId + "/" + uniqueFileName;
+    B2StorageService.B2UploadResult b2Result;
+
+    try {
+        // File > 100MB dùng Large File API
+        if (finalSize > 100 * 1024 * 1024) {
+            b2Result = b2StorageService.uploadLargeFile(mergedFilePath, b2FileName, realMimeType);
+        } else {
+            b2Result = b2StorageService.uploadFile(mergedFilePath, b2FileName, realMimeType);
+        }
+    } finally {
+        // QUAN TRỌNG: Luôn xóa file local sau khi upload (dù thành công hay thất bại)
+        try {
+            deleteDirectoryRecursively(Paths.get(tempMergeDir));
+        } catch (IOException cleanupEx) {
+            System.err.println("[Cleanup] Failed to delete temp merge dir: " + cleanupEx.getMessage());
+        }
+    }
+
+    return new B2MergedResult(b2Result.getB2FileId(), b2Result.getB2FileName(), realMimeType, finalSize);
   }
 
-  public Resource loadFileAsResource(StorageFile file) throws Exception {
-    try {
-      Path filePath = Paths.get(file.getStoredPath()).normalize();
-      Resource resource = new UrlResource(filePath.toUri());
-      if (resource.exists() && resource.isReadable()) {
-        return resource;
-      } else {
-        throw new FileNotFoundException("File not found or not readable " + file.getName());
-      }
-    } catch (Exception ex) {
-      throw new Exception("Could not find file " + file.getName(), ex);
-    }
-  }
-
-  public void deleteFilePhysical(String storedPath) {
-    try {
-      Path path = Paths.get(storedPath);
-      Files.deleteIfExists(path);
-    } catch (IOException e) {
-      System.err.println("Could not delete physical file: " + storedPath);
-    }
-  }
+  // ─── Utility ──────────────────────────────────────────────────────────────
 
   public void deleteDirectoryRecursively(Path path) throws IOException {
     if (Files.exists(path)) {
@@ -201,9 +228,6 @@ public class FileStorageService {
   /**
    * Quét tất cả sub-folder trong uploads/temp/ và xóa những folder
    * có lastModifiedTime không được cập nhật trong >= thresholdHours giờ.
-   *
-   * @param thresholdHours số giờ tối thiểu không hoạt động để bị coi là "stale"
-   * @return số lượng folder đã xóa
    */
   public int cleanupStaleTempFolders(long thresholdHours) {
     Path tempDir = Paths.get(TEMP_DIR);

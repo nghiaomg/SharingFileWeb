@@ -13,7 +13,6 @@ import com.sharingfileweb.models.Folder;
 import com.sharingfileweb.models.StorageFile;
 import com.sharingfileweb.repository.FileRepository;
 import com.sharingfileweb.repository.FolderRepository;
-import com.sharingfileweb.security.services.FileStorageService;
 import com.sharingfileweb.security.services.UserDetailsImpl;
 
 @Service
@@ -26,7 +25,7 @@ public class TrashService {
     FileRepository fileRepository;
 
     @Autowired
-    FileStorageService fileStorageService;
+    B2StorageService b2StorageService;
 
     private String getCurrentUserId() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -114,7 +113,9 @@ public class TrashService {
         } else if (type.equals("file")) {
             StorageFile file = fileRepository.findByIdAndOwnerIdAndIsDeletedTrue(id, userId)
                     .orElseThrow(() -> new RuntimeException("File not found in trash"));
-            fileStorageService.deleteFilePhysical(file.getStoredPath());
+            
+            // Xóa trên B2 trước khi xóa metadata
+            deleteB2File(file);
             fileRepository.deleteById(file.getId());
         } else {
             throw new IllegalArgumentException("Invalid type: " + type);
@@ -125,7 +126,7 @@ public class TrashService {
         List<StorageFile> files = fileRepository.findByOwnerIdAndIsDeletedTrue(userId).stream()
                 .filter(f -> folderId.equals(f.getFolderId())).toList();
         for (StorageFile f : files) {
-            fileStorageService.deleteFilePhysical(f.getStoredPath());
+            deleteB2File(f);
             fileRepository.deleteById(f.getId());
         }
 
@@ -141,23 +142,27 @@ public class TrashService {
     public void emptyTrash() {
         String userId = getCurrentUserId();
         
-        // Find all deleted files and folders
+        // Xóa tất cả files đã deleted (xóa B2 + DB)
         List<StorageFile> deletedFiles = fileRepository.findByOwnerIdAndIsDeletedTrue(userId);
         for (StorageFile file : deletedFiles) {
-            fileStorageService.deleteFilePhysical(file.getStoredPath());
+            deleteB2File(file);
             fileRepository.deleteById(file.getId());
         }
 
+        // Xóa tất cả folders đã deleted
         List<Folder> deletedFolders = folderRepository.findByOwnerIdAndIsDeletedTrue(userId);
         for (Folder folder : deletedFolders) {
             deletePermanentRecursively(folder.getId(), userId);
-            // wait, deletePermanentRecursively will delete children too.
-            // But since all deleted folders are deleted here, we can just delete them.
-            // Actually, if we just delete all deletedFolders by ID, it's safer.
-            // But deletePermanentRecursively also handles files inside nested folders if they weren't matched above?
-            // Yes, so:
-            // deletedFolders contains all folders marked isDeleted=true.
-            // We just need to ensure physical files are removed.
         }
+    }
+
+    /**
+     * Helper xóa file trên B2. Tách riêng để tái sử dụng và xử lý cả legacy (storedPath).
+     */
+    private void deleteB2File(StorageFile file) {
+        if (file.getB2FileId() != null && !file.getB2FileId().isEmpty()) {
+            b2StorageService.deleteFile(file.getB2FileId(), file.getB2FileName());
+        }
+        // Legacy files (storedPath) — không có B2 → skip, chỉ xóa metadata
     }
 }

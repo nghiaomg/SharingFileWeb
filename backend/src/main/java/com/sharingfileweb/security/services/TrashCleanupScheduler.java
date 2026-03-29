@@ -8,6 +8,7 @@ import com.sharingfileweb.models.Folder;
 import com.sharingfileweb.models.StorageFile;
 import com.sharingfileweb.repository.FileRepository;
 import com.sharingfileweb.repository.FolderRepository;
+import com.sharingfileweb.services.B2StorageService;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -26,6 +27,9 @@ public class TrashCleanupScheduler {
     @Autowired
     FileStorageService fileStorageService;
 
+    @Autowired
+    B2StorageService b2StorageService;
+
     // Chạy lúc 2 giờ sáng mỗi ngày
     @Scheduled(cron = "0 0 2 * * ?")
     public void cleanupOldTrashItems() {
@@ -37,7 +41,10 @@ public class TrashCleanupScheduler {
         // Tìm các File Deleted > 30 Days
         List<StorageFile> filesToDelete = fileRepository.findByIsDeletedTrueAndDeletedAtBefore(thirtyDaysAgoDate);
         for (StorageFile file : filesToDelete) {
-            fileStorageService.deleteFilePhysical(file.getStoredPath());
+            // Xóa trên B2
+            if (file.getB2FileId() != null && !file.getB2FileId().isEmpty()) {
+                b2StorageService.deleteFile(file.getB2FileId(), file.getB2FileName());
+            }
             fileRepository.deleteById(file.getId());
             System.out.println("Đã tự động xóa vĩnh viễn tệp rác: " + file.getId());
         }

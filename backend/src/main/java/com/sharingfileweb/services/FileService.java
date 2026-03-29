@@ -32,6 +32,9 @@ public class FileService {
     FileStorageService fileStorageService;
 
     @Autowired
+    B2StorageService b2StorageService;
+
+    @Autowired
     UploadLimitService uploadLimitService;
 
     @Autowired
@@ -104,7 +107,6 @@ public class FileService {
             if ("BASIC".equals(user.getSubscriptionPlan()) && user.getMaxFileSize() < 1024L * 1024 * 1024) {
                 user.setMaxFileSize(1024L * 1024 * 1024);
                 userRepository.save(user);
-            // End auto-upgrade
             }
 
             if (totalFileSize > user.getMaxFileSize()) {
@@ -146,10 +148,19 @@ public class FileService {
         }
 
         try {
-            FileStorageService.MergedFileResult mergedResult = fileStorageService.mergeChunks(uploadId, fileName, totalChunks, userId);
+            // Merge chunks → validate → upload B2 → cleanup local
+            FileStorageService.B2MergedResult b2Result = fileStorageService.mergeChunksAndUploadB2(uploadId, fileName, totalChunks, userId);
             
-            // Lớp 1 & Lớp 4: Lưu Type thật và Size thật (sau re-encode) thay vì tin client
-            StorageFile storageFile = new StorageFile(fileName, mergedResult.getRealMimeType(), mergedResult.getFinalSize(), userId, normalizedFolderId, mergedResult.getStoredPath());
+            // Lưu metadata với b2FileId + b2FileName thay vì storedPath
+            StorageFile storageFile = new StorageFile(
+                fileName, 
+                b2Result.getRealMimeType(), 
+                b2Result.getFinalSize(), 
+                userId, 
+                normalizedFolderId, 
+                b2Result.getB2FileId(), 
+                b2Result.getB2FileName()
+            );
             StorageFile savedFile = fileRepository.save(storageFile);
             return mapToResponse(savedFile);
         } finally {
@@ -163,6 +174,7 @@ public class FileService {
         StorageFile file = fileRepository.findByIdAndOwnerIdAndIsDeletedFalse(id, userId)
                 .orElseThrow(() -> new RuntimeException("File not found"));
 
+        // Soft-delete: KHÔNG xóa file trên B2, chỉ đánh dấu deleted
         file.setDeleted(true);
         file.setDeletedAt(new Date());
         fileRepository.save(file);
@@ -177,6 +189,9 @@ public class FileService {
         if (newName == null || newName.trim().isEmpty()) {
             throw new RuntimeException("Name cannot be empty");
         }
+
+        // Sanitize filename — chống XSS
+        newName = newName.replaceAll("[<>\"'&]", "_");
 
         if (!file.getName().equals(newName) &&
                 fileRepository.existsByNameAndOwnerIdAndFolderIdAndIsDeletedFalse(newName, userId, file.getFolderId())) {
@@ -198,7 +213,12 @@ public class FileService {
         file.setAccessMode(mode);
         file.setPublic("PUBLIC".equals(mode));
         
-        file.setSharedEmails(payload.getSharedEmails() != null ? payload.getSharedEmails() : new java.util.ArrayList<>());
+        List<String> emails = payload.getSharedEmails() != null ? payload.getSharedEmails() : new java.util.ArrayList<>();
+        // Giới hạn số lượng shared emails (chống mass share)
+        if (emails.size() > 50) {
+            throw new RuntimeException("Không thể chia sẻ cho quá 50 người cùng lúc.");
+        }
+        file.setSharedEmails(emails);
 
         if (payload.getExpiresInDays() != null) {
             file.setShareExpiresAt(Instant.now().plus(payload.getExpiresInDays(), ChronoUnit.DAYS));
@@ -211,12 +231,22 @@ public class FileService {
         return mapToResponse(file);
     }
 
-    public org.springframework.core.io.Resource downloadPrivateFile(String id) throws Exception {
+    /**
+     * Tạo presigned download URL cho file private (owner download).
+     * Client sẽ nhận URL và download trực tiếp từ B2 CDN.
+     */
+    public String getPresignedDownloadUrl(String id) throws Exception {
         String userId = getCurrentUserId();
         StorageFile file = fileRepository.findByIdAndOwnerIdAndIsDeletedFalse(id, userId)
                 .orElseThrow(() -> new Exception("File not found or deleted"));
 
-        return fileStorageService.loadFileAsResource(file);
+        // Ưu tiên B2, fallback cho data cũ (storedPath)
+        if (file.getB2FileName() != null && !file.getB2FileName().isEmpty()) {
+            return b2StorageService.getPresignedDownloadUrl(file.getB2FileName());
+        }
+
+        // Fallback: file cũ vẫn trên disk — throw lỗi yêu cầu migration
+        throw new Exception("File chưa được migrate lên cloud storage. Vui lòng liên hệ admin.");
     }
 
     public StorageFile getFileEntity(String id) throws Exception {
@@ -232,7 +262,6 @@ public class FileService {
             throw new RuntimeException("File not found");
         }
         
-        // Cũ: chỉ kiểm tra isPublic. Mới: nếu PRIVATE thì chặn, PUBLIC thì ok, RESTRICTED thì logic sau.
         // Hết hạn: block
         if (file.getShareExpiresAt() != null && file.getShareExpiresAt().isBefore(Instant.now())) {
             throw new RuntimeException("Share link expired");
@@ -244,7 +273,6 @@ public class FileService {
         }
         
         if ("RESTRICTED".equals(mode)) {
-            // Cần check Auth
             org.springframework.security.core.Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
                 throw new RuntimeException("Unauthorized: Login is required to view this file");
@@ -256,6 +284,44 @@ public class FileService {
         }
 
         return mapToResponse(file);
+    }
+
+    /**
+     * Tạo presigned download URL cho file public/shared.
+     */
+    public String getPublicPresignedDownloadUrl(String id) throws Exception {
+        StorageFile file = fileRepository.findById(id)
+                .orElseThrow(() -> new Exception("File not found"));
+
+        if (file.isDeleted()) {
+            throw new Exception("File not found");
+        }
+        
+        if (file.getShareExpiresAt() != null && file.getShareExpiresAt().isBefore(Instant.now())) {
+            throw new Exception("Share link expired");
+        }
+        
+        String mode = file.getAccessMode() != null ? file.getAccessMode() : (file.isPublic() ? "PUBLIC" : "PRIVATE");
+        if ("PRIVATE".equals(mode)) {
+            throw new Exception("File not shared");
+        }
+        
+        if ("RESTRICTED".equals(mode)) {
+            org.springframework.security.core.Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+                throw new Exception("Unauthorized: Login is required to download this file");
+            }
+            UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+            if (file.getSharedEmails() == null || !file.getSharedEmails().contains(userDetails.getEmail())) {
+                throw new Exception("Forbidden: You are not invited to download this file");
+            }
+        }
+
+        if (file.getB2FileName() != null && !file.getB2FileName().isEmpty()) {
+            return b2StorageService.getPresignedDownloadUrl(file.getB2FileName());
+        }
+
+        throw new Exception("File chưa được migrate lên cloud storage.");
     }
 
     public StorageFile getPublicFileEntity(String id) throws Exception {
@@ -287,9 +353,5 @@ public class FileService {
         }
 
         return file;
-    }
-
-    public org.springframework.core.io.Resource downloadPublicFile(StorageFile file) throws Exception {
-        return fileStorageService.loadFileAsResource(file);
     }
 }

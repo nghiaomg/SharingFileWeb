@@ -81,24 +81,28 @@ export async function shareFile(fileId: string, payload: ShareFileInput): Promis
 }
 
 export async function downloadFile(fileId: string, fileName: string): Promise<void> {
-  const response = await apiClient.get(`/files/download/${fileId}`, {
-    responseType: "blob",
-  });
-  const url = window.URL.createObjectURL(new Blob([response.data]));
-  const link = document.createElement("a");
-  link.href = url;
-  link.setAttribute("download", fileName);
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  window.URL.revokeObjectURL(url);
+  const response = await apiClient.get<{ message?: string, data?: { url: string } }>(`/files/download/${fileId}`);
+  if (response.data?.data?.url) {
+    // Navigate or create invisible link
+    const link = document.createElement("a");
+    link.href = response.data.data.url;
+    // Note: 'download' attribute might be ignored if cross-origin, but B2 API sets Content-Disposition
+    link.target = "_blank";
+    link.setAttribute("download", fileName);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  } else {
+    throw new Error("Không lấy được đường dẫn tải xuống");
+  }
 }
 
 export async function getFileBlobUrl(fileId: string): Promise<string> {
-  const response = await apiClient.get(`/files/download/${fileId}`, {
-    responseType: "blob",
-  });
-  return window.URL.createObjectURL(new Blob([response.data]));
+  const response = await apiClient.get<{ message?: string, data?: { url: string } }>(`/files/download/${fileId}`);
+  if (response.data?.data?.url) {
+    return response.data.data.url;
+  }
+  throw new Error("Không lấy được đường dẫn URL");
 }
 
 // ─── Chunked Upload ──────────────────────────────────────────────────────────

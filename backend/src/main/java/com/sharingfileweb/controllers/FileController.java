@@ -14,11 +14,12 @@ import com.sharingfileweb.payload.request.RenameFileRequest;
 import com.sharingfileweb.payload.request.ShareFileRequest;
 import com.sharingfileweb.repository.FileRepository;
 import com.sharingfileweb.repository.UserRepository;
-import com.sharingfileweb.security.services.FileStorageService;
 import com.sharingfileweb.models.User;
 import com.sharingfileweb.security.services.UserDetailsImpl;
+import com.sharingfileweb.services.B2StorageService;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -36,6 +37,9 @@ public class FileController {
 
   @Autowired
   FileService fileService;
+
+  @Autowired
+  private B2StorageService b2StorageService;
 
   @Operation(summary = "Lấy danh sách tệp", description = "Lấy danh sách các tệp của người dùng hiện tại, có thể lọc theo thư mục.")
   @GetMapping
@@ -58,7 +62,6 @@ public class FileController {
     return ResponseEntity.ok(StandardResponse.success("Fetched shared files successfully", response));
   }
 
-  // Expect FormData: file (blob), chunkIndex, uploadId
   @Operation(summary = "Tải lên chunk (phân ảnh)", description = "Tải lên một chunk của tập tin để hỗ trợ file tải lớn và resume tải.")
   @PostMapping("/upload/chunk")
   public ResponseEntity<?> uploadChunk(
@@ -66,7 +69,7 @@ public class FileController {
       @Parameter(description = "Thứ tự chunk") @RequestParam("chunkIndex") int chunkIndex,
       @Parameter(description = "ID upload session") @RequestParam("uploadId") String uploadId,
       @Parameter(description = "Tổng kích thước tệp") @RequestParam(value = "totalFileSize", required = false) Long totalFileSize) {
-          
+        
     try {
       fileService.storeChunk(file, chunkIndex, uploadId, totalFileSize);
       return ResponseEntity.ok(StandardResponse.success("Chunk " + chunkIndex + " uploaded successfully", null));
@@ -75,7 +78,6 @@ public class FileController {
     }
   }
 
-  // Get uploaded chunks status to support resumption
   @Operation(summary = "Lấy trạng thái chunk đã tải", description = "Lấy danh sách các chunk đã tải thành công theo uploadId để hỗ trợ tải tiếp.")
   @GetMapping("/upload/status")
   public ResponseEntity<?> getUploadStatus(@Parameter(description = "ID upload session") @RequestParam("uploadId") String uploadId) {
@@ -83,8 +85,7 @@ public class FileController {
     return ResponseEntity.ok(StandardResponse.success("Fetched upload status successfully", uploadedChunks));
   }
 
-  // Complete upload request
-  @Operation(summary = "Hoàn thành tải lên", description = "Gộp các chunk đã tải lên hành một tệp hoàn chỉnh.")
+  @Operation(summary = "Hoàn thành tải lên", description = "Gộp các chunk đã tải lên thành một tệp hoàn chỉnh và upload lên Backblaze B2.")
   @PostMapping("/upload/complete")
   public ResponseEntity<?> completeUpload(
       @Parameter(description = "ID upload session") @RequestParam("uploadId") String uploadId,
@@ -113,7 +114,6 @@ public class FileController {
         }
     }
 
-    // Đổi tên tệp
     @Operation(summary = "Đổi tên tệp", description = "Đổi tên của tệp thuộc sở hữu người dùng.")
     @PutMapping("/{id}/rename")
     public ResponseEntity<?> renameFile(@Parameter(description = "ID của tệp") @PathVariable String id, @jakarta.validation.Valid @RequestBody RenameFileRequest payload) {
@@ -128,7 +128,6 @@ public class FileController {
         }
     }
 
-  // Đổi trạng thái Public/Share của File
   @Operation(summary = "Chia sẻ tệp nội bộ", description = "Thiết lập trạng thái Public hoặc chia sẻ tệp cho danh sách người dùng nhất định.")
   @PutMapping("/{id}/share")
   public ResponseEntity<?> shareFile(@Parameter(description = "ID của tệp") @PathVariable String id, @RequestBody ShareFileRequest payload) {
@@ -143,26 +142,29 @@ public class FileController {
     }
   }
 
-  // API download file nội bộ (Cần Auth)
-  @Operation(summary = "Tải xuống tệp nội bộ", description = "Tải xuống các tệp đang nắm quyền truy cập (thuộc bản thân, hoặc được chia sẻ).")
+  /**
+   * API download file nội bộ (Cần Auth).
+   * Trả về presigned URL thay vì stream file qua server.
+   */
+  @Operation(summary = "Tải xuống tệp nội bộ", description = "Lấy presigned URL để tải xuống tệp trực tiếp từ cloud storage.")
   @GetMapping("/download/{id}")
-  public ResponseEntity<org.springframework.core.io.Resource> downloadPrivateFile(@Parameter(description = "ID của tệp") @PathVariable String id) {
+  public ResponseEntity<?> downloadPrivateFile(@Parameter(description = "ID của tệp") @PathVariable String id) {
     try {
       StorageFile file = fileService.getFileEntity(id);
-      org.springframework.core.io.Resource resource = fileService.downloadPrivateFile(id);
+      String downloadUrl = fileService.getPresignedDownloadUrl(id);
 
-      String contentDisposition = "attachment; filename=\"" + file.getName() + "\"";
-      return ResponseEntity.ok()
-          .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
-          .contentType(org.springframework.http.MediaType.parseMediaType(file.getType()))
-          .body(resource);
+      return ResponseEntity.ok(StandardResponse.success("Download URL", Map.of(
+          "url", downloadUrl,
+          "fileName", file.getName(),
+          "fileType", file.getType(),
+          "fileSize", file.getSize()
+      )));
 
     } catch (Exception e) {
-       return ResponseEntity.status(500).build();
+       return ResponseEntity.status(500).body(StandardResponse.error("Không thể tạo liên kết tải xuống: " + e.getMessage(), null));
     }
   }
 
-  // API lấy Metadata public (Không cần Auth)
   @Operation(summary = "Lấy thông tin tệp công khai (Public)", description = "Dùng cho liên kết chia sẻ công khai không yêu cầu Auth.")
   @GetMapping("/public/{id}")
   public ResponseEntity<?> getPublicFileMetadata(@Parameter(description = "ID tệp public") @PathVariable String id) {
@@ -174,19 +176,23 @@ public class FileController {
       }
   }
 
-  // API tải xuống Public (Không cần Auth)
-  @Operation(summary = "Tải xuống tệp công khai (Public)", description = "Tải xuống tệp được đặt chế độ chia sẻ công khai mà không yêu cầu JWT.")
+  /**
+   * API tải xuống Public.
+   * Trả về presigned URL thay vì stream qua server.
+   */
+  @Operation(summary = "Tải xuống tệp công khai (Public)", description = "Lấy presigned URL để tải xuống tệp công khai trực tiếp từ cloud storage.")
   @GetMapping("/public/download/{id}")
-  public ResponseEntity<org.springframework.core.io.Resource> downloadPublicFile(@Parameter(description = "ID tệp public") @PathVariable String id) {
+  public ResponseEntity<?> downloadPublicFile(@Parameter(description = "ID tệp public") @PathVariable String id) {
     try {
       StorageFile file = fileService.getPublicFileEntity(id);
-      org.springframework.core.io.Resource resource = fileService.downloadPublicFile(file);
+      String downloadUrl = fileService.getPublicPresignedDownloadUrl(id);
 
-      String contentDisposition = "attachment; filename=\"" + file.getName() + "\"";
-      return ResponseEntity.ok()
-          .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
-          .contentType(org.springframework.http.MediaType.parseMediaType(file.getType()))
-          .body(resource);
+      return ResponseEntity.ok(StandardResponse.success("Download URL", Map.of(
+          "url", downloadUrl,
+          "fileName", file.getName(),
+          "fileType", file.getType(),
+          "fileSize", file.getSize()
+      )));
 
     } catch (Exception e) {
        return ResponseEntity.notFound().build();
@@ -196,7 +202,6 @@ public class FileController {
   @Autowired
   private com.sharingfileweb.repository.FileRepository fileRepository;
 
-  // GET /api/files?all=true  → Admin: lấy toàn bộ file hệ thống
   @Operation(summary = "Lấy tất cả tệp (Quyền Admin)", description = "Lấy danh sách tất cả tệp tải lên hệ thống.")
   @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
   @GetMapping("/all")
@@ -205,16 +210,26 @@ public class FileController {
       return ResponseEntity.ok(StandardResponse.success("Fetched all files", files));
   }
 
-  // DELETE /api/files/{id}?permanent=true  → Admin: xóa cứng
-  @Operation(summary = "Xóa vĩnh viễn tệp (Quyền Admin)", description = "Xóa hoàn toàn tệp khỏi DB và Storage Storage.")
+  /**
+   * Admin xóa vĩnh viễn: xóa cả metadata DB và file trên B2.
+   */
+  @Operation(summary = "Xóa vĩnh viễn tệp (Quyền Admin)", description = "Xóa hoàn toàn tệp khỏi DB và Backblaze B2.")
   @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
   @DeleteMapping("/{id}/permanent")
   public ResponseEntity<?> deleteFilePermanentlyByAdmin(@Parameter(description = "ID của tệp cần xóa") @PathVariable String id) {
-      if (!fileRepository.existsById(id)) {
+      Optional<StorageFile> fileOpt = fileRepository.findById(id);
+      if (fileOpt.isEmpty()) {
           return ResponseEntity.notFound().build();
       }
+
+      StorageFile file = fileOpt.get();
+      
+      // Xóa file trên B2 trước
+      if (file.getB2FileId() != null && !file.getB2FileId().isEmpty()) {
+          b2StorageService.deleteFile(file.getB2FileId(), file.getB2FileName());
+      }
+
       fileRepository.deleteById(id);
       return ResponseEntity.ok(StandardResponse.success("File deleted permanently", null));
   }
 }
-
