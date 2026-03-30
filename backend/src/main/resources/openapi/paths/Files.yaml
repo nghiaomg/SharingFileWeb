@@ -1,0 +1,497 @@
+paths:
+  /:
+    get:
+      tags: [File Management]
+      summary: Lấy danh sách tệp
+      description: Lấy danh sách tệp của người dùng hiện tại, có thể lọc theo thư mục.
+      operationId: getFiles
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: folderId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: ID thư mục (bỏ trống = lấy ở root)
+          example: "64f1a2b3c4d5e6f7a8b9c0d2"
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '../components/schemas/File.yaml#/FileResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+
+  /recent:
+    get:
+      tags: [File Management]
+      summary: Tệp truy cập gần đây
+      description: Lấy danh sách tệp người dùng vừa truy cập gần đây.
+      operationId: getRecentFiles
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '../components/schemas/File.yaml#/FileResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+
+  /shared:
+    get:
+      tags: [File Management]
+      summary: Tệp được chia sẻ
+      description: Lấy danh sách tệp mà người dùng được chia sẻ từ người khác.
+      operationId: getSharedFiles
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '../components/schemas/File.yaml#/FileResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+
+  /upload/chunk:
+    post:
+      tags: [File Management]
+      summary: Tải lên chunk (phân đoạn)
+      description: |
+        Tải lên một chunk của tệp. Hỗ trợ tệp lớn và resume tải.
+        - Gọi nhiều lần với chunkIndex tăng dần.
+        - Dùng GET /api/files/upload/status?uploadId=... để kiểm tra chunk đã tải.
+      operationId: uploadChunk
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, chunkIndex, uploadId]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Nội dung chunk (Blob)
+                chunkIndex:
+                  type: integer
+                  description: Thứ tự chunk (0-based)
+                  example: 0
+                uploadId:
+                  type: string
+                  description: ID phiên upload (tự tạo UUID)
+                  example: "550e8400-e29b-41d4-a716-446655440000"
+                totalFileSize:
+                  type: integer
+                  format: int64
+                  description: Tổng kích thước tệp gốc
+                  example: 104857600
+      responses:
+        '200':
+          description: Chunk tải lên thành công
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/StandardResponse'
+        '400':
+          description: Lỗi khi tải chunk
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+
+  /upload/status:
+    get:
+      tags: [File Management]
+      summary: Lấy trạng thái chunk đã tải
+      description: Lấy danh sách chỉ số chunk đã tải thành công theo uploadId. Dùng để resume upload.
+      operationId: getUploadStatus
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: uploadId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: ID phiên upload
+          example: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '../components/schemas/File.yaml#/UploadStatusResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+
+  /upload/complete:
+    post:
+      tags: [File Management]
+      summary: Hoàn thành tải lên
+      description: |
+        Gộp các chunk đã tải thành tệp hoàn chỉnh và upload lên Backblaze B2.
+        Chỉ gọi SAU KHI tất cả chunk đã được tải lên thành công.
+      operationId: completeUpload
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: uploadId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: ID phiên upload
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        - name: fileName
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Tên tệp gốc
+          example: "report.pdf"
+        - name: totalChunks
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: Tổng số chunk
+          example: 10
+        - name: fileType
+          in: query
+          required: true
+          schema:
+            type: string
+          description: MIME type của tệp
+          example: "application/pdf"
+        - name: fileSize
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Kích thước tệp (bytes)
+          example: 104857600
+        - name: folderId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: ID thư mục đích (null = root)
+      responses:
+        '200':
+          description: Tệp tải lên và gộp thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '../components/schemas/File.yaml#/FileResponse'
+        '400':
+          description: Lỗi khi gộp file
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+
+  /{fileId}:
+    delete:
+      tags: [File Management]
+      summary: Chuyển tệp vào thùng rác (xóa mềm)
+      description: Đánh dấu tệp là đã xóa. Tệp có thể khôi phục trong 30 ngày.
+      operationId: deleteFile
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID của tệp cần xóa
+          example: "64f1a2b3c4d5e6f7a8b9c0d1"
+      responses:
+        '200':
+          description: Đã chuyển vào thùng rác
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/StandardResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+        '404':
+          description: Tệp không tồn tại hoặc không thuộc quyền sở hữu
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error404'
+
+  /{fileId}/rename:
+    put:
+      tags: [File Management]
+      summary: Đổi tên tệp
+      description: Thay đổi tên tệp thuộc sở hữu người dùng.
+      operationId: renameFile
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID của tệp cần đổi tên
+          example: "64f1a2b3c4d5e6f7a8b9c0d1"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/File.yaml#/RenameFileRequest'
+            example:
+              name: "report_v2.pdf"
+      responses:
+        '200':
+          description: Đổi tên thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '../components/schemas/File.yaml#/FileResponse'
+        '400':
+          description: Tên tệp không hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+        '404':
+          description: Tệp không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error404'
+
+  /{fileId}/share:
+    put:
+      tags: [File Management]
+      summary: Chia sẻ tệp nội bộ
+      description: Thiết lập chế độ truy cập và chia sẻ tệp cho danh sách người dùng.
+      operationId: shareFile
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID của tệp cần chia sẻ
+          example: "64f1a2b3c4d5e6f7a8b9c0d1"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/File.yaml#/ShareFileRequest'
+            example:
+              accessMode: RESTRICTED
+              sharedEmails:
+                - colleague@example.com
+              expiresInDays: 30
+      responses:
+        '200':
+          description: Chia sẻ thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '../components/schemas/File.yaml#/FileResponse'
+        '403':
+          description: Không có quyền chia sẻ tệp này
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+        '404':
+          description: Tệp không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error404'
+
+  /{fileId}/permanent:
+    delete:
+      tags: [File Management]
+      summary: Xóa vĩnh viễn tệp (Quyền Admin)
+      description: Xóa hoàn toàn tệp khỏi database và Backblaze B2. Chỉ ADMIN.
+      operationId: deleteFilePermanentlyAdmin
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID tệp cần xóa vĩnh viễn
+          example: "64f1a2b3c4d5e6f7a8b9c0d1"
+      responses:
+        '200':
+          description: Đã xóa vĩnh viễn
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/StandardResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+        '403':
+          description: Không có quyền Admin
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+        '404':
+          description: Tệp không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error404'
+
+  /all:
+    get:
+      tags: [File Management]
+      summary: Lấy tất cả tệp (Quyền Admin)
+      description: Lấy danh sách toàn bộ tệp trong hệ thống. Chỉ ADMIN.
+      operationId: getAllFilesAdmin
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            name:
+                              type: string
+                            type:
+                              type: string
+                            size:
+                              type: integer
+                              format: int64
+                            ownerId:
+                              type: string
+                            isPublic:
+                              type: boolean
+                            isDeleted:
+                              type: boolean
+                            createdAt:
+                              type: string
+                              format: date-time
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+        '403':
+          description: Không có quyền Admin
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'

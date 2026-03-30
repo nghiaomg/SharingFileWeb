@@ -1,0 +1,183 @@
+paths:
+  /{token}:
+    get:
+      tags: [Public Sharing]
+      summary: Lấy thông tin tệp qua Link
+      description: |
+        Lấy metadata tệp (tên, kích thước, loại) từ mã token của link chia sẻ.
+        Nếu link có mật khẩu: server trả về HTTP 403 với mã "REQUIRES_PASSWORD".
+        Client cần gọi lại kèm query param `password`.
+      operationId: getFileMetadataByToken
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Mã token của link chia sẻ
+          example: "abc123xyz"
+        - name: password
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Mật khẩu bảo vệ link (nếu có)
+          example: "secret123"
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '../components/schemas/File.yaml#/FileResponse'
+        '403':
+          description: "REQUIRES_PASSWORD - cần gọi lại với password"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  msg:
+                    type: string
+                    example: "REQUIRES_PASSWORD"
+                  data:
+                    type: object
+                    example: null
+        '400':
+          description: Mật khẩu không đúng
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+        '404':
+          description: Link không tồn tại hoặc đã hết hạn
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error404'
+
+  /{token}/download:
+    get:
+      tags: [Public Sharing]
+      summary: Tải xuống tệp qua Link
+      description: |
+        Lấy presigned URL để tải xuống tệp qua link chia sẻ.
+        - Nếu link chỉ có quyền VIEW: trả về HTTP 403.
+        - Nếu link có mật khẩu: trả về HTTP 403 "REQUIRES_PASSWORD".
+      operationId: downloadFileByToken
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Mã token của link chia sẻ
+          example: "abc123xyz"
+        - name: password
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Mật khẩu bảo vệ link (nếu có)
+          example: "secret123"
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '../components/schemas/File.yaml#/DownloadUrlResponse'
+        '403':
+          description: "REQUIRES_PASSWORD | VIEW_ONLY"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  msg:
+                    type: string
+                    enum:
+                      - "REQUIRES_PASSWORD"
+                      - "Link này chỉ cho phép xem, không cho tải xuống"
+                  data:
+                    type: object
+                    example: null
+        '404':
+          description: Link không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error404'
+
+  /{token}/folder:
+    get:
+      tags: [Public Sharing]
+      summary: Lấy nội dung thư mục public
+      description: Lấy danh sách tệp/thư mục con bên trong thư mục được chia sẻ công khai.
+      operationId: getPublicFolderContent
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Mã token của thư mục
+          example: "abc123xyz"
+        - name: password
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Mật khẩu bảo vệ (nếu có)
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '../components/schemas/File.yaml#/FileResponse'
+        '403':
+          description: Link có mật khẩu - cần gọi lại với password
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  msg:
+                    type: string
+                    example: "REQUIRES_PASSWORD"
+                  data:
+                    type: object
+                    example: null
+        '400':
+          description: Mật khẩu không đúng
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'

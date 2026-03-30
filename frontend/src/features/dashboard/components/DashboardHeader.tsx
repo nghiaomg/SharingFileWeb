@@ -48,7 +48,7 @@ export function DashboardHeader({ userName, onMenuClick }: DashboardHeaderProps)
                 <DropdownMenu.Root>
                     <DropdownMenu.Trigger>
                         <button className="flex items-center gap-2 hover:bg-secondary rounded-xl px-2 py-1.5 transition-colors outline-none cursor-pointer">
-                            <Box style={{ width: "32px", height: "32px", borderRadius: "100%", background: "linear-gradient(to top right, var(--violet-9), var(--purple-9))" }}>
+                            <Box style={{ width: "32px", height: "32px", borderRadius: "100%", background: "linear-gradient(to top right, var(--gray-12), var(--gray-11))" }}>
                                 <Flex align="center" justify="center" width="100%" height="100%">
                                     <Text size="2" weight="bold" style={{ color: "white" }}>{initials}</Text>
                                 </Flex>

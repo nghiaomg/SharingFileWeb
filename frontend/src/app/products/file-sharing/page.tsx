@@ -28,7 +28,7 @@ export default function FileSharingPage() {
                         <span>Chia Sẻ Siêu Nhanh</span>
                     </div>
                     <h1 className="text-5xl md:text-7xl font-extrabold mb-8 tracking-tighter max-w-4xl mx-auto leading-tight">
-                        Chia sẻ bất kỳ lúc nào, <br /> ở <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-violet-500">Bất cứ nơi đâu.</span>
+                        Chia sẻ bất kỳ lúc nào, <br /> ở <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-zinc-500">Bất cứ nơi đâu.</span>
                     </h1>
                     <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-12">
                         Từ hình ảnh gia đình cho tới hàng nghìn file dữ liệu của máy chủ, gửi và trao đổi tệp với mọi người chỉ trong vòng một nốt nhạc bằng Link Bảo Mật.

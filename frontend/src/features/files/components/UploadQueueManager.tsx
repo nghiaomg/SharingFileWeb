@@ -46,7 +46,7 @@ export function UploadQueueManager() {
                 <Button 
                     size="3" 
                     variant="solid" 
-                    color="violet"
+                    color="gray"
                     onClick={() => setIsMinimized(false)}
                     onPointerDown={(e) => dragControls.start(e)}
                     style={{ 
@@ -130,7 +130,7 @@ export function UploadQueueManager() {
                                         {/* Actions */}
                                         <Flex gap="1" align="center">
                                             {(isPending || isPaused) && !isCanceled && (
-                                                <IconButton size="1" variant="ghost" color="violet" onClick={() => resumeUpload(item.id)} title="Tiếp tục">
+                                                <IconButton size="1" variant="ghost" color="gray" onClick={() => resumeUpload(item.id)} title="Tiếp tục">
                                                     <Play className="w-4 h-4" />
                                                 </IconButton>
                                             )}

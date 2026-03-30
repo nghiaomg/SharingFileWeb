@@ -1,0 +1,92 @@
+paths:
+  /:
+    get:
+      tags: [Notifications]
+      summary: Lấy danh sách thông báo
+      description: Lấy lịch sử thông báo của người dùng hiện tại.
+      operationId: getNotifications
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '../components/schemas/Dashboard.yaml#/NotificationResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+
+  /{notificationId}/read:
+    put:
+      tags: [Notifications]
+      summary: Đánh dấu đã đọc
+      description: Đánh dấu một thông báo là đã đọc.
+      operationId: markNotificationAsRead
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: notificationId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID thông báo
+          example: "64f1a2b3c4d5e6f7a8b9c0d5"
+      responses:
+        '200':
+          description: Đã đánh dấu đã đọc
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/StandardResponse'
+        '400':
+          description: Không hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+
+  /unread-count:
+    get:
+      tags: [Notifications]
+      summary: Đếm số thông báo chưa đọc
+      description: Lấy số lượng thông báo mà người dùng chưa đọc.
+      operationId: getUnreadCount
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '../components/schemas/Dashboard.yaml#/UnreadCountResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'

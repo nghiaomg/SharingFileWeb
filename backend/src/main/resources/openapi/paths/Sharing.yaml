@@ -1,0 +1,554 @@
+paths:
+  /internal:
+    post:
+      tags: [Sharing]
+      summary: Chia sẻ nội bộ cho nhiều người
+      description: Chia sẻ quyền truy cập tệp/thư mục cho các email người dùng khác trong hệ thống.
+      operationId: shareWithUsers
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/Sharing.yaml#/InternalShareRequest'
+            example:
+              fileId: "64f1a2b3c4d5e6f7a8b9c0d1"
+              emails:
+                - colleague@example.com
+              permission: VIEW
+      responses:
+        '200':
+          description: Chia sẻ thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '../components/schemas/Sharing.yaml#/SharedAccessResponse'
+        '400':
+          description: Email không hợp lệ hoặc tệp không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+
+  /with-me:
+    get:
+      tags: [Sharing]
+      summary: Được chia sẻ với tôi
+      description: Danh sách các tệp/thư mục người khác chia sẻ cho tài khoản hiện tại.
+      operationId: getSharedWithMe
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '../components/schemas/Sharing.yaml#/SharedAccessResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+
+  /by-me:
+    get:
+      tags: [Sharing]
+      summary: Tôi đã chia sẻ
+      description: Danh sách các tệp/thư mục mà tài khoản hiện tại đã chia sẻ cho người khác.
+      operationId: getSharedByMe
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '../components/schemas/Sharing.yaml#/SharedAccessResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+
+  /access/file/{fileId}:
+    get:
+      tags: [Sharing]
+      summary: Danh sách người được chia sẻ của một tệp
+      description: Lấy danh sách chi tiết người dùng đang có quyền truy cập tệp/thư mục này.
+      operationId: getAccessesForFile
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID tệp
+          example: "64f1a2b3c4d5e6f7a8b9c0d1"
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '../components/schemas/Sharing.yaml#/SharedAccessResponse'
+        '400':
+          description: Tệp không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+
+    delete:
+      tags: [Sharing]
+      summary: Thu hồi tất cả quyền truy cập của một tệp
+      description: Xóa toàn bộ phép chia sẻ của một tệp.
+      operationId: revokeAllForFile
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID tệp
+          example: "64f1a2b3c4d5e6f7a8b9c0d1"
+      responses:
+        '200':
+          description: Đã thu hồi tất cả quyền
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/StandardResponse'
+        '400':
+          description: Tệp không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+
+  /access/{accessId}:
+    put:
+      tags: [Sharing]
+      summary: Cập nhật quyền truy cập
+      description: Thay đổi quyền truy cập (VIEW ↔ DOWNLOAD) của một phép chia sẻ.
+      operationId: updatePermission
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: accessId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID của phép truy cập cần cập nhật
+          example: "64f1a2b3c4d5e6f7a8b9c0d4"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/Sharing.yaml#/UpdatePermissionRequest'
+            example:
+              permission: DOWNLOAD
+      responses:
+        '200':
+          description: Cập nhật thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '../components/schemas/Sharing.yaml#/SharedAccessResponse'
+        '400':
+          description: Không hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+
+    delete:
+      tags: [Sharing]
+      summary: Thu hồi quyền truy cập
+      description: Xóa một phép chia sẻ cụ thể (thu hồi quyền của một người).
+      operationId: revokeAccess
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: accessId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID phép truy cập cần thu hồi
+          example: "64f1a2b3c4d5e6f7a8b9c0d4"
+      responses:
+        '200':
+          description: Đã thu hồi quyền
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/StandardResponse'
+        '400':
+          description: Không hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+
+  /access/folder/{folderId}:
+    get:
+      tags: [Sharing]
+      summary: Lấy nội dung thư mục được chia sẻ
+      description: Lấy danh sách tệp con bên trong thư mục được chia sẻ với tôi.
+      operationId: getSharedFolderContent
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: folderId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID thư mục
+          example: "64f1a2b3c4d5e6f7a8b9c0d2"
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '../components/schemas/File.yaml#/FileResponse'
+        '400':
+          description: Không tìm thấy thư mục
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+
+  /link:
+    post:
+      tags: [Sharing]
+      summary: Tạo link chia sẻ công khai
+      description: |
+        Tạo một link để chia sẻ tệp/thư mục ra ngoài.
+        Có thể cài mật khẩu bảo vệ. Có thể đặt ngày hết hạn.
+      operationId: createLink
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/Sharing.yaml#/CreateShareLinkRequest'
+            example:
+              fileId: "64f1a2b3c4d5e6f7a8b9c0d1"
+              permission: VIEW
+              password: "secret123"
+              expiresInDays: 7
+      responses:
+        '200':
+          description: Tạo link thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '../components/schemas/Sharing.yaml#/ShareLinkResponse'
+        '400':
+          description: Tệp không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+
+  /link/file/{fileId}:
+    get:
+      tags: [Sharing]
+      summary: Lấy danh sách link của một tệp
+      description: Lấy tất cả link chia sẻ đang hoạt động của một tệp.
+      operationId: getLinksForFile
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID tệp
+          example: "64f1a2b3c4d5e6f7a8b9c0d1"
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '../components/schemas/Sharing.yaml#/ShareLinkResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+
+  /link/{linkId}:
+    put:
+      tags: [Sharing]
+      summary: Cập nhật link chia sẻ
+      description: Thay đổi quyền, mật khẩu hoặc ngày hết hạn của một link.
+      operationId: updateLink
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID link
+          example: "64f1a2b3c4d5e6f7a8b9c0d3"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/Sharing.yaml#/UpdateShareLinkRequest'
+            example:
+              permission: DOWNLOAD
+              expiresInDays: 30
+      responses:
+        '200':
+          description: Cập nhật thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '../components/schemas/Sharing.yaml#/ShareLinkResponse'
+        '400':
+          description: Link không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+
+    delete:
+      tags: [Sharing]
+      summary: Thu hồi link chia sẻ
+      description: Vô hiệu hóa một link chia sẻ (không xóa, chỉ revoke).
+      operationId: revokeLink
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID link
+          example: "64f1a2b3c4d5e6f7a8b9c0d3"
+      responses:
+        '200':
+          description: Đã thu hồi link
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/StandardResponse'
+        '400':
+          description: Link không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+
+  /links:
+    get:
+      tags: [Sharing]
+      summary: Lấy tất cả link chia sẻ (Quyền Admin)
+      description: Lấy danh sách toàn bộ link chia sẻ trong hệ thống. Chỉ ADMIN.
+      operationId: getAllShareLinksAdmin
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '../components/schemas/Sharing.yaml#/ShareLinkResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+        '403':
+          description: Không có quyền Admin
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+
+  /links/{linkId}:
+    delete:
+      tags: [Sharing]
+      summary: Xóa link chia sẻ (Quyền Admin)
+      description: Xóa hoàn toàn link chia sẻ khỏi hệ thống. Chỉ ADMIN.
+      operationId: revokeShareLinkByAdmin
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID link
+          example: "64f1a2b3c4d5e6f7a8b9c0d3"
+      responses:
+        '200':
+          description: Đã xóa link
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/StandardResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+        '403':
+          description: Không có quyền Admin
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+        '404':
+          description: Link không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error404'

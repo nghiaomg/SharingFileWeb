@@ -35,7 +35,7 @@ export default function RootLayout({
         className={`${dmSans.variable} ${geistMono.variable} antialiased`}
       >
         <QueryProvider>
-          <Theme>
+          <Theme accentColor="gray" radius="large" scaling="100%">
             {children}
             <Toaster position="bottom-right" richColors theme="system" />
           </Theme>

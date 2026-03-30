@@ -143,17 +143,51 @@ public class FileService {
             throw new RuntimeException("Không đủ dung lượng lưu trữ trống. Vui lòng nâng cấp gói.");
         }
 
-        if (fileRepository.existsByNameAndOwnerIdAndFolderIdAndIsDeletedFalse(fileName, userId, normalizedFolderId)) {
-            throw new RuntimeException("Lỗi: Đã tồn tại tệp có cùng tên trong thư mục này.");
+        String baseName = fileName;
+        String extension = "";
+        int dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex > 0) {
+            baseName = fileName.substring(0, dotIndex);
+            extension = fileName.substring(dotIndex);
         }
+
+        String actualFileName = fileName;
+        int counter = 1;
+        while (fileRepository.existsByNameAndOwnerIdAndFolderIdAndIsDeletedFalse(actualFileName, userId, normalizedFolderId)) {
+            actualFileName = baseName + " (" + counter + ")" + extension;
+            counter++;
+        }
+        final String finalFileNameToUse = actualFileName;
 
         try {
             // Merge chunks → validate → upload B2 → cleanup local
-            FileStorageService.B2MergedResult b2Result = fileStorageService.mergeChunksAndUploadB2(uploadId, fileName, totalChunks, userId);
+            // Thêm Timeout bằng CompletableFuture để tránh treo vô hạn
+            java.util.concurrent.CompletableFuture<FileStorageService.B2MergedResult> future = 
+                java.util.concurrent.CompletableFuture.supplyAsync(() -> {
+                    try {
+                        return fileStorageService.mergeChunksAndUploadB2(uploadId, finalFileNameToUse, totalChunks, userId);
+                    } catch (Exception ex) {
+                        throw new java.util.concurrent.CompletionException(ex);
+                    }
+                });
+            
+            FileStorageService.B2MergedResult b2Result;
+            try {
+                // Timeout 10 phút (600 giây)
+                b2Result = future.get(10, java.util.concurrent.TimeUnit.MINUTES);
+            } catch (java.util.concurrent.TimeoutException ex) {
+                future.cancel(true);
+                throw new RuntimeException("Quá trình xử lý file bị treo quá lâu (Timeout), thao tác bị hủy.");
+            } catch (java.util.concurrent.ExecutionException ex) {
+                throw new RuntimeException(ex.getCause() != null ? ex.getCause().getMessage() : "Lỗi xử lý file");
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("Tiến trình gộp file bị gián đoạn.");
+            }
             
             // Lưu metadata với b2FileId + b2FileName thay vì storedPath
             StorageFile storageFile = new StorageFile(
-                fileName, 
+                finalFileNameToUse, 
                 b2Result.getRealMimeType(), 
                 b2Result.getFinalSize(), 
                 userId, 

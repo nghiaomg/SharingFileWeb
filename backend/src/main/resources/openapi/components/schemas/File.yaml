@@ -1,0 +1,115 @@
+FileResponse:
+  type: object
+  properties:
+    id:
+      type: string
+      description: ID của tệp
+      example: "64f1a2b3c4d5e6f7a8b9c0d1"
+    name:
+      type: string
+      description: Tên tệp gốc
+      example: "report.pdf"
+    type:
+      type: string
+      description: MIME type
+      example: "application/pdf"
+    size:
+      type: integer
+      format: int64
+      description: Kích thước (bytes)
+      example: 2048576
+    folderId:
+      type: string
+      nullable: true
+      description: ID thư mục chứa (null = root)
+      example: "64f1a2b3c4d5e6f7a8b9c0d2"
+    createdAt:
+      type: string
+      format: date-time
+      description: Thời điểm tải lên
+      example: "2024-01-15T10:30:00Z"
+    isPublic:
+      type: boolean
+      description: Có phải file công khai không
+      example: false
+    accessMode:
+      type: string
+      enum: [PRIVATE, PUBLIC, RESTRICTED]
+      description: Chế độ truy cập
+      example: PRIVATE
+    sharedEmails:
+      type: array
+      items:
+        type: string
+      description: Danh sách email được chia sẻ
+      example: ["colleague@example.com"]
+    shareExpiresAt:
+      type: string
+      format: date-time
+      nullable: true
+      description: Ngày hết hạn chia sẻ
+      example: "2024-02-15T10:30:00Z"
+
+ShareFileRequest:
+  type: object
+  properties:
+    accessMode:
+      type: string
+      enum: [PRIVATE, PUBLIC, RESTRICTED]
+      description: Chế độ truy cập
+      example: RESTRICTED
+    sharedEmails:
+      type: array
+      items:
+        type: string
+      description: Danh sách email người được chia sẻ
+      example: ["colleague@example.com"]
+    expiresInDays:
+      type: integer
+      format: int64
+      nullable: true
+      description: Số ngày hết hạn chia sẻ (null = vĩnh viễn)
+      example: 30
+
+RenameFileRequest:
+  type: object
+  required:
+    - name
+  properties:
+    name:
+      type: string
+      maxLength: 255
+      description: Tên mới của tệp
+      example: "report_v2.pdf"
+
+UploadStatusResponse:
+  type: object
+  properties:
+    uploadedChunks:
+      type: array
+      items:
+        type: integer
+      description: Danh sách chỉ số chunk đã tải thành công
+      example: [0, 1, 2, 3]
+
+DownloadUrlResponse:
+  type: object
+  properties:
+    url:
+      type: string
+      format: uri
+      description: Presigned URL để tải xuống
+      example: "https://f005.backblazeb2.com/file/..."
+    fileName:
+      type: string
+      description: Tên tệp
+      example: "report.pdf"
+    fileType:
+      type: string
+      description: MIME type
+      example: "application/pdf"
+    fileSize:
+      type: integer
+      format: int64
+      description: Kích thước (bytes)
+      example: 2048576

@@ -18,9 +18,11 @@ export interface UploadItem {
 interface UploadError {
   name?: string;
   message?: string;
+  code?: string;
   response?: {
     data?: {
       message?: string;
+      msg?: string;
     };
   };
 }
@@ -50,7 +52,7 @@ async function saveQueueToDB(items: UploadItem[]) {
       abortController: undefined // AbortController is not structured-clonable
     }));
     await set(DB_KEY, toSave);
-  } catch(e) {
+  } catch (e) {
     console.warn('Failed to save upload queue to IndexedDB:', e);
   }
 }
@@ -58,7 +60,7 @@ async function saveQueueToDB(items: UploadItem[]) {
 export const useUploadStore = create<UploadStore>((set, get) => {
   const processQueue = async () => {
     if (isProcessing) return;
-    
+
     const { items, _setItems } = get();
     // Đang có file nào upload không? (Chỉ upload 1 file lúc này)
     const isUploading = items.some(item => item.status === "UPLOADING");
@@ -71,21 +73,21 @@ export const useUploadStore = create<UploadStore>((set, get) => {
     isProcessing = true;
     const abortController = new AbortController();
 
-    _setItems(prev => prev.map(it => 
-      it.id === pendingItem.id 
-        ? { ...it, status: "UPLOADING", abortController } 
+    _setItems(prev => prev.map(it =>
+      it.id === pendingItem.id
+        ? { ...it, status: "UPLOADING", abortController }
         : it
     ));
 
     try {
       await uploadFileChunked(
-        pendingItem.file, 
-        pendingItem.folderId, 
+        pendingItem.file,
+        pendingItem.folderId,
         {
           existingUploadId: pendingItem.uploadId,
           signal: abortController.signal,
           onUploadIdGenerated: (uploadId) => {
-            _setItems(prev => prev.map(it => 
+            _setItems(prev => prev.map(it =>
               it.id === pendingItem.id ? { ...it, uploadId } : it
             ));
           },
@@ -94,7 +96,7 @@ export const useUploadStore = create<UploadStore>((set, get) => {
             return currentItem?.status === "PAUSED" || currentItem?.status === "CANCELED";
           },
           onProgress: (progress) => {
-            _setItems(prev => prev.map(it => 
+            _setItems(prev => prev.map(it =>
               it.id === pendingItem.id ? { ...it, progress } : it
             ));
           }
@@ -104,7 +106,7 @@ export const useUploadStore = create<UploadStore>((set, get) => {
       // After a short wait for the final response (uploadFileChunked completes it)
       const finalItem = get().items.find(it => it.id === pendingItem.id);
       if (finalItem && finalItem.status === "UPLOADING") {
-        _setItems(prev => prev.map(it => 
+        _setItems(prev => prev.map(it =>
           it.id === pendingItem.id ? { ...it, status: "SUCCESS", progress: 100 } : it
         ));
         // Dispatch custom event to let React Query know it should refetch 
@@ -124,14 +126,18 @@ export const useUploadStore = create<UploadStore>((set, get) => {
         // Aborted request
       } else {
         // Actual error
-        _setItems(prev => prev.map(it => 
-          it.id === pendingItem.id ? { ...it, status: "ERROR", errorMessage: err.response?.data?.message || err.message } : it
+        let errorMsg = err.response?.data?.msg || err.response?.data?.message || err.message;
+        if (err.code === "ECONNABORTED" || err.message?.toLowerCase().includes("timeout")) {
+          errorMsg = "Lỗi phản hồi máy chủ: Phản hồi quá lâu (Timeout)";
+        }
+        _setItems(prev => prev.map(it =>
+          it.id === pendingItem.id ? { ...it, status: "ERROR", errorMessage: errorMsg } : it
         ));
       }
     } finally {
       isProcessing = false;
       // Kích hoạt file tiếp theo
-      setTimeout(() => get()._processQueue(), 500); 
+      setTimeout(() => get()._processQueue(), 500);
     }
   };
 
@@ -173,7 +179,7 @@ export const useUploadStore = create<UploadStore>((set, get) => {
 
     retryUpload: (id: string) => {
       set(state => {
-        const nextItems = state.items.map(item => 
+        const nextItems = state.items.map(item =>
           item.id === id ? { ...item, status: "PENDING" as UploadStatus, errorMessage: undefined } : item
         );
         saveQueueToDB(nextItems);
@@ -184,7 +190,7 @@ export const useUploadStore = create<UploadStore>((set, get) => {
 
     resumeUpload: (id: string) => {
       set(state => {
-        const nextItems = state.items.map(item => 
+        const nextItems = state.items.map(item =>
           item.id === id ? { ...item, status: "PENDING" as UploadStatus } : item
         );
         saveQueueToDB(nextItems);
@@ -210,7 +216,7 @@ export const useUploadStore = create<UploadStore>((set, get) => {
       set(state => {
         const index = state.items.findIndex(it => it.id === id);
         if (index <= 0) return state; // Đã ở đầu hoặc không thấy
-        
+
         // Không cho phép vượt qua file đang UPLOADING
         const prevItem = state.items[index - 1];
         if (prevItem.status === "UPLOADING") return state;
@@ -225,7 +231,7 @@ export const useUploadStore = create<UploadStore>((set, get) => {
       set(state => {
         const index = state.items.findIndex(it => it.id === id);
         if (index < 0 || index === state.items.length - 1) return state;
-        
+
         const newItems = [...state.items];
         [newItems[index], newItems[index + 1]] = [newItems[index + 1], newItems[index]];
         return { items: newItems };

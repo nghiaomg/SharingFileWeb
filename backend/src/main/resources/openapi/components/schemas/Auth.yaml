@@ -1,0 +1,137 @@
+LoginRequest:
+  type: object
+  required:
+    - username
+    - password
+  properties:
+    username:
+      type: string
+      description: Tên đăng nhập
+      example: johndoe
+    password:
+      type: string
+      description: Mật khẩu
+      format: password
+      example: "123456"
+
+SignupRequest:
+  type: object
+  required:
+    - username
+    - email
+    - password
+  properties:
+    username:
+      type: string
+      minLength: 3
+      maxLength: 20
+      description: Tên đăng nhập
+      example: johndoe
+    email:
+      type: string
+      format: email
+      maxLength: 50
+      description: Địa chỉ email
+      example: johndoe@example.com
+    password:
+      type: string
+      minLength: 6
+      maxLength: 40
+      format: password
+      description: Mật khẩu (6-40 ký tự)
+      example: "123456"
+    role:
+      type: array
+      items:
+        type: string
+      description: Danh sách vai trò (mặc định: ROLE_USER)
+      example:
+        - ROLE_USER
+    turnstileToken:
+      type: string
+      description: Turnstile token (chống bot)
+
+GoogleLoginRequest:
+  type: object
+  required:
+    - idToken
+  properties:
+    idToken:
+      type: string
+      description: Google ID Token từ OAuth flow
+      example: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+TokenRefreshRequest:
+  type: object
+  required:
+    - refreshToken
+  properties:
+    refreshToken:
+      type: string
+      description: Refresh token nhận được từ /api/auth/signin
+      example: "eyJhbGciOiJIUzM4NCJ9..."
+
+JwtResponse:
+  type: object
+  properties:
+    accessToken:
+      type: string
+      description: JWT Access Token
+      example: "eyJhbGciOiJIUzM4NCJ9..."
+    refreshToken:
+      type: string
+      description: Refresh Token
+      example: "eyJhbGciOiJIUzM4NCJ9..."
+    tokenType:
+      type: string
+      description: Loại token (luôn là "Bearer")
+      example: Bearer
+    id:
+      type: string
+      description: ID người dùng
+      example: "64f1a2b3c4d5e6f7a8b9c0d1"
+    username:
+      type: string
+      description: Tên đăng nhập
+      example: johndoe
+    email:
+      type: string
+      format: email
+      description: Email
+      example: johndoe@example.com
+    roles:
+      type: array
+      items:
+        type: string
+      description: Danh sách vai trò
+      example:
+        - ROLE_USER
+    subscriptionPlan:
+      type: string
+      description: Gói cước hiện tại
+      example: FREE
+    maxStorage:
+      type: integer
+      format: int64
+      description: Dung lượng lưu trữ tối đa (bytes)
+      example: 1073741824
+    maxFileSize:
+      type: integer
+      format: int64
+      description: Kích thước file tối đa (bytes)
+      example: 104857600
+
+TokenRefreshResponse:
+  type: object
+  properties:
+    accessToken:
+      type: string
+      description: Access Token mới
+      example: "eyJhbGciOiJIUzM4NCJ9..."
+    refreshToken:
+      type: string
+      description: Refresh Token mới
+      example: "eyJhbGciOiJIUzM4NCJ9..."
+    tokenType:
+      type: string
+      example: Bearer

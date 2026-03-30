@@ -157,7 +157,7 @@ export default function UpgradePage() {
                     </div>
                 }
                 confirmText="Tiến hành nâng cấp"
-                color="violet"
+                color="gray"
                 icon={<Crown className="w-6 h-6 text-primary" />}
             />
         </div>

@@ -1,0 +1,58 @@
+paths:
+  /categories:
+    get:
+      tags: [Dashboard]
+      summary: Thống kê dung lượng theo loại File
+      description: Thống kê số lượng và kích thước tệp theo từng loại (Hình ảnh, Video, Tài liệu...).
+      operationId: getDashboardCategories
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '../components/schemas/Dashboard.yaml#/StorageCategoryDTO'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+
+  /recent-files:
+    get:
+      tags: [Dashboard]
+      summary: Tệp hoạt động gần đây
+      description: Lấy danh sách tệp được tải lên hoặc truy cập gần đây nhất.
+      operationId: getDashboardRecentFiles
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '../components/schemas/Dashboard.yaml#/RecentFileDTO'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'

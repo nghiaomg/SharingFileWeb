@@ -13,6 +13,7 @@ import { resolveFolderPath } from "@/features/files/api";
 import { useUploadStore } from "@/features/files/upload-store";
 import { FolderModal } from "@/features/dashboard/components/FolderModal";
 import { RenameFileDialog } from "@/features/files/components/RenameFileDialog";
+import { ConfirmUploadDialog, type PendingUploadFile } from "@/features/files/components/ConfirmUploadDialog";
 import { UploadDropdown } from "./UploadDropdown";
 import { DeleteConfirmModal } from "@/features/dashboard/components/DeleteConfirmModal";
 import { ShareModal } from "@/features/dashboard/components/ShareModal";
@@ -67,6 +68,9 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
     // ─── Local UI State ─────────────────────────────────────────────────────────
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
     const [isDragging, setIsDragging] = useState(false);
+    const [, setDragCounter] = useState(0);
+    const [pendingUploadFiles, setPendingUploadFiles] = useState<PendingUploadFile[]>([]);
+    const [isConfirmUploadOpen, setIsConfirmUploadOpen] = useState(false);
 
     // Folder Modal
     const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
@@ -134,19 +138,31 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
         }
     }, [deleteTarget, deleteFolderMutation, deleteFileMutation]);
 
-    const processFiles = useCallback(async (filesToUpload: FileList | File[]) => {
-        if (!filesToUpload || filesToUpload.length === 0 || !currentFolderId) return;
+    const processFiles = useCallback(async (inputFiles: FileList | File[] | PendingUploadFile[]) => {
+        if (!inputFiles || inputFiles.length === 0 || !currentFolderId) return;
 
-        const filesArray = Array.from(filesToUpload);
+        let filesArray: PendingUploadFile[];
+        if (inputFiles.length > 0 && 'path' in inputFiles[0] && 'file' in inputFiles[0]) {
+            filesArray = inputFiles as PendingUploadFile[];
+        } else {
+            filesArray = Array.from(inputFiles as FileList | File[]).map(file => {
+                let path = "";
+                if (file.webkitRelativePath) {
+                    const parts = file.webkitRelativePath.split('/');
+                    if (parts.length > 1) {
+                        parts.pop();
+                        path = parts.join('/');
+                    }
+                }
+                return { file, path };
+            });
+        }
+
         const pathsToResolve = new Set<string>();
 
-        filesArray.forEach(file => {
-            if (file.webkitRelativePath) {
-                const parts = file.webkitRelativePath.split('/');
-                if (parts.length > 1) {
-                    parts.pop(); 
-                    pathsToResolve.add(parts.join('/'));
-                }
+        filesArray.forEach(item => {
+            if (item.path) {
+                pathsToResolve.add(item.path);
             }
         });
 
@@ -167,42 +183,108 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
             }
         }
 
-        filesArray.forEach(file => {
+        filesArray.forEach(item => {
             let targetFolderId = currentFolderId;
-            if (file.webkitRelativePath) {
-                const parts = file.webkitRelativePath.split('/');
-                if (parts.length > 1) {
-                    parts.pop();
-                    const path = parts.join('/');
-                    if (folderMap[path]) {
-                        targetFolderId = folderMap[path];
-                    }
-                }
+            if (item.path && folderMap[item.path]) {
+                targetFolderId = folderMap[item.path];
             }
-            useUploadStore.getState().addFiles([file], targetFolderId);
+            useUploadStore.getState().addFiles([item.file], targetFolderId);
         });
         
         toast.info(`Đã xếp hàng ${filesArray.length} tệp để tải lên.`);
     }, [currentFolderId]);
 
-    const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    const handleDragEnter = useCallback((e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
+        e.stopPropagation();
+        setDragCounter((prev) => prev + 1);
         setIsDragging(true);
     }, []);
 
     const handleDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
-        setIsDragging(false);
+        e.stopPropagation();
+        setDragCounter((prev) => {
+            const next = prev - 1;
+            if (next === 0) {
+                setIsDragging(false);
+            }
+            return next;
+        });
     }, []);
 
-    const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
+        e.stopPropagation();
+        e.dataTransfer.dropEffect = 'copy';
+    }, []);
+
+    const handleDrop = useCallback(async (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragCounter(0);
         setIsDragging(false);
-        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-            const filesCopy = Array.from(e.dataTransfer.files);
-            processFiles(filesCopy);
+
+        if (!e.dataTransfer.items || e.dataTransfer.items.length === 0) return;
+
+        const files: PendingUploadFile[] = [];
+        
+        const readEntry = async (entry: FileSystemEntry, path = "") => {
+            if (entry.isFile) {
+                await new Promise<void>((resolve, reject) => {
+                    (entry as FileSystemFileEntry).file((file: File) => {
+                        files.push({ file, path });
+                        resolve();
+                    }, reject);
+                });
+            } else if (entry.isDirectory) {
+                const dirReader = (entry as FileSystemDirectoryEntry).createReader();
+                const newPath = path ? `${path}/${entry.name}` : entry.name;
+                
+                const readEntriesPromise = () => new Promise<FileSystemEntry[]>((resolve, reject) => {
+                    dirReader.readEntries(resolve, reject);
+                });
+
+                let allEntries: FileSystemEntry[] = [];
+                let batch: FileSystemEntry[] = [];
+                do {
+                    batch = await readEntriesPromise();
+                    allEntries = allEntries.concat(batch);
+                } while (batch.length > 0);
+
+                for (const subEntry of allEntries) {
+                    await readEntry(subEntry, newPath);
+                }
+            }
+        };
+
+        toast.loading("Đang đọc tệp...", { id: "read-files" });
+        try {
+            const promises = [];
+            for (let i = 0; i < e.dataTransfer.items.length; i++) {
+                const item = e.dataTransfer.items[i];
+                if (item.kind === "file") {
+                    const entry = item.webkitGetAsEntry();
+                    if (entry) {
+                        promises.push(readEntry(entry));
+                    } else {
+                        const file = item.getAsFile();
+                        if (file) files.push({ file, path: "" });
+                    }
+                }
+            }
+            await Promise.all(promises);
+            toast.dismiss("read-files");
+
+            if (files.length > 0) {
+                setPendingUploadFiles(files);
+                setIsConfirmUploadOpen(true);
+            }
+        } catch (error) {
+            console.error("Error reading dropped files:", error);
+            toast.error("Lỗi khi đọc file", { id: "read-files" });
         }
-    }, [processFiles]);
+    }, []);
 
     const handleShare = useCallback((file: FileItem) => {
         setShareTarget(file);
@@ -220,7 +302,7 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
     if (isLoading) {
         return (
             <Flex align="center" justify="center" style={{ flex: 1, padding: "3rem" }}>
-                <Loader2 className="w-8 h-8 animate-spin text-violet-9" style={{ color: "var(--violet-9)" }} />
+                <Loader2 className="w-8 h-8 animate-spin text-zinc-900 dark:text-zinc-100" style={{ color: "var(--gray-12)" }} />
             </Flex>
         );
     }
@@ -240,7 +322,7 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
                         </Flex>
                     )}
                     <Heading size="6" weight="bold" style={{ letterSpacing: "-0.025em", display: "flex", alignItems: "center", gap: "12px" }}>
-                        {!folderId || !folderInfo ? <Home style={{ width: 32, height: 32, color: "var(--violet-9)" }} /> : <FolderOpen style={{ width: 32, height: 32, color: "var(--amber-11)" }} />}
+                        {!folderId || !folderInfo ? <Home style={{ width: 32, height: 32, color: "var(--gray-12)" }} /> : <FolderOpen style={{ width: 32, height: 32, color: "var(--amber-11)" }} />}
                         {folderId && folderInfo ? folderInfo.name : "Tệp của tôi"}
                     </Heading>
                 </Box>
@@ -284,34 +366,65 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
             </Flex>
 
             {/* Content  */}
-            <Box p={{ initial: "4", sm: "6", lg: "8" }} style={{ flex: 1, overflowY: "auto", position: "relative", zIndex: 0 }}>
+            <Box 
+                p={{ initial: "4", sm: "6", lg: "8" }} 
+                style={{ flex: 1, overflowY: "auto", position: "relative", zIndex: 0 }}
+                onDragEnter={handleDragEnter}
+                onDragLeave={handleDragLeave}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+            >
+                {/* Drag Overlay */}
+                {isDragging && (
+                    <Flex 
+                        align="center" 
+                        justify="center" 
+                        direction="column"
+                        style={{
+                            position: "absolute",
+                            top: 0, left: 0, right: 0, bottom: 0,
+                            backgroundColor: "var(--gray-a3)",
+                            backdropFilter: "blur(2px)",
+                            zIndex: 50,
+                            border: "2px dashed var(--gray-12)",
+                            borderRadius: "var(--radius-5)",
+                            margin: "1rem"
+                        }}
+                    >
+                        <Box p="4" mb="4" style={{ borderRadius: "100%", backgroundColor: "var(--gray-a4)", transition: "all 0.3s" }}>
+                            <FolderOpen style={{ width: 64, height: 64, color: "var(--gray-12)", transition: "all 0.3s" }} />
+                        </Box>
+                        <Heading size="6" mb="3" style={{ color: "var(--gray-12)" }}>
+                            Thả tệp hoặc thư mục vào đây
+                        </Heading>
+                        <Text size="3" color="gray" style={{ maxWidth: "24rem", textAlign: "center" }}>
+                            Chúng tôi sẽ liệt kê các tệp để bạn duyệt và xác nhận trước khi tải lên.
+                        </Text>
+                    </Flex>
+                )}
+
                 {folders.length === 0 && files.length === 0 ? (
                     <Flex 
                         direction="column"
                         align="center"
                         justify="center"
-                        onDragOver={handleDragOver}
-                        onDragLeave={handleDragLeave}
-                        onDrop={handleDrop}
                         p="6"
                         style={{
                             minHeight: "400px",
-                            border: `2px dashed ${isDragging ? "var(--violet-9)" : "var(--gray-a6)"}`,
-                            backgroundColor: isDragging ? "var(--violet-a2)" : "transparent",
+                            border: `2px dashed var(--gray-a6)`,
+                            backgroundColor: "transparent",
                             borderRadius: "var(--radius-5)",
-                            transition: "all 0.3s",
-                            cursor: "pointer",
                             textAlign: "center"
                         }}
                     >
-                        <Box p="4" mb="4" style={{ borderRadius: "100%", backgroundColor: isDragging ? "var(--violet-a3)" : "var(--gray-a3)", transition: "all 0.3s" }}>
-                            <FolderOpen style={{ width: 64, height: 64, color: isDragging ? "var(--violet-9)" : "var(--gray-a8)", transition: "all 0.3s" }} />
+                        <Box p="4" mb="4" style={{ borderRadius: "100%", backgroundColor: "var(--gray-a3)", transition: "all 0.3s" }}>
+                            <FolderOpen style={{ width: 64, height: 64, color: "var(--gray-a8)" }} />
                         </Box>
-                        <Heading size="6" mb="3" style={{ color: isDragging ? "var(--violet-11)" : "inherit" }}>
-                            {isDragging ? "Thả tệp vào đây" : "Thư mục trống"}
+                        <Heading size="6" mb="3" style={{ color: "var(--gray-11)" }}>
+                            Thư mục trống
                         </Heading>
                         <Text size="3" color="gray" style={{ maxWidth: "24rem" }}>
-                            {isDragging ? "Chúng tôi sẽ tự động tải lên không gian của bạn." : "Kéo thả tệp vào đây hoặc nhấn mũi tên tải lên ở góc trên cùng để bắt đầu."}
+                            Kéo thả tệp vào đây hoặc nhấn mũi tên tải lên ở góc trên cùng để bắt đầu.
                         </Text>
                     </Flex>
                 ) : (
@@ -326,14 +439,14 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
                                 {viewMode === "grid" ? (
                                     <Grid columns={{ initial: "1", sm: "2", lg: "3", xl: "4" }} gap="4">
                                         {folders.map(folder => (
-                                            <Card key={folder.id} size="2" variant="surface" className="group" style={{ cursor: "pointer", position: "relative", transition: "background-color 0.2s" }}>
+                                            <Card key={folder.id} size="2" variant="ghost" className="group" style={{ cursor: "pointer", position: "relative", border: "none" }}>
                                                 <Flex 
                                                     align="center" 
                                                     gap="3" 
                                                     onClick={() => router.push(`/dashboard/files/${folder.id}`)}
                                                 >
-                                                    <Flex align="center" justify="center" flexShrink="0" style={{ width: 40, height: 40, backgroundColor: "var(--amber-a3)", borderRadius: "var(--radius-3)" }}>
-                                                        <FolderOpen className="w-5 h-5 text-amber-500" style={{ color: "var(--amber-11)" }} />
+                                                    <Flex align="center" justify="center" flexShrink="0" style={{ width: 40, height: 40, backgroundColor: "var(--brown-a3)", borderRadius: "var(--radius-3)" }}>
+                                                        <FolderOpen className="w-5 h-5" style={{ color: "var(--brown-11)" }} />
                                                     </Flex>
                                                     <Text size="3" weight="bold" truncate>{folder.name}</Text>
                                                 </Flex>
@@ -362,14 +475,14 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
                                 ) : (
                                     <Flex direction="column" gap="2">
                                         {folders.map(folder => (
-                                            <Card key={folder.id} size="2" variant="surface" className="group" style={{ cursor: "pointer", position: "relative" }}>
+                                            <Card key={folder.id} size="2" variant="ghost" className="group" style={{ cursor: "pointer", position: "relative", border: "none" }}>
                                                 <Flex 
                                                     align="center" 
                                                     gap="4"
                                                     onClick={() => router.push(`/dashboard/files/${folder.id}`)}
                                                 >
-                                                    <Flex align="center" justify="center" flexShrink="0" style={{ width: 40, height: 40, backgroundColor: "var(--amber-a3)", borderRadius: "var(--radius-3)" }}>
-                                                        <FolderOpen className="w-5 h-5 text-amber-500" style={{ color: "var(--amber-11)" }} />
+                                                    <Flex align="center" justify="center" flexShrink="0" style={{ width: 40, height: 40, backgroundColor: "var(--brown-a3)", borderRadius: "var(--radius-3)" }}>
+                                                        <FolderOpen className="w-5 h-5" style={{ color: "var(--brown-11)" }} />
                                                     </Flex>
                                                     <Text size="3" weight="bold" truncate style={{ flex: 1 }}>{folder.name}</Text>
                                                 </Flex>
@@ -512,6 +625,27 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
                 onSubmit={handleRenameFileSubmit}
                 file={renamingFile}
                 isLoading={renameFileMutation.isPending}
+            />
+
+            <ConfirmUploadDialog
+                isOpen={isConfirmUploadOpen}
+                onClose={() => {
+                    setIsConfirmUploadOpen(false);
+                    setPendingUploadFiles([]);
+                }}
+                onConfirm={() => {
+                    setIsConfirmUploadOpen(false);
+                    processFiles(pendingUploadFiles);
+                    setPendingUploadFiles([]);
+                }}
+                onRemove={(index) => {
+                    setPendingUploadFiles(prev => {
+                        const next = [...prev];
+                        next.splice(index, 1);
+                        return next;
+                    });
+                }}
+                files={pendingUploadFiles}
             />
         </Flex>
     );

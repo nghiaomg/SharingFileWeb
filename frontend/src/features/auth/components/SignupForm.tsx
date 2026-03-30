@@ -13,10 +13,10 @@ export function SignupForm() {
     email: "",
     password: "",
     confirmPassword: "",
-    turnstileToken: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [localError, setLocalError] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState<string>("");
   const registerMutation = useRegister();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -32,7 +32,7 @@ export function SignupForm() {
       username: formData.username,
       email: formData.email,
       password: formData.password,
-      turnstileToken: formData.turnstileToken,
+      turnstileToken,
     });
   };
 
@@ -120,18 +120,18 @@ export function SignupForm() {
         </span>
       </div>
 
-      <div className="flex justify-center mb-4">
-        <Turnstile
-          siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
-          onSuccess={(token) => setFormData({ ...formData, turnstileToken: token })}
-          onError={() => setFormData({ ...formData, turnstileToken: "" })}
-          onExpire={() => setFormData({ ...formData, turnstileToken: "" })}
-        />
-      </div>
+      <Turnstile
+        siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+        onSuccess={(token) => setTurnstileToken(token)}
+        onExpire={() => setTurnstileToken("")}
+        options={{
+          theme: "auto",
+        }}
+      />
 
       <button
         type="submit"
-        disabled={registerMutation.isPending || !formData.turnstileToken}
+        disabled={registerMutation.isPending || !turnstileToken}
         className="w-full py-3.5 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all shadow-lg hover:shadow-primary/30 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
       >
         {registerMutation.isPending ? (

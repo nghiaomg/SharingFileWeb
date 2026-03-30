@@ -1,0 +1,132 @@
+StandardResponse:
+  type: object
+  description: Wrapper response chuẩn cho mọi API endpoint
+  properties:
+    success:
+      type: boolean
+      description: Trạng thái thành công
+      example: true
+    msg:
+      type: string
+      description: Thông điệp mô tả kết quả
+      example: "Operation completed successfully"
+    data:
+      type: object
+      description: Dữ liệu trả về (nullable)
+      example: null
+
+# ─── Generic Error Responses ───────────────────────────────────────────────────
+
+Error400:
+  type: object
+  description: Yêu cầu không hợp lệ — Bad Request
+  properties:
+    success:
+      type: boolean
+      example: false
+    msg:
+      type: string
+      example: "Validation failed"
+    data:
+      type: object
+      example: null
+
+Error401:
+  type: object
+  description: Chưa xác thực — Unauthorized
+  properties:
+    success:
+      type: boolean
+      example: false
+    msg:
+      type: string
+      example: "Full authentication is required to access this resource"
+    data:
+      type: object
+      example: null
+
+Error403:
+  type: object
+  description: Không có quyền — Forbidden
+  properties:
+    success:
+      type: boolean
+      example: false
+    msg:
+      type: string
+      example: "Access denied"
+    data:
+      type: object
+      example: null
+
+Error404:
+  type: object
+  description: Không tìm thấy — Not Found
+  properties:
+    success:
+      type: boolean
+      example: false
+    msg:
+      type: string
+      example: "Resource not found"
+    data:
+      type: object
+      example: null
+
+Error500:
+  type: object
+  description: Lỗi máy chủ — Internal Server Error
+  properties:
+    success:
+      type: boolean
+      example: false
+    msg:
+      type: string
+      example: "Internal server error"
+    data:
+      type: object
+      example: null
+
+# ─── Pagination (để dùng chung khi cần) ───────────────────────────────────────
+
+PageMetadata:
+  type: object
+  properties:
+    page:
+      type: integer
+      description: Trang hiện tại (0-indexed)
+      example: 0
+    size:
+      type: integer
+      description: Số phần tử mỗi trang
+      example: 20
+    totalElements:
+      type: integer
+      format: int64
+      description: Tổng số phần tử
+      example: 100
+    totalPages:
+      type: integer
+      description: Tổng số trang
+      example: 5
+
+# ─── Parameters (dùng chung) ───────────────────────────────────────────────────
+
+limitParam:
+  name: limit
+  in: query
+  schema:
+    type: integer
+    default: 20
+    minimum: 1
+    maximum: 100
+  description: Số lượng phần tử tối đa trả về
+
+offsetParam:
+  name: offset
+  in: query
+  schema:
+    type: integer
+    default: 0
+    minimum: 0
+  description: Số phần tử bỏ qua (offset)

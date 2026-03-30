@@ -1,0 +1,69 @@
+FolderResponse:
+  type: object
+  properties:
+    id:
+      type: string
+      description: ID thư mục
+      example: "64f1a2b3c4d5e6f7a8b9c0d2"
+    name:
+      type: string
+      description: Tên thư mục
+      example: "Project Documents"
+    parentId:
+      type: string
+      nullable: true
+      description: ID thư mục cha (null = root)
+      example: null
+    createdAt:
+      type: string
+      format: date-time
+      description: Thời điểm tạo
+      example: "2024-01-15T10:30:00Z"
+    updatedAt:
+      type: string
+      format: date-time
+      nullable: true
+      description: Thời điểm cập nhật gần nhất
+      example: "2024-01-16T08:00:00Z"
+
+CreateFolderRequest:
+  type: object
+  required:
+    - name
+  properties:
+    name:
+      type: string
+      maxLength: 255
+      description: Tên thư mục mới
+      example: "New Folder"
+    parentId:
+      type: string
+      nullable: true
+      description: ID thư mục cha (null hoặc bỏ trống = root)
+      example: null
+
+UpdateFolderRequest:
+  type: object
+  required:
+    - name
+  properties:
+    name:
+      type: string
+      maxLength: 255
+      description: Tên mới của thư mục
+      example: "Renamed Folder"
+
+ResolvePathRequest:
+  type: object
+  required:
+    - path
+  properties:
+    path:
+      type: string
+      description: Tên thư mục cần tìm
+      example: "Project"
+    parentId:
+      type: string
+      nullable: true
+      description: ID thư mục cha để tìm kiếm trong đó
+      example: "64f1a2b3c4d5e6f7a8b9c0d2"

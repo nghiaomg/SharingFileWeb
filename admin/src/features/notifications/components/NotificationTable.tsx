@@ -2,12 +2,12 @@ import React from 'react';
 import { Table, Button, Space, Tag } from 'antd';
 import { CheckOutlined } from '@ant-design/icons';
 import type { Notification } from '../types/notification.types';
-import { useNotificationsQuery, useMarkAsReadMutation } from '../hooks/useNotificationsHooks';
+import { useNotificationsQuery, useMarkNotificationReadMutation } from '../hooks/useNotificationsHooks';
 import dayjs from 'dayjs';
 
 export const NotificationTable: React.FC = () => {
   const { data: notifications, isLoading } = useNotificationsQuery();
-  const markAsReadMutation = useMarkAsReadMutation();
+  const markAsReadMutation = useMarkNotificationReadMutation();
 
   const columns = [
     { title: 'Tiêu đề', dataIndex: 'title', key: 'title' },

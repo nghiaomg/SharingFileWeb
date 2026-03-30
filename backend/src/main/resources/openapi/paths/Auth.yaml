@@ -1,0 +1,154 @@
+paths:
+  /signin:
+    post:
+      tags: [Authentication]
+      summary: Đăng nhập
+      description: Xác thực bằng username và mật khẩu. Trả về Access Token (JWT) và Refresh Token.
+      operationId: signin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/Auth.yaml#/LoginRequest'
+            example:
+              username: johndoe
+              password: "123456"
+      responses:
+        '200':
+          description: Đăng nhập thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '../components/schemas/Auth.yaml#/JwtResponse'
+        '400':
+          description: Tên đăng nhập hoặc mật khẩu không đúng
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+
+  /google:
+    post:
+      tags: [Authentication]
+      summary: Đăng nhập Google
+      description: Xác thực bằng Google ID Token (OAuth 2.0).
+      operationId: googleLogin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/Auth.yaml#/GoogleLoginRequest'
+            example:
+              idToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+      responses:
+        '200':
+          description: Đăng nhập thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '../components/schemas/Auth.yaml#/JwtResponse'
+        '400':
+          description: Token không hợp lệ hoặc Google API lỗi
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+
+  /signup:
+    post:
+      tags: [Authentication]
+      summary: Đăng ký tài khoản mới
+      description: Tạo tài khoản mới. Mặc định gán vai trò ROLE_USER.
+      operationId: signup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/Auth.yaml#/SignupRequest'
+            example:
+              username: johndoe
+              email: johndoe@example.com
+              password: "123456"
+              role:
+                - ROLE_USER
+      responses:
+        '200':
+          description: Đăng ký thành công
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/StandardResponse'
+        '400':
+          description: Username hoặc email đã tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+
+  /refreshtoken:
+    post:
+      tags: [Authentication]
+      summary: Làm mới Access Token
+      description: Dùng Refresh Token để lấy cặp Access Token + Refresh Token mới.
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/Auth.yaml#/TokenRefreshRequest'
+            example:
+              refreshToken: "eyJhbGciOiJIUzM4NCJ9..."
+      responses:
+        '200':
+          description: Token làm mới thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '../components/schemas/Auth.yaml#/TokenRefreshResponse'
+        '403':
+          description: Refresh token hết hạn hoặc không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+
+  /logout:
+    post:
+      tags: [Authentication]
+      summary: Đăng xuất
+      description: Xóa Refresh Token của phiên hiện tại.
+      operationId: logout
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Đăng xuất thành công
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/StandardResponse'
+        '401':
+          description: Chưa đăng nhập
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'

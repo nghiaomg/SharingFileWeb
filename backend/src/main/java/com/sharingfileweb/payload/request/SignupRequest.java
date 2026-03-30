@@ -20,7 +20,6 @@ public class SignupRequest {
   @Size(min = 6, max = 40)
   private String password;
 
-  @NotBlank(message = "Captcha token is required")
   private String turnstileToken;
 
   public String getUsername() {

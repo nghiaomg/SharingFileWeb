@@ -112,7 +112,7 @@ export default function DocsPage() {
                                     <span className="text-slate-400">{"// Automatically encrypts locally before uploading"}</span><br />
                                     <span className="text-pink-400">const</span> result = <span className="text-pink-400">await</span> client.upload(<span className="text-amber-300">&apos;./financial_report.pdf&apos;</span>, {"{"}<br />
                                     &nbsp;&nbsp;bucket: <span className="text-amber-300">&apos;Q3_2024&apos;</span>,<br />
-                                    &nbsp;&nbsp;options: {"{"} versioning: <span className="text-violet-400">true</span> {"}"}<br />
+                                    &nbsp;&nbsp;options: {"{"} versioning: <span className="text-zinc-900 dark:text-zinc-100">true</span> {"}"}<br />
                                     {"}"});<br /><br />
                                     console.<span className="text-sky-200">log</span>(<span className="text-amber-300">`Secure URI: <span className="text-sky-200">{"${"}</span>result.secureUrl<span className="text-sky-200">{"}"}</span>`</span>);
                                 </div>

@@ -1,0 +1,113 @@
+paths:
+  /{fileId}:
+    get:
+      tags: [File Management]
+      summary: Lấy thông tin tệp công khai
+      description: Lấy metadata của tệp public (isPublic=true). Dùng cho liên kết chia sẻ công khai không yêu cầu Auth.
+      operationId: getPublicFileMetadata
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID tệp công khai
+          example: "64f1a2b3c4d5e6f7a8b9c0d1"
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '../components/schemas/File.yaml#/FileResponse'
+        '404':
+          description: Tệp không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error404'
+
+  /{fileId}/download:
+    get:
+      tags: [File Management]
+      summary: Tải xuống tệp công khai
+      description: Lấy presigned URL để tải xuống tệp công khai trực tiếp từ Backblaze B2.
+      operationId: downloadPublicFile
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID tệp công khai
+          example: "64f1a2b3c4d5e6f7a8b9c0d1"
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '../components/schemas/File.yaml#/DownloadUrlResponse'
+        '404':
+          description: Tệp không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error404'
+        '500':
+          description: Lỗi khi tạo presigned URL
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error500'
+
+  /download/{fileId}:
+    get:
+      tags: [File Management]
+      summary: Tải xuống tệp nội bộ (có Auth)
+      description: Lấy presigned URL để tải xuống tệp thuộc sở hữu người dùng đã đăng nhập. Yêu cầu Bearer JWT.
+      operationId: downloadPrivateFile
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID tệp
+          example: "64f1a2b3c4d5e6f7a8b9c0d1"
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '../components/schemas/File.yaml#/DownloadUrlResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+        '500':
+          description: Lỗi khi tạo presigned URL
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error500'

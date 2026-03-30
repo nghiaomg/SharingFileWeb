@@ -34,7 +34,7 @@ export const DashboardStats: React.FC = () => {
   return (
     <Row gutter={[24, 24]} style={{ marginBottom: 24 }}>
       <Col xs={24} sm={12} lg={6}>
-        <Card bordered={false} loading={loadingUsers} style={{ borderRadius: 8, boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
+        <Card variant="borderless" loading={loadingUsers} style={{ borderRadius: 8, boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
           <Statistic
             title="Tổng người dùng"
             value={totalUsers}
@@ -44,7 +44,7 @@ export const DashboardStats: React.FC = () => {
         </Card>
       </Col>
       <Col xs={24} sm={12} lg={6}>
-        <Card bordered={false} loading={loadingFiles} style={{ borderRadius: 8, boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
+        <Card variant="borderless" loading={loadingFiles} style={{ borderRadius: 8, boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
           <Statistic
             title="Tổng tệp tin"
             value={totalFiles}
@@ -54,7 +54,7 @@ export const DashboardStats: React.FC = () => {
         </Card>
       </Col>
       <Col xs={24} sm={12} lg={6}>
-        <Card bordered={false} loading={loadingCategories} style={{ borderRadius: 8, boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
+        <Card variant="borderless" loading={loadingCategories} style={{ borderRadius: 8, boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
           <Statistic
             title="Dung lượng đã dùng"
             value={totalStorage}
@@ -65,7 +65,7 @@ export const DashboardStats: React.FC = () => {
         </Card>
       </Col>
       <Col xs={24} sm={12} lg={6}>
-        <Card bordered={false} loading={loadingLinks} style={{ borderRadius: 8, boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
+        <Card variant="borderless" loading={loadingLinks} style={{ borderRadius: 8, boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
           <Statistic
             title="Liên kết hoạt động"
             value={activeLinks}

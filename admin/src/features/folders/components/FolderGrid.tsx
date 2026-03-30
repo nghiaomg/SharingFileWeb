@@ -3,33 +3,45 @@ import { Row, Col, Card, Tag, Button, Popconfirm, Empty, Spin } from 'antd';
 import { FolderOpenFilled, DeleteOutlined } from '@ant-design/icons';
 
 import { useFoldersQuery, useDeleteFolderMutation } from '../hooks/useFoldersHooks';
+import type { Folder } from '../types/folder.types';
 import dayjs from 'dayjs';
 
 interface FolderGridProps {
-  onFolderClick: (folderId: string, folderName: string) => void;
+  onFolderClick: (folder: Folder) => void;
+  searchText?: string;
 }
 
-export const FolderGrid: React.FC<FolderGridProps> = ({ onFolderClick }) => {
+export const FolderGrid: React.FC<FolderGridProps> = ({ onFolderClick, searchText = '' }) => {
   const { data: folders, isLoading } = useFoldersQuery();
   const deleteMutation = useDeleteFolderMutation();
+
+  // Filter folders based on search text
+  const filteredFolders = React.useMemo(() => {
+    if (!folders) return [];
+    if (!searchText) return folders;
+    return folders.filter((folder) =>
+      folder.name.toLowerCase().includes(searchText.toLowerCase()) ||
+      folder.ownerId?.toLowerCase().includes(searchText.toLowerCase())
+    );
+  }, [folders, searchText]);
 
   if (isLoading) {
     return <div style={{ textAlign: 'center', padding: '50px' }}><Spin size="large" /></div>;
   }
 
-  if (!folders || folders.length === 0) {
+  if (!filteredFolders || filteredFolders.length === 0) {
     return <Empty description="Không có thư mục nào" />;
   }
 
   return (
     <Row gutter={[16, 16]}>
-      {folders.map(folder => (
+      {filteredFolders.map(folder => (
         <Col xs={24} sm={12} md={8} lg={6} xl={4} key={folder.id}>
           <Card
             hoverable
             style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
             bodyStyle={{ padding: 16, display: 'flex', flexDirection: 'column', height: '100%', flex: 1 }}
-            onClick={() => onFolderClick(folder.id, folder.name)}
+            onClick={() => onFolderClick(folder)}
           >
             <div style={{ textAlign: 'center', marginBottom: 16 }}>
               <FolderOpenFilled style={{ fontSize: 64, color: '#1677ff' }} />

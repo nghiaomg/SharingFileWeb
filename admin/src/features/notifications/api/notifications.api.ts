@@ -1,5 +1,5 @@
 import { axiosInstance } from '@/shared/api/axios.instance';
-import type { Notification } from '../types/notification.types';
+import type { Notification, UnreadCount } from '../types/notification.types';
 import type { StandardResponse } from '@/shared/api/api.types';
 
 export const notificationsApi = {
@@ -10,8 +10,8 @@ export const notificationsApi = {
   markAsRead: async (id: string): Promise<void> => {
     await axiosInstance.put(`/api/notifications/${id}/read`);
   },
-  getUnreadCount: async (): Promise<number> => {
-    const response = await axiosInstance.get<StandardResponse<number>>('/api/notifications/unread-count');
+  getUnreadCount: async (): Promise<UnreadCount> => {
+    const response = await axiosInstance.get<StandardResponse<UnreadCount>>('/api/notifications/unread-count');
     return response.data.data;
   },
 };

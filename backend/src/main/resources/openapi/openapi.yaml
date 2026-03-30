@@ -1,0 +1,300 @@
+# ─── SharingFileWeb OpenAPI Specification ─────────────────────────────────────────
+# Version: 1.0.0
+# Encoding: UTF-8
+#
+# 📦 Bundle command (sau khi build, ghép lại thành 1 file):
+#    npx @redocly/cli bundle src/main/resources/openapi/openapi.yaml -o src/main/resources/openapi/bundled.yaml
+#
+# 🧪 Validate command:
+#    npx @redocly/cli lint src/main/resources/openapi/openapi.yaml
+
+openapi: 3.1.0
+
+info:
+  title: SharingFileWeb API
+  version: "1.0.0"
+  description: |
+    API Documentation cho hệ thống SharingFileWeb — nền tảng lưu trữ và chia sẻ file.
+    Hỗ trợ: tài khoản local, đăng nhập Google, upload chunked, chia sẻ nội bộ,
+    link chia sẻ công khai (có/mật khẩu), Backblaze B2 storage, thùng rác, thông báo.
+  contact:
+    name: SharingFileWeb Team
+    url: https://sharingfileweb.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080
+    description: Development server
+  - url: https://api.sharingfileweb.com
+    description: Production server
+
+# ─── Security Scheme ────────────────────────────────────────────────────────────
+security:
+  - bearerAuth: []
+
+components:
+
+  # ─── Security ───────────────────────────────────────────────────────────────
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT token nhận được từ API `/api/auth/signin`.
+        Format: `Authorization: Bearer <accessToken>`
+
+  # ─── Schemas ────────────────────────────────────────────────────────────────
+  schemas:
+
+    # ── Auth ─────────────────────────────────────────────────────────────────
+    LoginRequest:
+      $ref: './components/schemas/Auth.yaml#/LoginRequest'
+    SignupRequest:
+      $ref: './components/schemas/Auth.yaml#/SignupRequest'
+    GoogleLoginRequest:
+      $ref: './components/schemas/Auth.yaml#/GoogleLoginRequest'
+    TokenRefreshRequest:
+      $ref: './components/schemas/Auth.yaml#/TokenRefreshRequest'
+    JwtResponse:
+      $ref: './components/schemas/Auth.yaml#/JwtResponse'
+    TokenRefreshResponse:
+      $ref: './components/schemas/Auth.yaml#/TokenRefreshResponse'
+
+    # ── File ─────────────────────────────────────────────────────────────────
+    FileResponse:
+      $ref: './components/schemas/File.yaml#/FileResponse'
+    ShareFileRequest:
+      $ref: './components/schemas/File.yaml#/ShareFileRequest'
+    RenameFileRequest:
+      $ref: './components/schemas/File.yaml#/RenameFileRequest'
+    UploadStatusResponse:
+      $ref: './components/schemas/File.yaml#/UploadStatusResponse'
+    DownloadUrlResponse:
+      $ref: './components/schemas/File.yaml#/DownloadUrlResponse'
+
+    # ── Folder ────────────────────────────────────────────────────────────────
+    FolderResponse:
+      $ref: './components/schemas/Folder.yaml#/FolderResponse'
+    CreateFolderRequest:
+      $ref: './components/schemas/Folder.yaml#/CreateFolderRequest'
+    UpdateFolderRequest:
+      $ref: './components/schemas/Folder.yaml#/UpdateFolderRequest'
+    ResolvePathRequest:
+      $ref: './components/schemas/Folder.yaml#/ResolvePathRequest'
+
+    # ── Sharing ───────────────────────────────────────────────────────────────
+    InternalShareRequest:
+      $ref: './components/schemas/Sharing.yaml#/InternalShareRequest'
+    UpdatePermissionRequest:
+      $ref: './components/schemas/Sharing.yaml#/UpdatePermissionRequest'
+    CreateShareLinkRequest:
+      $ref: './components/schemas/Sharing.yaml#/CreateShareLinkRequest'
+    UpdateShareLinkRequest:
+      $ref: './components/schemas/Sharing.yaml#/UpdateShareLinkRequest'
+    ShareLinkResponse:
+      $ref: './components/schemas/Sharing.yaml#/ShareLinkResponse'
+    SharedAccessResponse:
+      $ref: './components/schemas/Sharing.yaml#/SharedAccessResponse'
+
+    # ── User ──────────────────────────────────────────────────────────────────
+    UserProfileResponse:
+      $ref: './components/schemas/User.yaml#/UserProfileResponse'
+    UpdateProfileRequest:
+      $ref: './components/schemas/User.yaml#/UpdateProfileRequest'
+    ChangePasswordRequest:
+      $ref: './components/schemas/User.yaml#/ChangePasswordRequest'
+    StorageUsageResponse:
+      $ref: './components/schemas/User.yaml#/StorageUsageResponse'
+    UserSummary:
+      $ref: './components/schemas/User.yaml#/UserSummary'
+
+    # ── Dashboard / Misc ─────────────────────────────────────────────────────
+    RecentFileDTO:
+      $ref: './components/schemas/Dashboard.yaml#/RecentFileDTO'
+    StorageCategoryDTO:
+      $ref: './components/schemas/Dashboard.yaml#/StorageCategoryDTO'
+    TrashItemsResponse:
+      $ref: './components/schemas/Dashboard.yaml#/TrashItemsResponse'
+    NotificationResponse:
+      $ref: './components/schemas/Dashboard.yaml#/NotificationResponse'
+    UnreadCountResponse:
+      $ref: './components/schemas/Dashboard.yaml#/UnreadCountResponse'
+
+    # ── Common ────────────────────────────────────────────────────────────────
+    StandardResponse:
+      $ref: './components/schemas/Common.yaml#/StandardResponse'
+    Error400:
+      $ref: './components/schemas/Common.yaml#/Error400'
+    Error401:
+      $ref: './components/schemas/Common.yaml#/Error401'
+    Error403:
+      $ref: './components/schemas/Common.yaml#/Error403'
+    Error404:
+      $ref: './components/schemas/Common.yaml#/Error404'
+    Error500:
+      $ref: './components/schemas/Common.yaml#/Error500'
+    PageMetadata:
+      $ref: './components/schemas/Common.yaml#/PageMetadata'
+
+# ─── Tags (Grouping) ─────────────────────────────────────────────────────────────
+tags:
+  - name: Authentication
+    description: Đăng nhập, đăng ký, làm mới token, đăng xuất. Tất cả endpoint **PUBLIC**.
+  - name: File Management
+    description: Upload chunked, download, rename, share, delete, admin CRUD. Yêu cầu **Bearer JWT**.
+  - name: Folder Management
+    description: CRUD thư mục, breadcrumb, children listing. Yêu cầu **Bearer JWT**.
+  - name: Sharing
+    description: Chia sẻ nội bộ (email) và tạo link public. Yêu cầu **Bearer JWT**.
+  - name: Public Sharing
+    description: Truy cập file qua link công khai — **PUBLIC**, không cần đăng nhập.
+  - name: User Profile
+    description: Profile, đổi mật khẩu, storage, admin user management. Yêu cầu **Bearer JWT**.
+  - name: Dashboard
+    description: Thống kê dung lượng và file gần đây. Yêu cầu **Bearer JWT**.
+  - name: Trash Management
+    description: Xóa mềm, khôi phục, dọn sạch thùng rác. Yêu cầu **Bearer JWT**.
+  - name: Notifications
+    description: Danh sách thông báo, đánh dấu đã đọc. Yêu cầu **Bearer JWT**.
+  - name: Subscription
+    description: Quản lý gói cước (nâng cấp PRO). Yêu cầu **Bearer JWT**.
+
+# ─── Paths ───────────────────────────────────────────────────────────────────────
+paths:
+
+  # ── Authentication ──────────────────────────────────────────────────────────
+  /api/auth/signin:
+    $ref: './paths/Auth.yaml#/paths/~1signin'
+  /api/auth/google:
+    $ref: './paths/Auth.yaml#/paths/~1google'
+  /api/auth/signup:
+    $ref: './paths/Auth.yaml#/paths/~1signup'
+  /api/auth/refreshtoken:
+    $ref: './paths/Auth.yaml#/paths/~1refreshtoken'
+  /api/auth/logout:
+    $ref: './paths/Auth.yaml#/paths/~1logout'
+
+  # ── Files ──────────────────────────────────────────────────────────────────
+  /api/files:
+    $ref: './paths/Files.yaml#/paths/~1'
+  /api/files/recent:
+    $ref: './paths/Files.yaml#/paths/~1recent'
+  /api/files/shared:
+    $ref: './paths/Files.yaml#/paths/~1shared'
+  /api/files/upload/chunk:
+    $ref: './paths/Files.yaml#/paths/~1upload~1chunk'
+  /api/files/upload/status:
+    $ref: './paths/Files.yaml#/paths/~1upload~1status'
+  /api/files/upload/complete:
+    $ref: './paths/Files.yaml#/paths/~1upload~1complete'
+  /api/files/{fileId}:
+    $ref: './paths/Files.yaml#/paths/~1{fileId}'
+  /api/files/{fileId}/rename:
+    $ref: './paths/Files.yaml#/paths/~1{fileId}~1rename'
+  /api/files/{fileId}/share:
+    $ref: './paths/Files.yaml#/paths/~1{fileId}~1share'
+  /api/files/{fileId}/permanent:
+    $ref: './paths/Files.yaml#/paths/~1{fileId}~1permanent'
+  /api/files/all:
+    $ref: './paths/Files.yaml#/paths/~1all'
+
+  # ── Public Files ────────────────────────────────────────────────────────────
+  /api/files/public/{fileId}:
+    $ref: './paths/PublicFiles.yaml#/paths/~1public~1{fileId}'
+  /api/files/public/{fileId}/download:
+    $ref: './paths/PublicFiles.yaml#/paths/~1public~1{fileId}~1download'
+  /api/files/download/{fileId}:
+    $ref: './paths/PublicFiles.yaml#/paths/~1download~1{fileId}'
+
+  # ── Folders ────────────────────────────────────────────────────────────────
+  /api/folders:
+    $ref: './paths/Folders.yaml#/paths/~1'
+  /api/folders/{folderId}:
+    $ref: './paths/Folders.yaml#/paths/~1{folderId}'
+  /api/folders/{folderId}/children:
+    $ref: './paths/Folders.yaml#/paths/~1{folderId}~1children'
+  /api/folders/{folderId}/files:
+    $ref: './paths/Folders.yaml#/paths/~1{folderId}~1files'
+  /api/folders/{folderId}/permanent:
+    $ref: './paths/Folders.yaml#/paths/~1{folderId}~1permanent'
+  /api/folders/all:
+    $ref: './paths/Folders.yaml#/paths/~1all'
+  /api/folders/resolve-path:
+    $ref: './paths/Folders.yaml#/paths/~1resolve-path'
+
+  # ── Sharing ────────────────────────────────────────────────────────────────
+  /api/share/internal:
+    $ref: './paths/Sharing.yaml#/paths/~1internal'
+  /api/share/with-me:
+    $ref: './paths/Sharing.yaml#/paths/~1with-me'
+  /api/share/by-me:
+    $ref: './paths/Sharing.yaml#/paths/~1by-me'
+  /api/share/access/file/{fileId}:
+    $ref: './paths/Sharing.yaml#/paths/~1access~1file~1{fileId}'
+  /api/share/access/{accessId}:
+    $ref: './paths/Sharing.yaml#/paths/~1access~1{accessId}'
+  /api/share/access/folder/{folderId}:
+    $ref: './paths/Sharing.yaml#/paths/~1access~1folder~1{folderId}'
+  /api/share/link:
+    $ref: './paths/Sharing.yaml#/paths/~1link'
+  /api/share/link/file/{fileId}:
+    $ref: './paths/Sharing.yaml#/paths/~1link~1file~1{fileId}'
+  /api/share/link/{linkId}:
+    $ref: './paths/Sharing.yaml#/paths/~1link~1{linkId}'
+  /api/share/links:
+    $ref: './paths/Sharing.yaml#/paths/~1links'
+  /api/share/links/{linkId}:
+    $ref: './paths/Sharing.yaml#/paths/~1links~1{linkId}'
+
+  # ── Public Sharing ─────────────────────────────────────────────────────────
+  /api/public/share/{token}:
+    $ref: './paths/PublicSharing.yaml#/paths/~1{token}'
+  /api/public/share/{token}/download:
+    $ref: './paths/PublicSharing.yaml#/paths/~1{token}~1download'
+  /api/public/share/{token}/folder:
+    $ref: './paths/PublicSharing.yaml#/paths/~1{token}~1folder'
+
+  # ── User Profile ──────────────────────────────────────────────────────────
+  /api/auth/me:
+    $ref: './paths/User.yaml#/paths/~1auth~1me'
+  /api/user/profile:
+    $ref: './paths/User.yaml#/paths/~1user~1profile'
+  /api/user/password:
+    $ref: './paths/User.yaml#/paths/~1user~1password'
+  /api/user/storage:
+    $ref: './paths/User.yaml#/paths/~1user~1storage'
+  /api/users:
+    $ref: './paths/User.yaml#/paths/~1users'
+  /api/users/{userId}:
+    $ref: './paths/User.yaml#/paths/~1users~1{userId}'
+
+  # ── Dashboard ─────────────────────────────────────────────────────────────
+  /api/dashboard/categories:
+    $ref: './paths/Dashboard.yaml#/paths/~1categories'
+  /api/dashboard/recent-files:
+    $ref: './paths/Dashboard.yaml#/paths/~1recent-files'
+
+  # ── Trash ─────────────────────────────────────────────────────────────────
+  /api/trash:
+    $ref: './paths/Trash.yaml#/paths/~1'
+  /api/trash/restore/{type}/{id}:
+    $ref: './paths/Trash.yaml#/paths/~1restore~1{type}~1{id}'
+  /api/trash/permanent/{type}/{id}:
+    $ref: './paths/Trash.yaml#/paths/~1permanent~1{type}~1{id}'
+  /api/trash/empty:
+    $ref: './paths/Trash.yaml#/paths/~1empty'
+
+  # ── Notifications ─────────────────────────────────────────────────────────
+  /api/notifications:
+    $ref: './paths/Notification.yaml#/paths/~1'
+  /api/notifications/{notificationId}/read:
+    $ref: './paths/Notification.yaml#/paths/~1{notificationId}~1read'
+  /api/notifications/unread-count:
+    $ref: './paths/Notification.yaml#/paths/~1unread-count'
+
+  # ── Subscription ──────────────────────────────────────────────────────────
+  /api/subscription/upgrade:
+    $ref: './paths/Subscription.yaml#/paths/~1upgrade'

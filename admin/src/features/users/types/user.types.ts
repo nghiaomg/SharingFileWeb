@@ -13,6 +13,7 @@ export interface User {
   subscriptionPlan: string;
   maxStorage: number;
   maxFileSize: number;
+  storageUsed?: number;
   createdAt: string;
   lastLogin?: string;
   twoFactorEnabled: boolean;

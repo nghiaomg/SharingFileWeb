@@ -39,4 +39,7 @@ public interface FileRepository extends MongoRepository<StorageFile, String> {
   // Tính tổng dung lượng (Aggregation) bao gồm cả file rác
   @Aggregation(pipeline = { "{ '$match': { 'ownerId' : ?0 } }", "{ '$group': { '_id': null, 'totalSize': { $sum: '$size' } } }" })
   Long sumSizeByOwnerId(String ownerId);
+
+  // Lấy toàn bộ file đã từng có b2FileId (cho mục đích đồng bộ sync job)
+  List<StorageFile> findByB2FileIdIsNotNull();
 }

@@ -1,18 +1,376 @@
-import React from 'react';
-import { Card, Typography } from 'antd';
-import { ShareLinkTable } from '../components/ShareLinkTable';
+import React, { useState, useMemo } from 'react';
+import {
+  Card,
+  Typography,
+  Input,
+  Button,
+  Space,
+  Table,
+  Tag,
+  Popconfirm,
+  Row,
+  Col,
+  Statistic,
+  Tooltip,
+  Empty,
+  message,
+  Segmented,
+} from 'antd';
+import {
+  SearchOutlined,
+  DeleteOutlined,
+  LinkOutlined,
+  CopyOutlined,
+  ReloadOutlined,
+  LockOutlined,
+  UnlockOutlined,
+  ClockCircleOutlined,
+  EyeOutlined,
+  DownloadOutlined,
+  ExclamationCircleOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  FilterOutlined,
+} from '@ant-design/icons';
+import type { ColumnsType } from 'antd/es/table';
+import { ShareLinkDetailDrawer } from '../components/ShareLinkDetailDrawer';
+import { useShareLinksQuery, useDeleteShareLinkMutation } from '../hooks/useShareLinksHooks';
+import type { ShareLink } from '../types/shareLink.types';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 
-const { Title } = Typography;
+dayjs.extend(relativeTime);
+
+const { Title, Text } = Typography;
 
 const ShareLinksPage: React.FC = () => {
+  const [searchText, setSearchText] = useState('');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'revoked' | 'expired'>('all');
+  const [detailDrawerVisible, setDetailDrawerVisible] = useState(false);
+  const [selectedLink, setSelectedLink] = useState<ShareLink | null>(null);
+
+  const { data: shareLinks, isLoading, refetch } = useShareLinksQuery();
+  const deleteMutation = useDeleteShareLinkMutation();
+
+  // Filter share links
+  const filteredLinks = useMemo(() => {
+    if (!shareLinks) return [];
+
+    return shareLinks.filter((link) => {
+      const matchesSearch =
+        searchText === '' ||
+        link.token?.toLowerCase().includes(searchText.toLowerCase()) ||
+        link.fileId?.toLowerCase().includes(searchText.toLowerCase()) ||
+        link.createdBy?.toLowerCase().includes(searchText.toLowerCase());
+
+      let matchesStatus = true;
+      const isExpired = link.expiresAt ? dayjs(link.expiresAt).isBefore(dayjs()) : false;
+      const isRevoked = link.isRevoked;
+
+      switch (filterStatus) {
+        case 'active':
+          matchesStatus = !isRevoked && !isExpired;
+          break;
+        case 'revoked':
+          matchesStatus = isRevoked;
+          break;
+        case 'expired':
+          matchesStatus = isExpired;
+          break;
+      }
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [shareLinks, searchText, filterStatus]);
+
+  // Statistics
+  const stats = useMemo(() => {
+    const total = shareLinks?.length || 0;
+    const active = shareLinks?.filter((l) => !l.isRevoked && (!l.expiresAt || dayjs(l.expiresAt).isAfter(dayjs()))).length || 0;
+    const revoked = shareLinks?.filter((l) => l.isRevoked).length || 0;
+    const expired = shareLinks?.filter((l) => l.expiresAt && dayjs(l.expiresAt).isBefore(dayjs()) && !l.isRevoked).length || 0;
+    const withPassword = shareLinks?.filter((l) => l.hasPassword).length || 0;
+
+    return { total, active, revoked, expired, withPassword };
+  }, [shareLinks]);
+
+  const handleViewDetail = (link: ShareLink) => {
+    setSelectedLink(link);
+    setDetailDrawerVisible(true);
+  };
+
+  const handleDeleteLink = (linkId: string) => {
+    deleteMutation.mutate(linkId);
+  };
+
+  const handleCopyLink = (link: ShareLink) => {
+    const url = link.fullUrl || `${window.location.origin}/share/${link.token}`;
+    navigator.clipboard.writeText(url);
+    message.success('Đã sao chép liên kết!');
+  };
+
+  const columns: ColumnsType<ShareLink> = [
+    {
+      title: 'Token',
+      key: 'token',
+      fixed: 'left',
+      width: 150,
+      render: (_, record) => (
+        <Space direction="vertical" size={0}>
+          <Text copyable={{ text: record.token }} style={{ fontFamily: 'monospace', fontSize: 12 }}>
+            {record.token?.substring(0, 12)}...
+          </Text>
+          <Text type="secondary" style={{ fontSize: 11 }}>{record.id?.substring(0, 8)}...</Text>
+        </Space>
+      ),
+    },
+    {
+      title: 'Quyền',
+      dataIndex: 'permission',
+      key: 'permission',
+      width: 120,
+      render: (permission: string) => (
+        <Tag icon={permission === 'DOWNLOAD' ? <DownloadOutlined /> : <EyeOutlined />} color={permission === 'DOWNLOAD' ? 'blue' : 'green'}>
+          {permission === 'DOWNLOAD' ? 'Tải xuống' : 'Xem'}
+        </Tag>
+      ),
+    },
+    {
+      title: 'Bảo mật',
+      key: 'security',
+      width: 100,
+      render: (_, record) => (
+        <Tooltip title={record.hasPassword ? 'Có mật khẩu' : 'Không có mật khẩu'}>
+          {record.hasPassword ? (
+            <LockOutlined style={{ color: '#faad14', fontSize: 18 }} />
+          ) : (
+            <UnlockOutlined style={{ color: '#8c8c8c', fontSize: 18 }} />
+          )}
+        </Tooltip>
+      ),
+    },
+    {
+      title: 'Trạng thái',
+      key: 'status',
+      width: 140,
+      render: (_, record) => {
+        const isExpired = record.expiresAt && dayjs(record.expiresAt).isBefore(dayjs());
+        const isRevoked = record.isRevoked;
+
+        if (isRevoked) {
+          return <Tag icon={<CloseCircleOutlined />} color="red">Đã thu hồi</Tag>;
+        }
+        if (isExpired) {
+          return <Tag icon={<ClockCircleOutlined />} color="default">Đã hết hạn</Tag>;
+        }
+        if (!record.expiresAt) {
+          return <Tag icon={<CheckCircleOutlined />} color="green">Vĩnh viễn</Tag>;
+        }
+        return <Tag icon={<CheckCircleOutlined />} color="green">Hoạt động</Tag>;
+      },
+    },
+    {
+      title: 'Hết hạn',
+      dataIndex: 'expiresAt',
+      key: 'expiresAt',
+      width: 150,
+      render: (date: string | null) => {
+        if (!date) {
+          return <Text type="secondary">Không có</Text>;
+        }
+        const isExpired = dayjs(date).isBefore(dayjs());
+        return (
+          <Tooltip title={dayjs(date).format('DD/MM/YYYY HH:mm:ss')}>
+            <Text type={isExpired ? 'danger' : 'secondary'}>
+              {isExpired ? 'Đã hết hạn' : dayjs(date).fromNow()}
+            </Text>
+          </Tooltip>
+        );
+      },
+    },
+    {
+      title: 'Người tạo',
+      dataIndex: 'createdBy',
+      key: 'createdBy',
+      width: 150,
+      render: (createdBy: string) => (
+        <Text type="secondary">{createdBy || 'N/A'}</Text>
+      ),
+    },
+    {
+      title: 'Ngày tạo',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      width: 150,
+      render: (date: string) => (
+        <Tooltip title={dayjs(date).format('DD/MM/YYYY HH:mm:ss')}>
+          <Text type="secondary">{dayjs(date).format('DD/MM/YYYY')}</Text>
+        </Tooltip>
+      ),
+      sorter: (a, b) => dayjs(a.createdAt).valueOf() - dayjs(b.createdAt).valueOf(),
+      defaultSortOrder: 'descend',
+    },
+    {
+      title: 'Hành động',
+      key: 'action',
+      fixed: 'right',
+      width: 200,
+      render: (_, record) => (
+        <Space size="small">
+          <Tooltip title="Sao chép liên kết">
+            <Button
+              type="text"
+              icon={<CopyOutlined />}
+              onClick={() => handleCopyLink(record)}
+            />
+          </Tooltip>
+          <Tooltip title="Xem chi tiết">
+            <Button
+              type="text"
+              icon={<EyeOutlined />}
+              onClick={() => handleViewDetail(record)}
+            />
+          </Tooltip>
+          <Popconfirm
+            title="Thu hồi và xóa liên kết này?"
+            description="Hành động này không thể hoàn tác."
+            icon={<ExclamationCircleOutlined style={{ color: '#ff4d4f' }} />}
+            onConfirm={() => handleDeleteLink(record.id)}
+            okText="Xóa"
+            cancelText="Hủy"
+            okButtonProps={{ danger: true }}
+          >
+            <Tooltip title="Xóa">
+              <Button type="text" danger icon={<DeleteOutlined />} />
+            </Tooltip>
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ];
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <Title level={2} style={{ margin: 0 }}>Quản lý liên kết chia sẻ</Title>
+        <Space>
+          <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
+            Làm mới
+          </Button>
+        </Space>
       </div>
-      <Card>
-        <ShareLinkTable />
+
+      {/* Statistics Cards */}
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        <Col xs={12} sm={6}>
+          <Card size="small">
+            <Statistic
+              title="Tổng liên kết"
+              value={stats.total}
+              prefix={<LinkOutlined />}
+              valueStyle={{ color: '#1677ff' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={12} sm={6}>
+          <Card size="small">
+            <Statistic
+              title="Đang hoạt động"
+              value={stats.active}
+              prefix={<CheckCircleOutlined style={{ color: '#52c41a' }} />}
+              valueStyle={{ color: '#52c41a' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={12} sm={6}>
+          <Card size="small">
+            <Statistic
+              title="Đã thu hồi"
+              value={stats.revoked}
+              prefix={<CloseCircleOutlined style={{ color: '#ff4d4f' }} />}
+              valueStyle={{ color: '#ff4d4f' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={12} sm={6}>
+          <Card size="small">
+            <Statistic
+              title="Cần bảo mật"
+              value={stats.withPassword}
+              prefix={<LockOutlined style={{ color: '#faad14' }} />}
+              suffix={`/ ${stats.total}`}
+              valueStyle={{ color: '#faad14' }}
+            />
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Filters */}
+      <Card size="small" style={{ marginBottom: 16 }}>
+        <Row gutter={16} align="middle">
+          <Col flex="auto">
+            <Input
+              placeholder="Tìm kiếm theo token, file ID..."
+              prefix={<SearchOutlined />}
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              allowClear
+              style={{ maxWidth: 300 }}
+            />
+          </Col>
+          <Col>
+            <Space>
+              <FilterOutlined />
+              <Segmented
+                options={[
+                  { label: `Tất cả (${stats.total})`, value: 'all' },
+                  { label: `Hoạt động (${stats.active})`, value: 'active' },
+                  { label: `Đã thu hồi (${stats.revoked})`, value: 'revoked' },
+                  { label: `Hết hạn (${stats.expired})`, value: 'expired' },
+                ]}
+                value={filterStatus}
+                onChange={(value) => setFilterStatus(value as typeof filterStatus)}
+              />
+            </Space>
+          </Col>
+        </Row>
       </Card>
+
+      {/* Share Links Table */}
+      <Card>
+        {filteredLinks.length > 0 ? (
+          <Table
+            scroll={{ x: 'max-content' }}
+            dataSource={filteredLinks}
+            columns={columns}
+            rowKey="id"
+            loading={isLoading}
+            pagination={{
+              pageSize: 10,
+              showSizeChanger: true,
+              showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} liên kết`,
+            }}
+          />
+        ) : (
+          <Empty
+            description={searchText || filterStatus !== 'all'
+              ? 'Không tìm thấy liên kết nào phù hợp'
+              : 'Chưa có liên kết chia sẻ nào'
+            }
+          />
+        )}
+      </Card>
+
+      {/* Share Link Detail Drawer */}
+      <ShareLinkDetailDrawer
+        link={selectedLink}
+        visible={detailDrawerVisible}
+        onClose={() => {
+          setDetailDrawerVisible(false);
+          setSelectedLink(null);
+        }}
+        onCopyLink={handleCopyLink}
+      />
     </div>
   );
 };

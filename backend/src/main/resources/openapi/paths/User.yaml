@@ -1,0 +1,333 @@
+paths:
+  /auth/me:
+    get:
+      tags: [User Profile]
+      summary: Lấy thông tin người dùng hiện tại
+      description: Lấy profile đầy đủ của người dùng đang đăng nhập.
+      operationId: getCurrentUser
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '../components/schemas/User.yaml#/UserProfileResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+
+  /user/profile:
+    put:
+      tags: [User Profile]
+      summary: Cập nhật Profile
+      description: Cập nhật email và/hoặc các thông tin cá nhân khác.
+      operationId: updateProfile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/User.yaml#/UpdateProfileRequest'
+            example:
+              email: newemail@example.com
+      responses:
+        '200':
+          description: Cập nhật thành công
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/StandardResponse'
+        '400':
+          description: Email không hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+
+  /user/password:
+    put:
+      tags: [User Profile]
+      summary: Đổi mật khẩu
+      description: Thay đổi mật khẩu tài khoản đang đăng nhập.
+      operationId: changePassword
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/User.yaml#/ChangePasswordRequest'
+            example:
+              currentPassword: "oldPassword123"
+              newPassword: "newPassword456"
+      responses:
+        '200':
+          description: Đổi mật khẩu thành công
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/StandardResponse'
+        '400':
+          description: Mật khẩu hiện tại không đúng
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+
+  /user/storage:
+    get:
+      tags: [User Profile]
+      summary: Lấy thông tin dung lượng
+      description: Lấy trạng thái sử dụng dung lượng lưu trữ hiện tại.
+      operationId: getStorageUsage
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '../components/schemas/User.yaml#/StorageUsageResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+
+  /users:
+    get:
+      tags: [User Profile]
+      summary: Lấy tất cả người dùng (Quyền Admin)
+      description: Lấy danh sách toàn bộ người dùng. Chỉ ADMIN.
+      operationId: getAllUsers
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '../components/schemas/User.yaml#/UserSummary'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+        '403':
+          description: Không có quyền Admin
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+
+  /users/{userId}:
+    get:
+      tags: [User Profile]
+      summary: Chi tiết người dùng (Quyền Admin)
+      description: Lấy thông tin chi tiết một người dùng. Chỉ ADMIN.
+      operationId: getUserById
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID người dùng
+          example: "64f1a2b3c4d5e6f7a8b9c0d1"
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '../components/schemas/User.yaml#/UserSummary'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+        '403':
+          description: Không có quyền Admin
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+        '404':
+          description: Người dùng không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error404'
+
+    put:
+      tags: [User Profile]
+      summary: Cập nhật người dùng (Quyền Admin)
+      description: Thay đổi vai trò, gói cước và giới hạn dung lượng của người dùng. Chỉ ADMIN.
+      operationId: updateUserByAdmin
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID người dùng
+          example: "64f1a2b3c4d5e6f7a8b9c0d1"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                roles:
+                  type: array
+                  items:
+                    type: string
+                    enum: [ROLE_USER, ROLE_MODERATOR, ROLE_ADMIN]
+                  description: Danh sách vai trò mới
+                  example:
+                    - ROLE_USER
+                    - ROLE_MODERATOR
+                subscriptionPlan:
+                  type: string
+                  enum: [FREE, PRO]
+                  description: Gói cước
+                  example: PRO
+                maxStorage:
+                  type: integer
+                  format: int64
+                  description: Dung lượng tối đa mới (bytes)
+                  example: 10737418240
+                maxFileSize:
+                  type: integer
+                  format: int64
+                  description: Kích thước file tối đa mới (bytes)
+                  example: 524288000
+      responses:
+        '200':
+          description: Cập nhật thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '../components/schemas/User.yaml#/UserSummary'
+        '400':
+          description: Vai trò không hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+        '403':
+          description: Không có quyền Admin
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+        '404':
+          description: Người dùng không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error404'
+
+    delete:
+      tags: [User Profile]
+      summary: Xóa người dùng (Quyền Admin)
+      description: Xóa hoàn toàn tài khoản người dùng. Chỉ ADMIN.
+      operationId: deleteUserByAdmin
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID người dùng cần xóa
+          example: "64f1a2b3c4d5e6f7a8b9c0d1"
+      responses:
+        '200':
+          description: Đã xóa người dùng
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/StandardResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+        '403':
+          description: Không có quyền Admin
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+        '404':
+          description: Người dùng không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error404'

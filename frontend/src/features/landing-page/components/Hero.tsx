@@ -26,7 +26,7 @@ export function Hero() {
         <section className="relative min-h-[90vh] flex items-center justify-center pt-32 pb-20 overflow-hidden hero-gradient">
             {/* Background Decorative Elements */}
             <div className="absolute top-1/4 -left-20 w-80 h-80 bg-primary/20 rounded-full blur-[120px] -z-10 animate-pulse" />
-            <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-violet-600/10 rounded-full blur-[100px] -z-10" />
+            <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-zinc-600/10 rounded-full blur-[100px] -z-10" />
 
             <div className="container mx-auto px-4">
                 <motion.div
@@ -42,7 +42,7 @@ export function Hero() {
                         </motion.div>
 
                         <motion.h1 variants={itemVariants} className="text-5xl md:text-6xl font-extrabold mb-6 leading-[1.1] tracking-tight text-foreground">
-                            Giải pháp lưu trữ & <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-violet-500 to-indigo-500">Chia sẻ tệp tin</span> thế hệ mới
+                            Giải pháp lưu trữ & <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-zinc-500 to-indigo-500">Chia sẻ tệp tin</span> thế hệ mới
                         </motion.h1>
 
                         <motion.p variants={itemVariants} className="text-lg text-muted-foreground mb-10 leading-relaxed max-w-lg">
@@ -69,7 +69,7 @@ export function Hero() {
                             <div className="flex -space-x-3">
                                 {[1, 2, 3, 4].map((i) => (
                                     <div key={i} className="w-10 h-10 rounded-full border-2 border-background bg-muted flex items-center justify-center overflow-hidden">
-                                        <div className={`w-full h-full bg-gradient-to-tr from-primary/40 to-violet-400 group-hover:scale-110 transition-transform`} />
+                                        <div className={`w-full h-full bg-gradient-to-tr from-primary/40 to-zinc-400 group-hover:scale-110 transition-transform`} />
                                     </div>
                                 ))}
                             </div>
@@ -113,8 +113,8 @@ export function Hero() {
                             style={{ animationDelay: '1s' }}
                         >
                             <div className="flex items-center gap-4 mb-4">
-                                <div className="w-12 h-12 rounded-xl bg-violet-500/20 flex items-center justify-center border border-violet-500/30">
-                                    <FileText className="w-6 h-6 text-violet-500" />
+                                <div className="w-12 h-12 rounded-xl bg-zinc-500/20 flex items-center justify-center border border-zinc-500/30">
+                                    <FileText className="w-6 h-6 text-zinc-900 dark:text-zinc-100" />
                                 </div>
                                 <div className="flex-1">
                                     <h4 className="text-sm font-bold truncate">Q3_Financial_R...pdf</h4>
@@ -122,7 +122,7 @@ export function Hero() {
                                 </div>
                             </div>
                             <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                                <div className="h-full bg-gradient-to-r from-primary to-violet-500 w-[85%] rounded-full relative">
+                                <div className="h-full bg-gradient-to-r from-primary to-zinc-500 w-[85%] rounded-full relative">
                                     <div className="absolute inset-0 bg-white/20 animate-pulse" />
                                 </div>
                             </div>

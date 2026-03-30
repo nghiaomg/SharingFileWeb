@@ -9,10 +9,10 @@ import { FileCard } from "@/features/files/components/FileCard";
 import type { FileItem } from "@/features/files/schemas";
 
 const categoryIcons: Record<string, { icon: React.ElementType, colorName: string }> = {
-    "document": { icon: FileText, colorName: "blue" },
-    "image": { icon: ImageIcon, colorName: "teal" },
-    "video": { icon: Video, colorName: "rose" },
-    "other": { icon: HardDrive, colorName: "amber" },
+    "document": { icon: FileText, colorName: "gray" },
+    "image": { icon: ImageIcon, colorName: "gray" },
+    "video": { icon: Video, colorName: "gray" },
+    "other": { icon: HardDrive, colorName: "gray" },
 };
 
 function getCategoryUIKey(type?: string): string {
@@ -34,7 +34,7 @@ export default function DashboardPage() {
     if (isLoading) {
         return (
             <Flex align="center" justify="center" style={{ flex: 1, padding: "2rem" }}>
-                <Loader2 className="w-8 h-8 animate-spin text-violet-9" style={{ color: "var(--violet-9)" }} />
+                <Loader2 className="w-8 h-8 animate-spin text-zinc-900 dark:text-zinc-100" style={{ color: "var(--gray-12)" }} />
             </Flex>
         );
     }
@@ -71,7 +71,7 @@ export default function DashboardPage() {
                                     <Box p="3" style={{ borderRadius: "var(--radius-3)", backgroundColor: `var(--${meta.colorName}-a3)` }}>
                                         <Icon style={{ width: 24, height: 24, color: `var(--${meta.colorName}-11)` }} />
                                     </Box>
-                                    <TrendingUp className="w-4 h-4 text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    <TrendingUp className="w-4 h-4 text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </Flex>
                                 <Heading size="7" mb="1" weight="bold">{cat.files}</Heading>
                                 <Text as="div" size="2" color="gray" weight="medium">{cat.title}</Text>
@@ -105,10 +105,10 @@ export default function DashboardPage() {
                 <Card size="4" variant="surface" mt="6" style={{ overflow: "hidden", padding: 0 }}>
                     <Flex align="center" justify="between" p="5" style={{ borderBottom: "1px solid var(--gray-a6)" }}>
                         <Heading size="5" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <Clock className="w-5 h-5 text-violet-9" style={{ color: "var(--violet-9)" }} /> Tệp gần đây
+                            <Clock className="w-5 h-5 text-zinc-900 dark:text-zinc-100" style={{ color: "var(--gray-12)" }} /> Tệp gần đây
                         </Heading>
                         <Link href="/dashboard/recent">
-                            <Text size="2" weight="bold" color="violet" style={{ cursor: "pointer" }}>Xem tất cả</Text>
+                            <Text size="2" weight="bold" color="gray" style={{ cursor: "pointer" }}>Xem tất cả</Text>
                         </Link>
                     </Flex>
 

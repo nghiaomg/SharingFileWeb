@@ -116,7 +116,7 @@ export default function BillingPage() {
                                         { id: "INV-2024-04", date: "24 Th04, 2024", amount: "$9.99", status: "Thành công", statusColor: "text-emerald-500", statusBg: "bg-emerald-500/10", icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
                                         { id: "INV-2024-03", date: "24 Th03, 2024", amount: "$9.99", status: "Thành công", statusColor: "text-emerald-500", statusBg: "bg-emerald-500/10", icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
                                         { id: "INV-2024-02", date: "24 Th02, 2024", amount: "$9.99", status: "Thành công", statusColor: "text-emerald-500", statusBg: "bg-emerald-500/10", icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
-                                        { id: "INV-2023-12-UP", date: "15 Th12, 2023", amount: "$49.99", status: "Nâng cấp Gói", statusColor: "text-violet-500", statusBg: "bg-violet-500/10", icon: <ArrowUpRight className="w-3.5 h-3.5" /> },
+                                        { id: "INV-2023-12-UP", date: "15 Th12, 2023", amount: "$49.99", status: "Nâng cấp Gói", statusColor: "text-zinc-900 dark:text-zinc-100", statusBg: "bg-zinc-500/10", icon: <ArrowUpRight className="w-3.5 h-3.5" /> },
                                     ].map((invoice) => (
                                         <tr key={invoice.id} className="group hover:bg-muted/30 transition-colors">
                                             <td className="py-5 pl-4">

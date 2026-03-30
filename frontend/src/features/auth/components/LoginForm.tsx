@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Eye, EyeOff, Loader } from "lucide-react";
-import { Turnstile } from "@marsidev/react-turnstile";
 import { useLogin } from "@/features/auth/mutations";
 import { loginWithGoogle } from "@/features/auth/api";
 import { getApiErrorMessage } from "@/types/api";
@@ -25,7 +24,7 @@ declare global {
 }
 
 export function LoginForm() {
-  const [formData, setFormData] = useState({ username: "", password: "", turnstileToken: "" });
+  const [formData, setFormData] = useState({ username: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const loginMutation = useLogin();
@@ -136,18 +135,9 @@ export function LoginForm() {
         </div>
       </div>
 
-      <div className="flex justify-center mb-4">
-        <Turnstile
-          siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
-          onSuccess={(token) => setFormData({ ...formData, turnstileToken: token })}
-          onError={() => setFormData({ ...formData, turnstileToken: "" })}
-          onExpire={() => setFormData({ ...formData, turnstileToken: "" })}
-        />
-      </div>
-
       <button
         type="submit"
-        disabled={loginMutation.isPending || isGoogleLoading || !formData.turnstileToken}
+        disabled={loginMutation.isPending || isGoogleLoading}
         className="w-full py-3.5 bg-primary text-white font-bold rounded-xl transition-colors hover:bg-primary/90 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 border border-primary/40 hover:border-primary"
       >
         {loginMutation.isPending ? (

@@ -30,6 +30,8 @@ public class B2StorageService {
     @Autowired
     private B2Config b2Config;
 
+    private final java.util.concurrent.ExecutorService largeFileExecutor = java.util.concurrent.Executors.newFixedThreadPool(4);
+
     /**
      * Upload file từ local disk lên B2.
      * 
@@ -70,7 +72,7 @@ public class B2StorageService {
 
             B2FileVersion fileVersion = b2Client.uploadLargeFile(
                     B2UploadFileRequest.builder(b2Config.getBucketId(), b2FileName, mimeType, source).build(),
-                    null // executor — null = use default
+                    largeFileExecutor
             );
 
             return new B2UploadResult(
@@ -150,6 +152,18 @@ public class B2StorageService {
             return true;
         } catch (B2Exception e) {
             return false;
+        }
+    }
+
+    /**
+     * Lấy iterator danh sách toàn bộ file từ B2 để chạy đồng bộ (Sync Job)
+     */
+    public Iterable<B2FileVersion> listAllFiles() {
+        try {
+            return b2Client.fileNames(b2Config.getBucketId());
+        } catch (B2Exception e) {
+            System.err.println("[B2] Failed to list all files: " + e.getMessage());
+            throw new RuntimeException("Không thể lấy danh sách B2 files để đồng bộ.", e);
         }
     }
 

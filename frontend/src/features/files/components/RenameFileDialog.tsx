@@ -48,11 +48,9 @@ export function RenameFileDialog({ isOpen, onClose, onSubmit, file, isLoading = 
                     </Flex>
 
                     <Flex gap="3" mt="6" justify="end">
-                        <Dialog.Close>
-                            <Button variant="soft" color="gray" type="button" size="3" disabled={isLoading} style={{ cursor: "pointer" }}>
-                                Hủy
-                            </Button>
-                        </Dialog.Close>
+                        <Button variant="soft" color="gray" type="button" size="3" onClick={onClose} disabled={isLoading} style={{ cursor: "pointer" }}>
+                            Hủy
+                        </Button>
                         <Button type="submit" size="3" disabled={isLoading || !name.trim()} style={{ cursor: isLoading ? "wait" : "pointer" }}>
                             {isLoading ? "Đang lưu..." : "Lưu thay đổi"}
                         </Button>

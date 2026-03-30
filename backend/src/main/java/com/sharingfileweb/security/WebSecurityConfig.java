@@ -60,7 +60,7 @@ public class WebSecurityConfig {
               .requestMatchers("/api/auth/**").permitAll()
               .requestMatchers("/api/files/public/**").permitAll()
               .requestMatchers("/api/public/share/**").permitAll()
-              .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+              .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/api-docs/**", "/openapi.yaml").permitAll()
               .requestMatchers("/error").permitAll()
               .anyRequest().authenticated()
         );

@@ -69,7 +69,7 @@ export default function SharedPage() {
     if (isLoading) {
         return (
             <Flex align="center" justify="center" style={{ flex: 1, padding: "3rem", height: "calc(100vh - 4rem)" }}>
-                <Loader2 className="w-8 h-8 animate-spin" style={{ color: "var(--violet-9)" }} />
+                <Loader2 className="w-8 h-8 animate-spin" style={{ color: "var(--gray-12)" }} />
             </Flex>
         );
     }
@@ -80,7 +80,7 @@ export default function SharedPage() {
             <Flex direction={{ initial: "column", sm: "row" }} align={{ initial: "stretch", sm: "end" }} justify="between" gap="4" px={{ initial: "4", sm: "6", lg: "8" }} py="5" className="relative z-10 bg-card/30 backdrop-blur-xl" style={{ borderBottom: "1px solid var(--gray-a4)", flexShrink: 0 }}>
                 <Box>
                     <Heading size="6" weight="bold" style={{ letterSpacing: "-0.025em", display: "flex", alignItems: "center", gap: "12px" }}>
-                        <Share2 style={{ width: 32, height: 32, color: "var(--violet-9)" }} />
+                        <Share2 style={{ width: 32, height: 32, color: "var(--gray-12)" }} />
                         Chia sẻ
                     </Heading>
                 </Box>

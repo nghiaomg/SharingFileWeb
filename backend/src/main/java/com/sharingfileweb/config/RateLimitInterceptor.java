@@ -39,6 +39,11 @@ public class RateLimitInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        // Bỏ qua rate limit cho các API tải lên (chunk) để không chặn thư viện gửi nhiều chunk
+        if (request.getRequestURI() != null && request.getRequestURI().startsWith("/api/files/upload/")) {
+            return true;
+        }
+
         String ip = getClientIP(request);
         Bucket bucket = resolveBucket(ip);
 

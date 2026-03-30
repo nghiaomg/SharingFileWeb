@@ -43,8 +43,8 @@ const features = [
         title: "Chia sẻ bằng mật khẩu",
         description: "Tạo liên kết chia sẻ an toàn bằng cách yêu cầu mã PIN hoặc mật mã cho mỗi lượt truy cập cá nhân.",
         icon: Key,
-        color: "text-violet-500",
-        bg: "bg-violet-100 dark:bg-violet-500/20",
+        color: "text-zinc-900 dark:text-zinc-100",
+        bg: "bg-zinc-100 dark:bg-zinc-500/20",
     },
 ];
 

@@ -34,7 +34,7 @@ export function AuthLayout({ children, title, subtitle }: { children: React.Reac
             {/* Right Side: Image/Branding Showcase */}
             <div className="hidden lg:flex flex-col items-center justify-center bg-muted/30 border-l border-border p-12 relative overflow-hidden hero-gradient">
                 <div className="absolute top-1/4 -right-20 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] -z-10 animate-pulse" />
-                <div className="absolute bottom-1/4 -left-20 w-[500px] h-[500px] bg-violet-500/10 rounded-full blur-[100px] -z-10" />
+                <div className="absolute bottom-1/4 -left-20 w-[500px] h-[500px] bg-zinc-500/10 rounded-full blur-[100px] -z-10" />
 
                 <div className="max-w-xl text-center z-10 w-full">
                     <h2 className="text-3xl font-bold mb-6 text-foreground/80">Quản lý tệp tin an toàn chưa bao giờ dễ dàng như thế.</h2>
@@ -92,8 +92,8 @@ export function AuthLayout({ children, title, subtitle }: { children: React.Reac
                                             <div className="h-1.5 w-1/2 bg-muted-foreground/30 rounded-full" />
                                         </div>
                                         <div className="p-3 border border-border/50 rounded-xl bg-background/50 flex flex-col gap-2">
-                                            <div className="p-2 bg-violet-500/10 rounded-lg w-fit">
-                                                <FileText className="w-5 h-5 text-violet-500" />
+                                            <div className="p-2 bg-zinc-500/10 rounded-lg w-fit">
+                                                <FileText className="w-5 h-5 text-zinc-900 dark:text-zinc-100" />
                                             </div>
                                             <div className="h-2 w-full bg-foreground/30 rounded-full mt-1" />
                                             <div className="h-1.5 w-1/2 bg-muted-foreground/30 rounded-full" />
@@ -127,7 +127,7 @@ export function AuthLayout({ children, title, subtitle }: { children: React.Reac
                                 </div>
                             </div>
                             <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
-                                <div className="w-[85%] h-full bg-gradient-to-r from-primary to-violet-500 rounded-full relative">
+                                <div className="w-[85%] h-full bg-gradient-to-r from-primary to-zinc-500 rounded-full relative">
                                     <div className="absolute inset-0 bg-white/20 animate-pulse" />
                                 </div>
                             </div>

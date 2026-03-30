@@ -1,0 +1,163 @@
+InternalShareRequest:
+  type: object
+  required:
+    - fileId
+    - emails
+  properties:
+    fileId:
+      type: string
+      description: ID của tệp/thư mục cần chia sẻ
+      example: "64f1a2b3c4d5e6f7a8b9c0d1"
+    emails:
+      type: array
+      items:
+        type: string
+        format: email
+      description: Danh sách email người được chia sẻ
+      example: ["colleague@example.com"]
+    permission:
+      type: string
+      enum: [VIEW, DOWNLOAD]
+      description: Quyền truy cập
+      example: VIEW
+
+UpdatePermissionRequest:
+  type: object
+  properties:
+    permission:
+      type: string
+      enum: [VIEW, DOWNLOAD]
+      description: Quyền truy cập mới
+      example: DOWNLOAD
+
+CreateShareLinkRequest:
+  type: object
+  required:
+    - fileId
+  properties:
+    fileId:
+      type: string
+      description: ID của tệp/thư mục cần chia sẻ
+      example: "64f1a2b3c4d5e6f7a8b9c0d1"
+    permission:
+      type: string
+      enum: [VIEW, DOWNLOAD]
+      description: Quyền khi truy cập qua link
+      example: VIEW
+    password:
+      type: string
+      nullable: true
+      description: Mật khẩu bảo vệ link (null = không có mật khẩu)
+      example: "secret123"
+    expiresInDays:
+      type: integer
+      format: int64
+      nullable: true
+      description: Số ngày hết hạn (null = không hết hạn)
+      example: 7
+
+UpdateShareLinkRequest:
+  type: object
+  properties:
+    permission:
+      type: string
+      enum: [VIEW, DOWNLOAD]
+      nullable: true
+      description: Quyền mới (null = giữ nguyên)
+      example: DOWNLOAD
+    password:
+      type: string
+      nullable: true
+      description: Mật khẩu mới (null = giữ, empty = xóa mật khẩu)
+    expiresInDays:
+      type: integer
+      format: int64
+      nullable: true
+      description: "Số ngày hết hạn (null = giữ, -1 = không hết hạn)"
+      example: 30
+
+ShareLinkResponse:
+  type: object
+  properties:
+    id:
+      type: string
+      description: ID của link chia sẻ
+      example: "64f1a2b3c4d5e6f7a8b9c0d3"
+    token:
+      type: string
+      description: Token duy nhất của link
+      example: "abc123xyz"
+    fullUrl:
+      type: string
+      format: uri
+      description: URL đầy đủ để chia sẻ
+      example: "https://sharingfileweb.com/share/abc123xyz"
+    permission:
+      type: string
+      enum: [VIEW, DOWNLOAD]
+      description: Quyền khi truy cập
+      example: VIEW
+    hasPassword:
+      type: boolean
+      description: Link có mật khẩu bảo vệ không
+      example: true
+    expiresAt:
+      type: string
+      format: date-time
+      nullable: true
+      description: Thời điểm hết hạn
+      example: "2024-02-15T10:30:00Z"
+    isRevoked:
+      type: boolean
+      description: Link đã bị thu hồi chưa
+      example: false
+    createdAt:
+      type: string
+      format: date-time
+      description: Thời điểm tạo
+      example: "2024-01-15T10:30:00Z"
+
+SharedAccessResponse:
+  type: object
+  properties:
+    id:
+      type: string
+      description: ID của phép truy cập
+      example: "64f1a2b3c4d5e6f7a8b9c0d4"
+    fileId:
+      type: string
+      description: ID tệp được chia sẻ
+      example: "64f1a2b3c4d5e6f7a8b9c0d1"
+    fileName:
+      type: string
+      description: Tên tệp
+      example: "report.pdf"
+    fileType:
+      type: string
+      description: MIME type
+      example: "application/pdf"
+    fileSize:
+      type: integer
+      format: int64
+      description: Kích thước (bytes)
+      example: 2048576
+    ownerEmail:
+      type: string
+      format: email
+      description: Email người chia sẻ
+      example: owner@example.com
+    recipientEmail:
+      type: string
+      format: email
+      description: Email người được chia sẻ
+      example: colleague@example.com
+    permission:
+      type: string
+      enum: [VIEW, DOWNLOAD]
+      description: Quyền truy cập
+      example: VIEW
+    createdAt:
+      type: string
+      format: date-time
+      description: Thời điểm chia sẻ
+      example: "2024-01-15T10:30:00Z"

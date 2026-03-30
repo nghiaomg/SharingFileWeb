@@ -40,7 +40,6 @@ import com.sharingfileweb.models.RefreshToken;
 import com.sharingfileweb.exception.TokenRefreshException;
 
 import com.sharingfileweb.services.AuthService;
-import com.sharingfileweb.services.TurnstileService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -50,21 +49,19 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping("/api/auth")
 @Tag(name = "Authentication", description = "Các API xác thực, đăng nhập và đăng ký người dùng")
 public class AuthController {
-  
-  @Autowired
-  AuthService authService;
 
   @Autowired
-  TurnstileService turnstileService;
+  AuthService authService;
 
   @Operation(summary = "Đăng nhập", description = "Đăng nhập bằng username và mật khẩu để nhận Access Token và Refresh Token.")
   @PostMapping("/signin")
   public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-    if (!turnstileService.verifyToken(loginRequest.getTurnstileToken())) {
-        return ResponseEntity.badRequest().body(StandardResponse.error("Xác minh Captcha thất bại. Vui lòng thử lại.", null));
+    try {
+      JwtResponse response = authService.authenticateUser(loginRequest);
+      return ResponseEntity.ok(StandardResponse.success("Login successful", response));
+    } catch (RuntimeException e) {
+      return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
     }
-    JwtResponse response = authService.authenticateUser(loginRequest);
-    return ResponseEntity.ok(StandardResponse.success("Login successful", response));
   }
 
   @Operation(summary = "Đăng nhập Google", description = "Đăng nhập sử dụng Google ID Token.")
@@ -81,9 +78,6 @@ public class AuthController {
   @Operation(summary = "Đăng ký tải khoản", description = "Tạo tài khoản mới trong hệ thống.")
   @PostMapping("/signup")
   public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
-    if (!turnstileService.verifyToken(signUpRequest.getTurnstileToken())) {
-        return ResponseEntity.badRequest().body(StandardResponse.error("Xác minh Captcha thất bại. Vui lòng thử lại.", null));
-    }
     try {
         authService.registerUser(signUpRequest);
         return ResponseEntity.ok(StandardResponse.success("User registered successfully!", null));

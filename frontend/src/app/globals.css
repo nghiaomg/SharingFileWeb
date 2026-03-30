@@ -7,7 +7,7 @@
   --card-foreground: #09090b;
   --popover: #ffffff;
   --popover-foreground: #09090b;
-  --primary: #7c3aed;
+  --primary: #18181b;
   --primary-foreground: #fafafa;
   --secondary: #f4f4f5;
   --secondary-foreground: #18181b;
@@ -19,7 +19,7 @@
   --destructive-foreground: #fafafa;
   --border: #e4e4e7;
   --input: #e4e4e7;
-  --ring: #7c3aed;
+  --ring: #18181b;
   --radius: 0.75rem;
 }
 
@@ -30,7 +30,7 @@
   --card-foreground: #fafafa;
   --popover: #09090b;
   --popover-foreground: #fafafa;
-  --primary: #9b6ffb;
+  --primary: #fafafa;
   --primary-foreground: #09090b;
   --secondary: #27272a;
   --secondary-foreground: #fafafa;
@@ -42,7 +42,7 @@
   --destructive-foreground: #fafafa;
   --border: #27272a;
   --input: #27272a;
-  --ring: #a78bfa;
+  --ring: #fafafa;
 }
 
 @theme inline {
@@ -87,8 +87,8 @@
 }
 
 .hero-gradient {
-  background: radial-gradient(circle at top center, rgba(124, 58, 237, 0.1) 0%, transparent 80%),
-    radial-gradient(circle at bottom center, rgba(139, 92, 246, 0.05) 0%, transparent 80%);
+  background: radial-gradient(circle at top center, rgba(24, 24, 27, 0.08) 0%, transparent 80%),
+    radial-gradient(circle at bottom center, rgba(39, 39, 42, 0.04) 0%, transparent 80%);
 }
 
 @keyframes float {

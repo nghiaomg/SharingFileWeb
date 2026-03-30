@@ -1,7 +1,6 @@
 import React from 'react';
-import { Card, Form, Input, Button, Typography } from 'antd';
+import { Card, Form, Input, Button, Typography, Alert } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
-import { Turnstile } from '@marsidev/react-turnstile';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, Controller } from 'react-hook-form';
 import { loginSchema } from '../types/auth.types';
@@ -13,7 +12,7 @@ const { Title } = Typography;
 const LoginPage: React.FC = () => {
   const { control, handleSubmit, formState: { errors } } = useForm<LoginRequest>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { username: '', password: '', turnstileToken: '' },
+    defaultValues: { username: '', password: '' },
   });
 
   const loginMutation = useLoginMutation();
@@ -31,6 +30,21 @@ const LoginPage: React.FC = () => {
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
           <Title level={3}>Admin Panel Login</Title>
         </div>
+
+        {loginMutation.isError && (
+          <Alert
+            message={
+              <span style={{ color: '#fff' }}>
+                {(loginMutation.error as { response?: { data?: { msg?: string, message?: string } } })?.response?.data?.msg || 
+                 (loginMutation.error as { response?: { data?: { msg?: string, message?: string } } })?.response?.data?.message || 
+                 'Đăng nhập thất bại'}
+              </span>
+            }
+            type="error"
+            showIcon
+            style={{ marginBottom: 24, backgroundColor: '#000', borderColor: '#000' }}
+          />
+        )}
 
         <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
           <Form.Item
@@ -64,25 +78,6 @@ const LoginPage: React.FC = () => {
                   size="large"
                   prefix={<LockOutlined />}
                   placeholder="Mật khẩu"
-                />
-              )}
-            />
-          </Form.Item>
-
-          <Form.Item
-            validateStatus={errors.turnstileToken ? 'error' : ''}
-            help={errors.turnstileToken?.message}
-            style={{ display: 'flex', justifyContent: 'center' }}
-          >
-            <Controller
-              name="turnstileToken"
-              control={control}
-              render={({ field }) => (
-                <Turnstile
-                  siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
-                  onSuccess={(token) => field.onChange(token)}
-                  onError={() => field.onChange('')}
-                  onExpire={() => field.onChange('')}
                 />
               )}
             />

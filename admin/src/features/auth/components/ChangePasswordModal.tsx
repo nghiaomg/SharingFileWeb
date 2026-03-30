@@ -39,7 +39,7 @@ export const ChangePasswordModal: React.FC<Props> = ({ open, onCancel }) => {
       open={open}
       onCancel={onCancel}
       footer={null}
-      destroyOnClose
+      destroyOnHidden
     >
       <Form
         form={form}

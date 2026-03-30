@@ -1,0 +1,141 @@
+UserProfileResponse:
+  type: object
+  properties:
+    id:
+      type: string
+      description: ID người dùng
+      example: "64f1a2b3c4d5e6f7a8b9c0d1"
+    username:
+      type: string
+      description: Tên đăng nhập
+      example: johndoe
+    email:
+      type: string
+      format: email
+      description: Email
+      example: johndoe@example.com
+    roles:
+      type: array
+      items:
+        type: string
+      description: Danh sách vai trò
+      example: ["ROLE_USER"]
+    subscriptionPlan:
+      type: string
+      description: Gói cước hiện tại
+      example: FREE
+    maxStorage:
+      type: integer
+      format: int64
+      description: Dung lượng tối đa (bytes)
+      example: 1073741824
+    maxFileSize:
+      type: integer
+      format: int64
+      description: Kích thước file tối đa (bytes)
+      example: 104857600
+    createdAt:
+      type: string
+      format: date-time
+      description: Thời điểm tạo tài khoản
+      example: "2024-01-01T00:00:00Z"
+    lastLogin:
+      type: string
+      format: date-time
+      nullable: true
+      description: Thời điểm đăng nhập gần nhất
+      example: "2024-01-15T10:30:00Z"
+    twoFactorEnabled:
+      type: boolean
+      description: Đã bật 2FA chưa
+      example: false
+
+UpdateProfileRequest:
+  type: object
+  properties:
+    email:
+      type: string
+      format: email
+      maxLength: 50
+      description: Email mới (tùy chọn)
+      example: newemail@example.com
+
+ChangePasswordRequest:
+  type: object
+  required:
+    - currentPassword
+    - newPassword
+  properties:
+    currentPassword:
+      type: string
+      format: password
+      description: Mật khẩu hiện tại
+      example: "oldPassword123"
+    newPassword:
+      type: string
+      minLength: 6
+      maxLength: 40
+      format: password
+      description: Mật khẩu mới
+      example: "newPassword456"
+
+StorageUsageResponse:
+  type: object
+  properties:
+    used:
+      type: integer
+      format: int64
+      description: Dung lượng đã sử dụng (bytes)
+      example: 536870912
+    limit:
+      type: integer
+      format: int64
+      description: Dung lượng giới hạn (bytes)
+      example: 1073741824
+    percentUsed:
+      type: number
+      format: float
+      description: Phần trăm đã sử dụng
+      example: 50.0
+    subscriptionPlan:
+      type: string
+      description: Gói cước hiện tại
+      example: FREE
+
+UserSummary:
+  type: object
+  properties:
+    id:
+      type: string
+      example: "64f1a2b3c4d5e6f7a8b9c0d1"
+    username:
+      type: string
+      example: johndoe
+    email:
+      type: string
+      format: email
+      example: johndoe@example.com
+    roles:
+      type: array
+      items:
+        type: string
+      example: ["ROLE_USER"]
+    subscriptionPlan:
+      type: string
+      example: FREE
+    maxStorage:
+      type: integer
+      format: int64
+      example: 1073741824
+    maxFileSize:
+      type: integer
+      format: int64
+      example: 104857600
+    storageUsed:
+      type: integer
+      format: int64
+      example: 536870912
+    createdAt:
+      type: string
+      format: date-time
+      example: "2024-01-01T00:00:00Z"

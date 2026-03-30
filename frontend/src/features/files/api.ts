@@ -193,6 +193,7 @@ export async function uploadFileChunked(
   const completeRes = await apiClient.post<FileItem>("/files/upload/complete", completeFormData, {
     headers: { "Content-Type": "multipart/form-data" },
     signal: options?.signal,
+    timeout: 600000, // Timeout 10 phút chờ B2 xử lý gộp file và trả về tránh bị treo vô hạn
   });
 
   return { fileItem: completeRes.data, uploadId };

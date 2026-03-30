@@ -14,7 +14,7 @@ export const useTrashQuery = () => {
   });
 };
 
-export const useRestoreItemMutation = () => {
+export const useRestoreTrashMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -30,7 +30,7 @@ export const useRestoreItemMutation = () => {
   });
 };
 
-export const useDeletePermanentMutation = () => {
+export const usePermanentDeleteMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -61,3 +61,7 @@ export const useEmptyTrashMutation = () => {
     },
   });
 };
+
+// Aliases for backward compatibility
+export const useRestoreItemMutation = useRestoreTrashMutation;
+export const useDeletePermanentMutation = usePermanentDeleteMutation;

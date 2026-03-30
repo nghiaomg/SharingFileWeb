@@ -1,0 +1,419 @@
+paths:
+  /:
+    get:
+      tags: [Folder Management]
+      summary: Lấy danh sách thư mục gốc
+      description: Lấy danh sách thư mục ở cấp Root của người dùng hiện tại.
+      operationId: getRootFolders
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '../components/schemas/Folder.yaml#/FolderResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+
+    post:
+      tags: [Folder Management]
+      summary: Tạo thư mục mới
+      description: Tạo thư mục mới trong thư mục gốc hoặc trong thư mục cha cụ thể.
+      operationId: createFolder
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/Folder.yaml#/CreateFolderRequest'
+            example:
+              name: "New Project"
+              parentId: null
+      responses:
+        '200':
+          description: Thư mục tạo thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '../components/schemas/Folder.yaml#/FolderResponse'
+        '400':
+          description: Tên thư mục không hợp lệ hoặc thư mục cha không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+
+  /{folderId}:
+    get:
+      tags: [Folder Management]
+      summary: Lấy chi tiết thư mục
+      description: Lấy thông tin của một thư mục theo ID. ID = "root" trả về thông tin thư mục gốc ảo.
+      operationId: getFolderById
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: folderId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID thư mục (dùng "root" cho thư mục gốc)
+          example: "64f1a2b3c4d5e6f7a8b9c0d2"
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '../components/schemas/Folder.yaml#/FolderResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+        '404':
+          description: Thư mục không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error404'
+
+    put:
+      tags: [Folder Management]
+      summary: Cập nhật thư mục
+      description: Đổi tên thư mục.
+      operationId: updateFolder
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: folderId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID thư mục cần đổi tên
+          example: "64f1a2b3c4d5e6f7a8b9c0d2"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/Folder.yaml#/UpdateFolderRequest'
+            example:
+              name: "Renamed Folder"
+      responses:
+        '200':
+          description: Cập nhật thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '../components/schemas/Folder.yaml#/FolderResponse'
+        '400':
+          description: Tên thư mục không hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+        '404':
+          description: Thư mục không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error404'
+
+    delete:
+      tags: [Folder Management]
+      summary: Xóa thư mục (xóa mềm)
+      description: Chuyển thư mục vào thùng rác.
+      operationId: deleteFolder
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: folderId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID thư mục cần xóa
+          example: "64f1a2b3c4d5e6f7a8b9c0d2"
+      responses:
+        '200':
+          description: Đã chuyển vào thùng rác
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/StandardResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+        '404':
+          description: Thư mục không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error404'
+
+  /{folderId}/children:
+    get:
+      tags: [Folder Management]
+      summary: Lấy danh sách thư mục con
+      description: Lấy danh sách thư mục con trực tiếp của một thư mục.
+      operationId: getFolderChildren
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: folderId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID thư mục cha
+          example: "64f1a2b3c4d5e6f7a8b9c0d2"
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '../components/schemas/Folder.yaml#/FolderResponse'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+
+  /{folderId}/files:
+    get:
+      tags: [Folder Management]
+      summary: Lấy tệp trong thư mục (Quyền Admin)
+      description: Lấy danh sách tệp của một thư mục cụ thể. Chỉ ADMIN.
+      operationId: getFilesInFolderAdmin
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: folderId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID thư mục
+          example: "64f1a2b3c4d5e6f7a8b9c0d2"
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            name:
+                              type: string
+                            type:
+                              type: string
+                            size:
+                              type: integer
+                              format: int64
+                            createdAt:
+                              type: string
+                              format: date-time
+        '403':
+          description: Không có quyền Admin
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+        '404':
+          description: Thư mục không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error404'
+
+  /{folderId}/permanent:
+    delete:
+      tags: [Folder Management]
+      summary: Xóa vĩnh viễn thư mục (Quyền Admin)
+      description: Xóa hoàn toàn thư mục khỏi database. Chỉ ADMIN.
+      operationId: deleteFolderPermanentlyAdmin
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: folderId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID thư mục cần xóa
+          example: "64f1a2b3c4d5e6f7a8b9c0d2"
+      responses:
+        '200':
+          description: Đã xóa vĩnh viễn
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/StandardResponse'
+        '403':
+          description: Không có quyền Admin
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+        '404':
+          description: Thư mục không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error404'
+
+  /all:
+    get:
+      tags: [Folder Management]
+      summary: Lấy tất cả thư mục (Quyền Admin)
+      description: Lấy danh sách toàn bộ thư mục trong hệ thống. Chỉ ADMIN.
+      operationId: getAllFoldersAdmin
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            name:
+                              type: string
+                            ownerId:
+                              type: string
+                            parentId:
+                              type: string
+                              nullable: true
+                            createdAt:
+                              type: string
+                              format: date-time
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'
+        '403':
+          description: Không có quyền Admin
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+
+  /resolve-path:
+    post:
+      tags: [Folder Management]
+      summary: Lấy đường dẫn (Breadcrumb)
+      description: Tính ra mảng thư mục để làm Breadcrumb giao diện.
+      operationId: resolvePath
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/Folder.yaml#/ResolvePathRequest'
+            example:
+              path: "Project"
+              parentId: null
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '../components/schemas/Common.yaml#/StandardResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '../components/schemas/Folder.yaml#/FolderResponse'
+        '400':
+          description: Không tìm thấy thư mục
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'

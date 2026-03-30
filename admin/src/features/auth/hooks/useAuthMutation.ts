@@ -3,7 +3,7 @@ import { authApi } from '../api/auth.api';
 import { useAuthStore } from '../stores/auth.store';
 import type { LoginRequest, LoginResponse, ChangePasswordRequest } from '../types/auth.types';
 import { useNavigate } from 'react-router-dom';
-import { message } from 'antd';
+import { notification } from 'antd';
 
 export const useLoginMutation = () => {
   const setAuth = useAuthStore((state) => state.setAuth);
@@ -13,7 +13,7 @@ export const useLoginMutation = () => {
     mutationFn: (data: LoginRequest) => authApi.login(data),
     onSuccess: (data: LoginResponse) => {
       if (!data.roles.includes('ROLE_ADMIN') && !data.roles.includes('ROLE_MODERATOR')) {
-        message.error('Bạn không có quyền truy cập trang quản trị!');
+        notification.error({ message: 'Không có quyền truy cập', description: 'Bạn không có quyền truy cập trang quản trị!' });
         return;
       }
       
@@ -24,12 +24,15 @@ export const useLoginMutation = () => {
         roles: data.roles,
       };
       setAuth(user, data.accessToken);
-      message.success('Đăng nhập thành công!');
+      notification.success({ message: 'Đăng nhập thành công!' });
       navigate('/');
     },
     onError: (error: unknown) => {
-      const err = error as { response?: { data?: { message?: string } } };
-      message.error(err.response?.data?.message || 'Đăng nhập thất bại');
+      const err = error as { response?: { data?: { message?: string, msg?: string } } };
+      notification.error({ 
+        message: 'Đăng nhập thất bại', 
+        description: err.response?.data?.msg || err.response?.data?.message || 'Đăng nhập thất bại' 
+      });
     },
   });
 };
@@ -51,12 +54,12 @@ export const useChangePasswordMutation = (onSuccessCallback?: () => void) => {
   return useMutation({
     mutationFn: (data: Omit<ChangePasswordRequest, 'confirmPassword'>) => authApi.changePassword(data),
     onSuccess: () => {
-      message.success('Đổi mật khẩu thành công!');
+      notification.success({ message: 'Đổi mật khẩu thành công!' });
       if (onSuccessCallback) onSuccessCallback();
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { message?: string } } };
-      message.error(err.response?.data?.message || 'Lỗi khi đổi mật khẩu');
+      notification.error({ message: 'Lỗi khi đổi mật khẩu', description: err.response?.data?.message || 'Lỗi khi đổi mật khẩu' });
     },
   });
 };

@@ -27,7 +27,7 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({ file, onClos
   useEffect(() => {
     if (!file) return;
 
-    let objectUrl: string = '';
+    const objectUrl: string = '';
 
     const loadFile = async () => {
       setLoading(true);

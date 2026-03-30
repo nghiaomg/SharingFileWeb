@@ -52,7 +52,7 @@ export function DashboardSidebar({ isOpen, onClose }: DashboardSidebarProps) {
                 {/* Logo */}
                 <Flex align="center" justify="between" px="6" style={{ height: "4rem", borderBottom: "1px solid var(--gray-a4)" }}>
                     <Link href="/dashboard" className="flex items-center gap-2 group">
-                        <Flex align="center" justify="center" style={{ width: "36px", height: "36px", background: "var(--violet-9)", borderRadius: "var(--radius-4)", transition: "transform 0.3s" }} className="group-hover:rotate-12">
+                        <Flex align="center" justify="center" style={{ width: "36px", height: "36px", background: "var(--gray-12)", borderRadius: "var(--radius-4)", transition: "transform 0.3s" }} className="group-hover:rotate-12">
                             <FileUp style={{ color: "white", width: "20px", height: "20px" }} />
                         </Flex>
                         <Text size="4" weight="bold" style={{ letterSpacing: "-0.025em" }}>FileFlow</Text>
@@ -79,7 +79,7 @@ export function DashboardSidebar({ isOpen, onClose }: DashboardSidebarProps) {
                                     className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                                         !isActive ? "text-muted-foreground hover:bg-secondary hover:text-foreground" : ""
                                     }`}
-                                    style={isActive ? { background: "var(--violet-9)", color: "white" } : {}}
+                                    style={isActive ? { background: "var(--gray-12)", color: "white" } : {}}
                                 >
                                     <item.icon className="w-5 h-5" />
                                     {item.label}
@@ -95,7 +95,7 @@ export function DashboardSidebar({ isOpen, onClose }: DashboardSidebarProps) {
                     <Box p="4" mb="4" style={{ background: "var(--gray-a3)", borderRadius: "var(--radius-4)" }}>
                         <Flex align="center" justify="between" mb="3">
                             <Text size="2" weight="bold" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                <HardDrive className="w-4 h-4 text-violet-9" style={{ color: "var(--violet-9)" }} /> Lưu trữ
+                                <HardDrive className="w-4 h-4 text-zinc-900 dark:text-zinc-100" style={{ color: "var(--gray-12)" }} /> Lưu trữ
                             </Text>
                             <Text size="1" color="gray" style={{ fontFamily: "var(--font-geist-mono)" }}>
                                 {formatBytes(usedStorage)} / {formatBytes(MAX_STORAGE)}
@@ -106,13 +106,13 @@ export function DashboardSidebar({ isOpen, onClose }: DashboardSidebarProps) {
                                 style={{
                                     height: "100%",
                                     width: `${usagePercent}%`,
-                                    background: "linear-gradient(to right, var(--violet-9), var(--purple-9))",
+                                    background: "linear-gradient(to right, var(--gray-12), var(--gray-11))",
                                     borderRadius: "9999px",
                                     transition: "width 0.5s ease-in-out"
                                 }}
                             />
                         </Box>
-                        <Button asChild size="2" variant="soft" color="violet" style={{ width: "100%" }}>
+                        <Button asChild size="2" variant="soft" color="gray" style={{ width: "100%" }}>
                             <Link href="/dashboard/upgrade">
                                 <Crown className="w-4 h-4" /> Nâng cấp Pro
                             </Link>
@@ -129,7 +129,7 @@ export function DashboardSidebar({ isOpen, onClose }: DashboardSidebarProps) {
                                     className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
                                         !isActive ? "text-muted-foreground hover:bg-secondary hover:text-foreground" : ""
                                     }`}
-                                    style={isActive ? { background: "var(--violet-9)", color: "white" } : {}}
+                                    style={isActive ? { background: "var(--gray-12)", color: "white" } : {}}
                                 >
                                     <item.icon className="w-5 h-5" />
                                     {item.label}
@@ -139,7 +139,7 @@ export function DashboardSidebar({ isOpen, onClose }: DashboardSidebarProps) {
                     </Flex>
 
                     <Flex align="center" justify="center" gap="1" mt="3" mb="1">
-                        <Zap className="w-3 h-3 text-violet-9" style={{ color: "var(--violet-9)" }} />
+                        <Zap className="w-3 h-3 text-zinc-900 dark:text-zinc-100" style={{ color: "var(--gray-12)" }} />
                         <Text size="1" color="gray">FileFlow v2.4.0</Text>
                     </Flex>
                 </Box>

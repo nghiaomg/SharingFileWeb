@@ -59,6 +59,9 @@ public class AuthService {
     @Autowired
     RefreshTokenService refreshTokenService;
 
+    @Autowired
+    TurnstileService turnstileService;
+
     @Value("${sharingfileweb.app.googleClientId}")
     private String googleClientId;
 
@@ -190,6 +193,11 @@ public class AuthService {
     }
 
     public void registerUser(SignupRequest signUpRequest) {
+        // Verify Turnstile token
+        if (!turnstileService.verifyToken(signUpRequest.getTurnstileToken())) {
+            throw new RuntimeException("Xác thực Turnstile thất bại. Vui lòng thử lại.");
+        }
+
         if (userRepository.existsByUsername(signUpRequest.getUsername())) {
              throw new RuntimeException("Error: Username is already taken!");
         }

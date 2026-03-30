@@ -1,0 +1,28 @@
+paths:
+  /upgrade:
+    post:
+      tags: [Subscription]
+      summary: Nâng cấp gói cước lên PRO
+      description: Nâng cấp gói cước của người dùng hiện tại lên PRO. Mở rộng thêm dung lượng lưu trữ.
+      operationId: upgradePlan
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Nâng cấp thành công
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/StandardResponse'
+        '400':
+          description: Đã là PRO hoặc thanh toán thất bại
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error400'
+        '401':
+          description: Chưa xác thực
+          content:
+            application/json:
+              schema:
+                $ref: '../components/schemas/Common.yaml#/Error401'

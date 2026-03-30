@@ -1,0 +1,111 @@
+RecentFileDTO:
+  type: object
+  properties:
+    id:
+      type: string
+      description: ID tệp
+      example: "64f1a2b3c4d5e6f7a8b9c0d1"
+    name:
+      type: string
+      description: Tên tệp
+      example: "report.pdf"
+    size:
+      type: integer
+      format: int64
+      description: Kích thước (bytes)
+      example: 2048576
+    type:
+      type: string
+      description: MIME type
+      example: "application/pdf"
+    createdAt:
+      type: string
+      format: date-time
+      description: Thời điểm tải lên
+      example: "2024-01-15T10:30:00Z"
+    category:
+      type: string
+      description: Loại phân loại (Hình ảnh, Video, Tài liệu, Khác)
+      example: "Tài liệu"
+
+StorageCategoryDTO:
+  type: object
+  properties:
+    title:
+      type: string
+      description: Tiêu đề loại
+      example: "Hình ảnh"
+    files:
+      type: integer
+      format: int64
+      description: Số lượng tệp
+      example: 25
+    size:
+      type: integer
+      format: int64
+      description: Tổng kích thước (bytes)
+      example: 104857600
+
+TrashItemsResponse:
+  type: object
+  properties:
+    files:
+      type: array
+      description: Danh sách tệp trong thùng rác
+      items:
+        $ref: '../schemas/File.yaml#/FileResponse'
+    folders:
+      type: array
+      description: Danh sách thư mục trong thùng rác
+      items:
+        $ref: '../schemas/Folder.yaml#/FolderResponse'
+    totalItems:
+      type: integer
+      description: Tổng số mục trong thùng rác
+      example: 12
+
+NotificationResponse:
+  type: object
+  properties:
+    id:
+      type: string
+      description: ID thông báo
+      example: "64f1a2b3c4d5e6f7a8b9c0d5"
+    type:
+      type: string
+      description: Loại thông báo
+      example: "SHARE"
+    title:
+      type: string
+      description: Tiêu đề
+      example: "File shared with you"
+    message:
+      type: string
+      description: Nội dung
+      example: "John shared 'report.pdf' with you"
+    metadata:
+      type: object
+      additionalProperties:
+        type: string
+      description: Dữ liệu bổ sung
+      example:
+        fileId: "64f1a2b3c4d5e6f7a8b9c0d1"
+        sharedBy: "johndoe"
+    isRead:
+      type: boolean
+      description: Đã đọc chưa
+      example: false
+    createdAt:
+      type: string
+      format: date-time
+      description: Thời điểm tạo
+      example: "2024-01-15T10:30:00Z"
+
+UnreadCountResponse:
+  type: object
+  properties:
+    count:
+      type: integer
+      format: int64
+      description: Số thông báo chưa đọc
+      example: 5

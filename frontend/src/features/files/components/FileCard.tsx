@@ -41,7 +41,7 @@ export function FileCard({
 }: FileCardProps) {
     const fileMeta = determineFileType(file.type || "");
     const Icon = fileMeta.icon;
-    const colorName = fileMeta.type.includes("Hình ảnh") ? "teal" : fileMeta.type.includes("Video") ? "rose" : fileMeta.type.includes("Nén") ? "amber" : "blue";
+    const colorName = "gray"; // Đổi màu chủ đạo file sang tông đen/xám (zinc/gray) theo theme mới
 
     const defaultSubtitle = `${formatBytes(file.size)}`;
 
@@ -112,8 +112,8 @@ export function FileCard({
                 style={{
                     transition: "background-color 0.2s",
                     cursor: onClick ? "pointer" : "default",
-                    backgroundColor: bordered ? "var(--color-card)" : "transparent",
-                    border: bordered ? "1px solid var(--gray-a5)" : "none",
+                    backgroundColor: bordered ? "var(--gray-a2)" : "transparent",
+                    border: "none",
                     borderRadius: bordered ? "var(--radius-4)" : "0",
                     ...style
                 }}
@@ -142,9 +142,9 @@ export function FileCard({
     return (
         <Card
             size="2"
-            variant="surface"
+            variant="ghost"
             className={`group ${className}`}
-            style={{ position: "relative", cursor: onClick ? "pointer" : "default", ...style }}
+            style={{ position: "relative", cursor: onClick ? "pointer" : "default", border: "none", ...style }}
             onClick={() => onClick?.(file)}
         >
             <Flex align="start" gap="3" mb="2">

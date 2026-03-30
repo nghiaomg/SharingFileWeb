@@ -63,7 +63,7 @@ export function ProfileClient() {
         <div className="w-full h-full">
             {/* Header Profile Banner */}
             <div className="relative rounded-3xl overflow-hidden mb-8 border border-border/50 bg-card">
-                <div className="h-48 w-full bg-gradient-to-r from-violet-600 via-primary to-indigo-600 relative overflow-hidden">
+                <div className="h-48 w-full bg-gradient-to-r from-zinc-600 via-primary to-indigo-600 relative overflow-hidden">
                     <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] mix-blend-overlay opacity-30"></div>
                     {isAdmin ? (
                         <div className="absolute top-4 right-4 bg-background/20 backdrop-blur-md px-3 py-1.5 rounded-full border border-rose-500/50 text-white text-xs font-bold flex items-center gap-2">
@@ -78,7 +78,7 @@ export function ProfileClient() {
 
                 <div className="px-8 pb-8 relative flex flex-col sm:flex-row items-center sm:items-end gap-6 -mt-16 sm:-mt-20">
                     <div className="relative p-2 bg-card rounded-full border border-border">
-                        <div className="w-32 h-32 rounded-full bg-gradient-to-tr from-primary to-violet-500 p-[3px]">
+                        <div className="w-32 h-32 rounded-full bg-gradient-to-tr from-primary to-zinc-500 p-[3px]">
                             <div className="w-full h-full bg-background rounded-full flex items-center justify-center overflow-hidden">
                                 <User className="w-16 h-16 text-foreground" />
                             </div>
@@ -204,9 +204,9 @@ export function ProfileClient() {
                                 <span className="text-xl font-bold">50+</span>
                                 <span className="text-xs text-muted-foreground font-medium text-center">Lượt chia sẻ</span>
                             </div>
-                            <div className="flex flex-col items-center justify-center p-4 border border-violet-500/20 bg-violet-500/5 rounded-2xl">
-                                <div className="w-12 h-12 rounded-full bg-violet-500/20 flex items-center justify-center mb-3">
-                                    <Star className="w-6 h-6 text-violet-500" />
+                            <div className="flex flex-col items-center justify-center p-4 border border-zinc-500/20 bg-zinc-500/5 rounded-2xl">
+                                <div className="w-12 h-12 rounded-full bg-zinc-500/20 flex items-center justify-center mb-3">
+                                    <Star className="w-6 h-6 text-zinc-900 dark:text-zinc-100" />
                                 </div>
                                 <span className="text-xl font-bold">VIP</span>
                                 <span className="text-xs text-muted-foreground font-medium text-center">Người dùng Tích cực</span>

@@ -29,7 +29,7 @@ export default function SettingsPage() {
     return (
         <Box p="6" pb="9" style={{ height: "100%", overflowY: "auto", position: "relative" }}>
             <Flex align="center" gap="3" mt="2" mb="6">
-                <Settings className="w-8 h-8 text-violet-9" style={{ color: "var(--violet-9)" }} />
+                <Settings className="w-8 h-8 text-zinc-900 dark:text-zinc-100" style={{ color: "var(--gray-12)" }} />
                 <Heading size="8">Cài đặt & Hồ sơ</Heading>
             </Flex>
 
@@ -40,13 +40,13 @@ export default function SettingsPage() {
                     <Card size="4" variant="surface">
                         <Flex direction={{ initial: "column", sm: "row" }} align={{ initial: "start", sm: "center" }} gap="5" mb="5" pb="5" style={{ borderBottom: "1px solid var(--gray-a6)" }}>
                             <Box position="relative" style={{ flexShrink: 0 }}>
-                                <Box width="96px" height="96px" style={{ padding: "3px", borderRadius: "100%", background: "linear-gradient(to top right, var(--violet-9), var(--purple-9))" }}>
+                                <Box width="96px" height="96px" style={{ padding: "3px", borderRadius: "100%", background: "linear-gradient(to top right, var(--gray-12), var(--gray-11))" }}>
                                     <Flex align="center" justify="center" width="100%" height="100%" style={{ background: "var(--color-panel-solid)", borderRadius: "100%", overflow: "hidden" }}>
                                         <User className="w-10 h-10" />
                                     </Flex>
                                 </Box>
                                 <Box position="absolute" bottom="0" right="0">
-                                    <Button variant="outline" size="1" color="violet" radius="full" style={{ padding: "4px 8px", background: "var(--color-panel-solid)" }}>
+                                    <Button variant="outline" size="1" color="gray" radius="full" style={{ padding: "4px 8px", background: "var(--color-panel-solid)" }}>
                                         Sửa
                                     </Button>
                                 </Box>
@@ -55,7 +55,7 @@ export default function SettingsPage() {
                                 <Heading size="6">Trung Nghĩa</Heading>
                                 <Text as="div" size="3" color="gray" mt="1">trungnghia@example.com</Text>
                                 <Box mt="3">
-                                    <Badge size="2" color="violet" variant="soft">PRO PLAN</Badge>
+                                    <Badge size="2" color="gray" variant="soft">PRO PLAN</Badge>
                                 </Box>
                             </Box>
                         </Flex>
@@ -89,7 +89,7 @@ export default function SettingsPage() {
                                     onClick={handleSaveProfile}
                                     disabled={isSaving}
                                     loading={isSaving}
-                                    color="violet"
+                                    color="gray"
                                 >
                                     Lưu thay đổi hồ sơ
                                 </Button>
@@ -161,12 +161,12 @@ export default function SettingsPage() {
                             </Box>
                         </Flex>
 
-                        <Box p="5" mb="2" style={{ background: "var(--violet-a2)", border: "1px solid var(--violet-a5)", borderRadius: "var(--radius-4)" }}>
+                        <Box p="5" mb="2" style={{ background: "var(--gray-a2)", border: "1px solid var(--gray-a5)", borderRadius: "var(--radius-4)" }}>
                             <Flex direction="column" gap="4" mb="5">
                                 <Box>
                                     <Flex align="center" gap="2">
-                                        <Heading size="6" style={{ color: "var(--violet-11)" }} weight="bold">FileFlow Pro</Heading>
-                                        <Badge size="1" color="violet" variant="solid" radius="full">HOT</Badge>
+                                        <Heading size="6" style={{ color: "var(--gray-12)" }} weight="bold">FileFlow Pro</Heading>
+                                        <Badge size="1" color="gray" variant="solid" radius="full">HOT</Badge>
                                     </Flex>
                                     <Text as="div" size="2" color="gray" mt="2" weight="medium">Chu kỳ tiếp theo: 24/05/2024</Text>
                                 </Box>
@@ -177,7 +177,7 @@ export default function SettingsPage() {
                             </Flex>
 
                             <Flex direction="column" gap="3">
-                                <Button asChild size="3" variant="soft" color="violet">
+                                <Button asChild size="3" variant="soft" color="gray">
                                     <Link href="#">Nâng cấp gói doanh nghiệp</Link>
                                 </Button>
                                 <Button asChild size="3" variant="outline" color="gray">
