@@ -55,8 +55,8 @@ export default function DashboardPage() {
             <Container size="4">
                 {/* Overview Header */}
                 <Box mb="6">
-                    <Heading size="6" mb="1" weight="bold">Tổng quan</Heading>
-                    <Text size="3" color="gray">Xem nhanh tình trạng lưu trữ và các hoạt động gần đây.</Text>
+                    <Heading size="6" mb="1" weight="bold" style={{ color: "var(--card-heading)" }}>Tổng quan</Heading>
+                    <Text size="3" style={{ color: "var(--muted-foreground)" }}>Xem nhanh tình trạng lưu trữ và các hoạt động gần đây.</Text>
                 </Box>
 
                 {/* Category Cards */}
@@ -73,9 +73,9 @@ export default function DashboardPage() {
                                     </Box>
                                     <TrendingUp className="w-4 h-4 text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </Flex>
-                                <Heading size="7" mb="1" weight="bold">{cat.files}</Heading>
-                                <Text as="div" size="2" color="gray" weight="medium">{cat.title}</Text>
-                                <Text as="div" size="1" color="gray" mt="1" style={{ fontFamily: "var(--font-geist-mono)" }}>{formatBytes(cat.size)}</Text>
+                                <Heading size="7" mb="1" weight="bold" style={{ color: "var(--card-heading)" }}>{cat.files}</Heading>
+                                <Text as="div" size="2" weight="medium" style={{ color: "var(--muted-foreground)" }}>{cat.title}</Text>
+                                <Text as="div" size="1" mt="1" style={{ color: "var(--muted-foreground)", fontFamily: "var(--font-geist-mono)" }}>{formatBytes(cat.size)}</Text>
                             </Card>
                         );
                     }) : (
@@ -92,9 +92,9 @@ export default function DashboardPage() {
                                             <Icon style={{ width: 24, height: 24, color: `var(--${meta.colorName}-11)` }} />
                                         </Box>
                                     </Flex>
-                                    <Heading size="7" mb="1" weight="bold">0</Heading>
-                                    <Text as="div" size="2" color="gray" weight="medium">{defaultType}</Text>
-                                    <Text as="div" size="1" color="gray" mt="1" style={{ fontFamily: "var(--font-geist-mono)" }}>0 B</Text>
+                                    <Heading size="7" mb="1" weight="bold" style={{ color: "var(--card-heading)" }}>0</Heading>
+                                    <Text as="div" size="2" weight="medium" style={{ color: "var(--muted-foreground)" }}>{defaultType}</Text>
+                                    <Text as="div" size="1" mt="1" style={{ color: "var(--muted-foreground)", fontFamily: "var(--font-geist-mono)" }}>0 B</Text>
                                 </Card>
                             )
                         })
@@ -104,8 +104,8 @@ export default function DashboardPage() {
                 {/* Recent Files */}
                 <Card size="4" variant="surface" mt="6" style={{ overflow: "hidden", padding: 0 }}>
                     <Flex align="center" justify="between" p="5" style={{ borderBottom: "1px solid var(--gray-a6)" }}>
-                        <Heading size="5" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <Clock className="w-5 h-5 text-zinc-900 dark:text-zinc-100" style={{ color: "var(--gray-12)" }} /> Tệp gần đây
+                        <Heading size="5" style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--card-heading)" }}>
+                            <Clock className="w-5 h-5" style={{ color: "var(--icon-storage)" }} /> Tệp gần đây
                         </Heading>
                         <Link href="/dashboard/recent">
                             <Text size="2" weight="bold" color="gray" style={{ cursor: "pointer" }}>Xem tất cả</Text>
@@ -115,7 +115,7 @@ export default function DashboardPage() {
                     <Flex direction="column">
                         {recent.length === 0 ? (
                             <Box p="6" style={{ textAlign: "center" }}>
-                                <Text color="gray">Chưa có tệp nào.</Text>
+                                <Text style={{ color: "var(--muted-foreground)" }}>Chưa có tệp nào.</Text>
                             </Box>
                         ) : (
                             recent.slice(0, 5).map((file, i) => (

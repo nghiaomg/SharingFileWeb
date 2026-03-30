@@ -70,11 +70,11 @@ export default function TrashPage() {
             {/* Header */}
             <Flex direction={{ initial: "column", sm: "row" }} align={{ initial: "stretch", sm: "end" }} justify="between" gap="4" px={{ initial: "4", sm: "6", lg: "8" }} py="5" className="relative z-10 bg-card/30 backdrop-blur-xl" style={{ borderBottom: "1px solid var(--gray-a4)", flexShrink: 0 }}>
                 <Box>
-                    <Heading size="6" weight="bold" style={{ letterSpacing: "-0.025em", display: "flex", alignItems: "center", gap: "12px" }}>
-                        <Trash2 style={{ width: 32, height: 32, color: "var(--gray-12)" }} />
+                    <Heading size="6" weight="bold" style={{ letterSpacing: "-0.025em", display: "flex", alignItems: "center", gap: "12px", color: "var(--card-heading)" }}>
+                        <Trash2 style={{ width: 32, height: 32, color: "var(--icon-storage)" }} />
                         Thùng rác
                     </Heading>
-                    <Text size="2" color="gray" mt="1" style={{ display: "block" }}>Nơi chứa các tệp đã xóa. Tự động dọn dẹp sau 30 ngày.</Text>
+                    <Text size="2" mt="1" style={{ display: "block", color: "var(--muted-foreground)" }}>Nơi chứa các tệp đã xóa. Tự động dọn dẹp sau 30 ngày.</Text>
                 </Box>
 
                 <Flex align="center" gap="3" style={{ flexShrink: 0 }}>
@@ -116,10 +116,10 @@ export default function TrashPage() {
                 {isEmpty ? (
                     <Flex direction="column" align="center" justify="center" p="6" style={{ minHeight: "400px", border: "2px dashed var(--gray-a6)", borderRadius: "var(--radius-5)", textAlign: "center" }}>
                         <Box p="4" mb="4" style={{ borderRadius: "100%", backgroundColor: "var(--gray-a3)" }}>
-                            <Sparkles style={{ width: 64, height: 64, color: "var(--gray-a8)" }} />
+                            <Sparkles style={{ width: 64, height: 64, color: "var(--gray-a6)" }} />
                         </Box>
-                        <Heading size="6" mb="3">Thùng rác trống</Heading>
-                        <Text size="3" color="gray" style={{ maxWidth: "24rem" }}>
+                        <Heading size="6" mb="3" style={{ color: "var(--color-foreground)" }}>Thùng rác trống</Heading>
+                        <Text size="3" style={{ maxWidth: "24rem", color: "var(--muted-foreground)" }}>
                             Không có thư mục hay tệp tin nào đã bị xóa gần đây.
                         </Text>
                     </Flex>
@@ -128,7 +128,7 @@ export default function TrashPage() {
                         {/* Folders Section */}
                         {folders.length > 0 && (
                             <Box>
-                                <Text size="2" weight="bold" color="gray" mb="4" style={{ textTransform: "uppercase", letterSpacing: "0.05em", display: "block" }}>
+                                <Text size="2" weight="bold" mb="4" style={{ textTransform: "uppercase", letterSpacing: "0.05em", display: "block", color: "var(--muted-foreground)" }}>
                                     Thư mục bị xóa ({folders.length})
                                 </Text>
 
@@ -141,8 +141,8 @@ export default function TrashPage() {
                                                         <FolderOpen className="w-5 h-5 text-amber-500" style={{ color: "var(--amber-11)" }} />
                                                     </Flex>
                                                     <Box style={{ flex: 1, minWidth: 0, paddingRight: "1.5rem" }}>
-                                                        <Text size="3" weight="bold" truncate>{folder.name}</Text>
-                                                        <Text size="1" color="gray" as="div" truncate>Xóa: {formatDate(folder.deletedAt)}</Text>
+                                                        <Text size="3" weight="bold" truncate style={{ color: "var(--color-foreground)" }}>{folder.name}</Text>
+                                                        <Text size="1" as="div" truncate style={{ color: "var(--muted-foreground)" }}>Xóa: {formatDate(folder.deletedAt)}</Text>
                                                     </Box>
                                                 </Flex>
 
@@ -169,9 +169,9 @@ export default function TrashPage() {
                                 ) : (
                                     <Card size="1" variant="surface" style={{ padding: 0, overflow: "hidden" }}>
                                         <Flex px="4" py="3" style={{ borderBottom: "1px solid var(--gray-a4)", backgroundColor: "var(--gray-a2)" }}>
-                                            <Box style={{ flex: 5 }}><Text size="2" weight="medium" color="gray">Tên thư mục</Text></Box>
-                                            <Box style={{ flex: 4 }}><Text size="2" weight="medium" color="gray">Ngày xóa</Text></Box>
-                                            <Box style={{ flex: 1, textAlign: "right" }}><Text size="2" weight="medium" color="gray">Thao tác</Text></Box>
+                                            <Box style={{ flex: 5 }}><Text size="2" weight="medium" style={{ color: "var(--muted-foreground)" }}>Tên thư mục</Text></Box>
+                                            <Box style={{ flex: 4 }}><Text size="2" weight="medium" style={{ color: "var(--muted-foreground)" }}>Ngày xóa</Text></Box>
+                                            <Box style={{ flex: 1, textAlign: "right" }}><Text size="2" weight="medium" style={{ color: "var(--muted-foreground)" }}>Thao tác</Text></Box>
                                         </Flex>
                                         <Flex direction="column">
                                             {folders.map((folder, idx) => (
@@ -180,9 +180,9 @@ export default function TrashPage() {
                                                         <Flex align="center" justify="center" flexShrink="0" style={{ width: 40, height: 40, backgroundColor: "var(--amber-a3)", borderRadius: "var(--radius-3)" }}>
                                                             <FolderOpen className="w-5 h-5 text-amber-500" style={{ color: "var(--amber-11)" }} />
                                                         </Flex>
-                                                        <Text size="2" weight="medium" truncate>{folder.name}</Text>
+                                                        <Text size="2" weight="medium" truncate style={{ color: "var(--color-foreground)" }}>{folder.name}</Text>
                                                     </Flex>
-                                                    <Box style={{ flex: 4 }}><Text size="2" color="gray">{formatDate(folder.deletedAt)}</Text></Box>
+                                                    <Box style={{ flex: 4 }}><Text size="2" style={{ color: "var(--muted-foreground)" }}>{formatDate(folder.deletedAt)}</Text></Box>
                                                     <Flex justify="end" style={{ flex: 1 }}>
                                                         <DropdownMenu.Root>
                                                             <DropdownMenu.Trigger>
@@ -211,7 +211,7 @@ export default function TrashPage() {
                         {/* Files Section */}
                         {files.length > 0 && (
                             <Box>
-                                <Text size="2" weight="bold" color="gray" mb="4" style={{ textTransform: "uppercase", letterSpacing: "0.05em", display: "block" }}>
+                                <Text size="2" weight="bold" mb="4" style={{ textTransform: "uppercase", letterSpacing: "0.05em", display: "block", color: "var(--muted-foreground)" }}>
                                     Tệp bị xóa ({files.length})
                                 </Text>
 
@@ -228,10 +228,10 @@ export default function TrashPage() {
                                                             <Icon className="w-5 h-5" style={{ color: `var(--${colorName}-11)` }} />
                                                         </Flex>
                                                         <Box style={{ flex: 1, minWidth: 0, paddingRight: "1.5rem" }}>
-                                                            <Text size="2" weight="bold" truncate as="div" title={file.name} style={{ lineHeight: "1.25", marginBottom: "4px" }}>
+                                                            <Text size="2" weight="bold" truncate as="div" title={file.name} style={{ lineHeight: "1.25", marginBottom: "4px", color: "var(--color-foreground)" }}>
                                                                 {file.name}
                                                             </Text>
-                                                            <Text size="1" color="gray" as="div" truncate>{formatBytes(file.size)} • Xóa: {formatDate(file.deletedAt)}</Text>
+                                                            <Text size="1" as="div" truncate style={{ color: "var(--muted-foreground)" }}>{formatBytes(file.size)} • Xóa: {formatDate(file.deletedAt)}</Text>
                                                         </Box>
                                                     </Flex>
 
@@ -259,10 +259,10 @@ export default function TrashPage() {
                                 ) : (
                                     <Card size="1" variant="surface" style={{ padding: 0, overflow: "hidden" }}>
                                         <Flex px="4" py="3" style={{ borderBottom: "1px solid var(--gray-a4)", backgroundColor: "var(--gray-a2)" }}>
-                                            <Box style={{ flex: 5 }}><Text size="2" weight="medium" color="gray">Tên tệp</Text></Box>
-                                            <Box style={{ flex: 2, textAlign: "right" }}><Text size="2" weight="medium" color="gray">Dung lượng</Text></Box>
-                                            <Box style={{ flex: 2 }} className="ml-4"><Text size="2" weight="medium" color="gray">Ngày xóa</Text></Box>
-                                            <Box style={{ flex: 1, textAlign: "right" }}><Text size="2" weight="medium" color="gray">Thao tác</Text></Box>
+                                            <Box style={{ flex: 5 }}><Text size="2" weight="medium" style={{ color: "var(--muted-foreground)" }}>Tên tệp</Text></Box>
+                                            <Box style={{ flex: 2, textAlign: "right" }}><Text size="2" weight="medium" style={{ color: "var(--muted-foreground)" }}>Dung lượng</Text></Box>
+                                            <Box style={{ flex: 2 }} className="ml-4"><Text size="2" weight="medium" style={{ color: "var(--muted-foreground)" }}>Ngày xóa</Text></Box>
+                                            <Box style={{ flex: 1, textAlign: "right" }}><Text size="2" weight="medium" style={{ color: "var(--muted-foreground)" }}>Thao tác</Text></Box>
                                         </Flex>
                                         <Flex direction="column">
                                             {files.map((file, idx) => {
@@ -275,10 +275,10 @@ export default function TrashPage() {
                                                             <Flex align="center" justify="center" flexShrink="0" style={{ width: 40, height: 40, backgroundColor: `var(--${colorName}-a3)`, borderRadius: "var(--radius-3)" }}>
                                                                 <Icon className="w-5 h-5" style={{ color: `var(--${colorName}-11)` }} />
                                                             </Flex>
-                                                            <Text size="2" weight="medium" truncate title={file.name}>{file.name}</Text>
+                                                            <Text size="2" weight="medium" truncate title={file.name} style={{ color: "var(--color-foreground)" }}>{file.name}</Text>
                                                         </Flex>
-                                                        <Box style={{ flex: 2, textAlign: "right" }}><Text size="2" color="gray" style={{ fontFamily: "var(--font-geist-mono)" }}>{formatBytes(file.size)}</Text></Box>
-                                                        <Box style={{ flex: 2 }} className="ml-4"><Text size="2" color="gray">{formatDate(file.deletedAt)}</Text></Box>
+                                                        <Box style={{ flex: 2, textAlign: "right" }}><Text size="2" style={{ fontFamily: "var(--font-geist-mono)", color: "var(--muted-foreground)" }}>{formatBytes(file.size)}</Text></Box>
+                                                        <Box style={{ flex: 2 }} className="ml-4"><Text size="2" style={{ color: "var(--muted-foreground)" }}>{formatDate(file.deletedAt)}</Text></Box>
                                                         <Flex justify="end" style={{ flex: 1 }}>
                                                             <DropdownMenu.Root>
                                                                 <DropdownMenu.Trigger>

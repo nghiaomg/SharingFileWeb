@@ -30,12 +30,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="vi" suppressHydrationWarning>
       <body
-        className={`${dmSans.variable} ${geistMono.variable} antialiased`}
+        className={`${dmSans.variable} ${geistMono.variable} antialiased dark`}
+        suppressHydrationWarning
       >
         <QueryProvider>
-          <Theme accentColor="gray" radius="large" scaling="100%">
+          <Theme accentColor="gray" radius="large" scaling="100%" hasBackground={false}>
             {children}
             <Toaster position="bottom-right" richColors theme="system" />
           </Theme>

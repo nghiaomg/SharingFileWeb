@@ -1,0 +1,441 @@
+/* =====================================================
+   LoginPage.module.css — Luxury Black & White Theme
+   ===================================================== */
+
+/* Root container */
+.root {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  background: #080808;
+}
+
+/* ── Background decorations ── */
+.bgGrid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+}
+
+.bgGlow {
+  position: absolute;
+  top: -20%;
+  right: -10%;
+  width: 60%;
+  height: 80%;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ── Two-panel layout ── */
+.wrapper {
+  position: relative;
+  display: flex;
+  width: min(960px, 95vw);
+  min-height: 560px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 32px 80px rgba(0, 0, 0, 0.6),
+    0 8px 24px rgba(0, 0, 0, 0.4);
+  animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Left brand panel ── */
+.brandPanel {
+  position: relative;
+  width: 40%;
+  min-width: 280px;
+  background: #0d0d0d;
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 40px;
+  overflow: hidden;
+}
+
+/* Subtle corner glow on brand panel */
+.brandPanel::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  left: -20%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(ellipse at top left, rgba(255, 255, 255, 0.03) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.brandInner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+  width: 100%;
+}
+
+.logoMark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: 0 0 24px rgba(255, 255, 255, 0.04);
+  margin-bottom: 4px;
+}
+
+.brandTitle {
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif !important;
+  font-size: 32px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.5px !important;
+  color: #ffffff !important;
+  margin: 0 !important;
+  line-height: 1.2 !important;
+}
+
+.brandSubtitle {
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.2px;
+}
+
+.brandDivider {
+  width: 40px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+  margin: 4px 0;
+}
+
+.brandQuote {
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-size: 12px;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.3px;
+  line-height: 1.6;
+}
+
+/* ── Right form panel ── */
+.formPanel {
+  position: relative;
+  flex: 1;
+  background: #0f0f0f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 48px;
+}
+
+/* Top border accent on form panel */
+.formPanel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+}
+
+.formInner {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Form header ── */
+.formHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 36px;
+}
+
+.formLogoIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 4px;
+}
+
+.formTitle {
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif !important;
+  font-size: 22px !important;
+  font-weight: 600 !important;
+  color: #ffffff !important;
+  margin: 0 !important;
+  letter-spacing: -0.3px !important;
+}
+
+.formSubtitle {
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.38);
+  letter-spacing: 0.1px;
+}
+
+/* ── Alerts ── */
+.errorAlert {
+  background: rgba(220, 38, 38, 0.08) !important;
+  border: 1px solid rgba(220, 38, 38, 0.2) !important;
+  border-radius: 8px !important;
+  margin-bottom: 20px !important;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif !important;
+  font-size: 13px !important;
+}
+
+.errorAlert span {
+  color: #fca5a5 !important;
+}
+
+.successAlert {
+  background: rgba(34, 197, 94, 0.08) !important;
+  border: 1px solid rgba(34, 197, 94, 0.2) !important;
+  border-radius: 8px !important;
+  margin-bottom: 20px !important;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif !important;
+  font-size: 13px !important;
+}
+
+.successAlert span {
+  color: #86efac !important;
+}
+
+/* ── Form fields ── */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.formItem {
+  margin: 0 !important;
+}
+
+.formItemSubmit {
+  margin: 8px 0 0 !important;
+}
+
+.inputLabel {
+  display: block;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+/* Override Antd input styles */
+.input {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 8px !important;
+  color: #ffffff !important;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif !important;
+  font-size: 14px !important;
+  height: 48px !important;
+  padding: 0 16px !important;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s !important;
+}
+
+.input::placeholder {
+  color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.input:hover {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+.input:focus,
+.input:focus-within {
+  border-color: rgba(255, 255, 255, 0.35) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06), 0 0 12px rgba(255, 255, 255, 0.04) !important;
+}
+
+/* Ant Design icon inside input */
+.inputPrefix {
+  color: rgba(255, 255, 255, 0.3) !important;
+  font-size: 14px !important;
+  margin-right: 4px !important;
+}
+
+/* AntD input ant-input-affix-wrapper */
+.input .ant-input,
+.input .ant-input-affix-wrapper-input {
+  color: #ffffff !important;
+  background: transparent !important;
+}
+
+.input .ant-input::placeholder {
+  color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Password suffix icon */
+.input .ant-input-password-icon {
+  color: rgba(255, 255, 255, 0.3) !important;
+  transition: color 0.2s !important;
+}
+
+.input .ant-input-password-icon:hover {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* AntD form item extra / help */
+.formItem :global(.ant-form-item-explain) {
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif !important;
+  font-size: 12px !important;
+  color: rgba(255, 255, 255, 0.4) !important;
+  margin-top: 6px !important;
+}
+
+.formItem :global(.ant-form-item-explain-error) {
+  color: #fca5a5 !important;
+}
+
+/* Validation status borders */
+.formItem:has(.ant-form-item-explain-error) .input {
+  border-color: rgba(220, 38, 38, 0.5) !important;
+}
+
+/* ── Submit button ── */
+.submitBtn {
+  height: 52px !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  border: 1px solid #ffffff !important;
+  color: #0a0a0a !important;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.3px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.15s !important;
+  margin-top: 4px;
+}
+
+.submitBtn:hover:not(:disabled) {
+  background: #f5f5f5 !important;
+  border-color: #f5f5f5 !important;
+  color: #0a0a0a !important;
+  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.12) !important;
+  transform: translateY(-1px);
+}
+
+.submitBtn:active:not(:disabled) {
+  background: #e8e8e8 !important;
+  transform: translateY(0);
+  box-shadow: none !important;
+}
+
+.submitBtn:disabled {
+  background: rgba(255, 255, 255, 0.5) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  color: rgba(0, 0, 0, 0.4) !important;
+  cursor: not-allowed;
+}
+
+.submitBtn .anticon-loading {
+  color: #0a0a0a !important;
+}
+
+.btnArrow {
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+.submitBtn:hover:not(:disabled) .btnArrow {
+  transform: translateX(3px);
+}
+
+/* ── Footer ── */
+.formFooter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 36px;
+}
+
+.footerLine {
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.footerText {
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.2);
+  letter-spacing: 0.4px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 700px) {
+  .wrapper {
+    flex-direction: column;
+    min-height: auto;
+    width: 95vw;
+  }
+
+  .brandPanel {
+    width: 100%;
+    min-width: unset;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    padding: 40px 32px;
+  }
+
+  .brandInner {
+    align-items: center;
+    text-align: center;
+  }
+
+  .formPanel {
+    padding: 40px 32px;
+  }
+}

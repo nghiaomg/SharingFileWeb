@@ -45,17 +45,19 @@ export function DashboardSidebar({ isOpen, onClose }: DashboardSidebarProps) {
             )}
 
             <aside className={`
-                fixed lg:static inset-y-0 left-0 z-50 w-72 bg-card border-r border-border/50 flex flex-col
+                fixed lg:static inset-y-0 left-0 z-50 w-72 flex flex-col
                 transform transition-transform duration-300 ease-in-out lg:translate-x-0
                 ${isOpen ? "translate-x-0" : "-translate-x-full"}
-            `}>
+            `}
+            style={{ background: "var(--color-background)", borderRight: "1px solid var(--color-border)" }}
+            >
                 {/* Logo */}
                 <Flex align="center" justify="between" px="6" style={{ height: "4rem", borderBottom: "1px solid var(--gray-a4)" }}>
                     <Link href="/dashboard" className="flex items-center gap-2 group">
-                        <Flex align="center" justify="center" style={{ width: "36px", height: "36px", background: "var(--gray-12)", borderRadius: "var(--radius-4)", transition: "transform 0.3s" }} className="group-hover:rotate-12">
-                            <FileUp style={{ color: "white", width: "20px", height: "20px" }} />
+                        <Flex align="center" justify="center" style={{ width: "36px", height: "36px", background: "var(--accent-logo)", borderRadius: "var(--radius-4)", transition: "transform 0.3s" }} className="group-hover:rotate-12">
+                            <FileUp style={{ color: "var(--color-logo-icon)", width: "20px", height: "20px" }} />
                         </Flex>
-                        <Text size="4" weight="bold" style={{ letterSpacing: "-0.025em" }}>FileFlow</Text>
+                        <Text size="4" weight="bold" style={{ letterSpacing: "-0.025em", color: "var(--color-foreground)" }}>FileFlow</Text>
                     </Link>
                     <Box display={{ initial: "block", lg: "none" }}>
                         <IconButton variant="ghost" color="gray" onClick={onClose}>
@@ -94,10 +96,10 @@ export function DashboardSidebar({ isOpen, onClose }: DashboardSidebarProps) {
                     {/* Storage Usage */}
                     <Box p="4" mb="4" style={{ background: "var(--gray-a3)", borderRadius: "var(--radius-4)" }}>
                         <Flex align="center" justify="between" mb="3">
-                            <Text size="2" weight="bold" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                <HardDrive className="w-4 h-4 text-zinc-900 dark:text-zinc-100" style={{ color: "var(--gray-12)" }} /> Lưu trữ
+                            <Text size="2" weight="bold" style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--color-foreground)" }}>
+                                <HardDrive className="w-4 h-4" style={{ color: "var(--icon-storage)" }} /> Lưu trữ
                             </Text>
-                            <Text size="1" color="gray" style={{ fontFamily: "var(--font-geist-mono)" }}>
+                            <Text size="1" style={{ color: "var(--muted-foreground)", fontFamily: "var(--font-geist-mono)" }}>
                                 {formatBytes(usedStorage)} / {formatBytes(MAX_STORAGE)}
                             </Text>
                         </Flex>
@@ -139,8 +141,8 @@ export function DashboardSidebar({ isOpen, onClose }: DashboardSidebarProps) {
                     </Flex>
 
                     <Flex align="center" justify="center" gap="1" mt="3" mb="1">
-                        <Zap className="w-3 h-3 text-zinc-900 dark:text-zinc-100" style={{ color: "var(--gray-12)" }} />
-                        <Text size="1" color="gray">FileFlow v2.4.0</Text>
+                        <Zap className="w-3 h-3" style={{ color: "var(--icon-version)" }} />
+                        <Text size="1" style={{ color: "var(--muted-foreground)" }}>FileFlow v2.4.0</Text>
                     </Flex>
                 </Box>
             </aside>

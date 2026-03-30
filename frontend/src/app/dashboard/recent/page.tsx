@@ -120,8 +120,8 @@ export default function RecentFilesPage() {
             {/* Header */}
             <Flex direction={{ initial: "column", sm: "row" }} align={{ initial: "stretch", sm: "end" }} justify="between" gap="4" px={{ initial: "4", sm: "6", lg: "8" }} py="5" className="relative z-10 bg-card/30 backdrop-blur-xl" style={{ borderBottom: "1px solid var(--gray-a4)", flexShrink: 0 }}>
                 <Box>
-                    <Heading size="6" weight="bold" style={{ letterSpacing: "-0.025em", display: "flex", alignItems: "center", gap: "12px" }}>
-                        <Clock style={{ width: 32, height: 32, color: "var(--gray-12)" }} />
+                    <Heading size="6" weight="bold" style={{ letterSpacing: "-0.025em", display: "flex", alignItems: "center", gap: "12px", color: "var(--card-heading)" }}>
+                        <Clock style={{ width: 32, height: 32, color: "var(--icon-storage)" }} />
                         Gần đây
                     </Heading>
                 </Box>
@@ -155,10 +155,10 @@ export default function RecentFilesPage() {
                 {recentGroups.length === 0 ? (
                     <Flex direction="column" align="center" justify="center" p="6" style={{ minHeight: "400px", border: "2px dashed var(--gray-a6)", borderRadius: "var(--radius-5)", textAlign: "center" }}>
                         <Box p="4" mb="4" style={{ borderRadius: "100%", backgroundColor: "var(--gray-a3)" }}>
-                            <Clock style={{ width: 64, height: 64, color: "var(--gray-a8)" }} />
+                            <Clock style={{ width: 64, height: 64, color: "var(--gray-a6)" }} />
                         </Box>
-                        <Heading size="6" mb="3">Không có tệp gần đây</Heading>
-                        <Text size="3" color="gray" style={{ maxWidth: "24rem" }}>
+                        <Heading size="6" mb="3" style={{ color: "var(--color-foreground)" }}>Không có tệp gần đây</Heading>
+                        <Text size="3" style={{ maxWidth: "24rem", color: "var(--muted-foreground)" }}>
                             Những tệp bạn vừa mở, tải lên hoặc làm việc gần đây sẽ hiển thị ở đây.
                         </Text>
                     </Flex>
@@ -166,7 +166,7 @@ export default function RecentFilesPage() {
                     <Flex direction="column" gap="8">
                         {recentGroups.map((group, i) => (
                             <Box key={i}>
-                                <Text size="2" weight="bold" color="gray" mb="4" style={{ textTransform: "uppercase", letterSpacing: "0.05em", display: "block" }}>
+                                <Text size="2" weight="bold" mb="4" style={{ textTransform: "uppercase", letterSpacing: "0.05em", display: "block", color: "var(--muted-foreground)" }}>
                                     {group.label}
                                 </Text>
 
@@ -187,11 +187,11 @@ export default function RecentFilesPage() {
                                 ) : (
                                     <Card size="1" variant="surface" style={{ padding: 0, overflow: "hidden" }}>
                                         <Flex px="4" py="3" style={{ borderBottom: "1px solid var(--gray-a4)", backgroundColor: "var(--gray-a2)" }}>
-                                            <Box style={{ flex: 5 }}><Text size="2" weight="medium" color="gray">Tên tệp</Text></Box>
-                                            <Box style={{ flex: 2 }}><Text size="2" weight="medium" color="gray">Loại</Text></Box>
-                                            <Box style={{ flex: 2, textAlign: "right" }}><Text size="2" weight="medium" color="gray">Dung lượng</Text></Box>
-                                            <Box style={{ flex: 2 }} className="ml-4"><Text size="2" weight="medium" color="gray">Thời gian</Text></Box>
-                                            <Box style={{ flex: 1, textAlign: "right" }}><Text size="2" weight="medium" color="gray">Thao tác</Text></Box>
+                                            <Box style={{ flex: 5 }}><Text size="2" weight="medium" style={{ color: "var(--muted-foreground)" }}>Tên tệp</Text></Box>
+                                            <Box style={{ flex: 2 }}><Text size="2" weight="medium" style={{ color: "var(--muted-foreground)" }}>Loại</Text></Box>
+                                            <Box style={{ flex: 2, textAlign: "right" }}><Text size="2" weight="medium" style={{ color: "var(--muted-foreground)" }}>Dung lượng</Text></Box>
+                                            <Box style={{ flex: 2 }} className="ml-4"><Text size="2" weight="medium" style={{ color: "var(--muted-foreground)" }}>Thời gian</Text></Box>
+                                            <Box style={{ flex: 1, textAlign: "right" }}><Text size="2" weight="medium" style={{ color: "var(--muted-foreground)" }}>Thao tác</Text></Box>
                                         </Flex>
                                         <Flex direction="column">
                                             {group.items.map((item, idx) => {
@@ -205,11 +205,11 @@ export default function RecentFilesPage() {
                                                             <Flex align="center" justify="center" flexShrink="0" style={{ width: 40, height: 40, backgroundColor: `var(--${colorName}-a3)`, borderRadius: "var(--radius-3)" }}>
                                                                 <Icon className="w-5 h-5" style={{ color: `var(--${colorName}-11)` }} />
                                                             </Flex>
-                                                            <Text size="2" weight="medium" truncate title={file.name}>{file.name}</Text>
+                                                            <Text size="2" weight="medium" truncate title={file.name} style={{ color: "var(--color-foreground)" }}>{file.name}</Text>
                                                         </Flex>
-                                                        <Box style={{ flex: 2 }}><Text size="2" color="gray">{fileMeta.type}</Text></Box>
-                                                        <Box style={{ flex: 2, textAlign: "right" }}><Text size="2" color="gray" style={{ fontFamily: "var(--font-geist-mono)" }}>{formatBytes(file.size)}</Text></Box>
-                                                        <Box style={{ flex: 2 }} className="ml-4"><Text size="2" color="gray">{item.timeStr}</Text></Box>
+                                                        <Box style={{ flex: 2 }}><Text size="2" style={{ color: "var(--muted-foreground)" }}>{fileMeta.type}</Text></Box>
+                                                        <Box style={{ flex: 2, textAlign: "right" }}><Text size="2" style={{ fontFamily: "var(--font-geist-mono)", color: "var(--muted-foreground)" }}>{formatBytes(file.size)}</Text></Box>
+                                                        <Box style={{ flex: 2 }} className="ml-4"><Text size="2" style={{ color: "var(--muted-foreground)" }}>{item.timeStr}</Text></Box>
                                                         <Flex justify="end" style={{ flex: 1 }}>
                                                             <DropdownMenu.Root>
                                                                 <DropdownMenu.Trigger>

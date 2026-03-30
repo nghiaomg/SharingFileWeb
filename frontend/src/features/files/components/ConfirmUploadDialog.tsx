@@ -28,10 +28,10 @@ export function ConfirmUploadDialog({ isOpen, onClose, onConfirm, onRemove, file
     return (
         <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <Dialog.Content maxWidth="600px" style={{ borderRadius: "var(--radius-4)", padding: "24px" }}>
-                <Dialog.Title size="5" weight="bold" mb="2">
+                <Dialog.Title size="5" weight="bold" mb="2" style={{ color: "var(--color-foreground)" }}>
                     Xác nhận tải lên
                 </Dialog.Title>
-                <Dialog.Description size="2" color="gray" mb="4">
+                <Dialog.Description size="2" mb="4" style={{ color: "var(--muted-foreground)" }}>
                     Bạn đã chọn {files.length} tệp với tổng dung lượng là {formatBytes(totalSize)}.
                 </Dialog.Description>
                 
@@ -45,7 +45,7 @@ export function ConfirmUploadDialog({ isOpen, onClose, onConfirm, onRemove, file
                         <Flex direction="column">
                             {files.length === 0 ? (
                                 <Flex align="center" justify="center" p="4">
-                                    <Text size="2" color="gray">Không có tệp nào được chọn.</Text>
+                                    <Text size="2" style={{ color: "var(--muted-foreground)" }}>Không có tệp nào được chọn.</Text>
                                 </Flex>
                             ) : (
                                 files.map((item, index) => {

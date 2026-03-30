@@ -29,8 +29,8 @@ export default function SettingsPage() {
     return (
         <Box p="6" pb="9" style={{ height: "100%", overflowY: "auto", position: "relative" }}>
             <Flex align="center" gap="3" mt="2" mb="6">
-                <Settings className="w-8 h-8 text-zinc-900 dark:text-zinc-100" style={{ color: "var(--gray-12)" }} />
-                <Heading size="8">Cài đặt & Hồ sơ</Heading>
+                <Settings className="w-8 h-8" style={{ color: "var(--icon-storage)" }} />
+                <Heading size="8" style={{ color: "var(--card-heading)" }}>Cài đặt & Hồ sơ</Heading>
             </Flex>
 
             <Grid columns={{ initial: "1", lg: "2", xl: "3" }} gap="6" width="100%">
@@ -52,8 +52,8 @@ export default function SettingsPage() {
                                 </Box>
                             </Box>
                             <Box>
-                                <Heading size="6">Trung Nghĩa</Heading>
-                                <Text as="div" size="3" color="gray" mt="1">trungnghia@example.com</Text>
+                                <Heading size="6" style={{ color: "var(--card-heading)" }}>Trung Nghĩa</Heading>
+                                <Text as="div" size="3" mt="1" style={{ color: "var(--muted-foreground)" }}>trungnghia@example.com</Text>
                                 <Box mt="3">
                                     <Badge size="2" color="gray" variant="soft">PRO PLAN</Badge>
                                 </Box>
@@ -63,22 +63,22 @@ export default function SettingsPage() {
                         <Flex direction="column" gap="5">
                             <Grid columns={{ initial: "1", sm: "2" }} gap="5">
                                 <Box>
-                                    <Text as="label" size="2" weight="bold" color="gray" mb="2" style={{ display: "block" }}>Tên hiển thị</Text>
+                                    <Text as="label" size="2" weight="bold" mb="2" style={{ display: "block", color: "var(--muted-foreground)" }}>Tên hiển thị</Text>
                                     <TextField.Root size="3" defaultValue="Trung Nghĩa" />
                                 </Box>
                                 <Box>
-                                    <Text as="label" size="2" weight="bold" color="gray" mb="2" style={{ display: "block" }}>Số điện thoại</Text>
+                                    <Text as="label" size="2" weight="bold" mb="2" style={{ display: "block", color: "var(--muted-foreground)" }}>Số điện thoại</Text>
                                     <TextField.Root size="3" type="tel" placeholder="+84 ..." />
                                 </Box>
                             </Grid>
 
                             <Grid columns={{ initial: "1", sm: "2" }} gap="5">
                                 <Box>
-                                    <Text as="label" size="2" weight="bold" color="gray" mb="2" style={{ display: "block" }}>Quốc gia</Text>
+                                    <Text as="label" size="2" weight="bold" mb="2" style={{ display: "block", color: "var(--muted-foreground)" }}>Quốc gia</Text>
                                     <TextField.Root size="3" defaultValue="Việt Nam" />
                                 </Box>
                                 <Box>
-                                    <Text as="label" size="2" weight="bold" color="gray" mb="2" style={{ display: "block" }}>Công ty / Tổ chức</Text>
+                                    <Text as="label" size="2" weight="bold" mb="2" style={{ display: "block", color: "var(--muted-foreground)" }}>Công ty / Tổ chức</Text>
                                     <TextField.Root size="3" placeholder="Nhập tên tổ chức..." />
                                 </Box>
                             </Grid>
@@ -104,16 +104,16 @@ export default function SettingsPage() {
                                 <Shield className="w-6 h-6" />
                             </Box>
                             <Box>
-                                <Heading size="5">Bảo mật tài khoản</Heading>
-                                <Text as="div" size="2" color="gray">Quản lý lớp bảo vệ cho dữ liệu của bạn</Text>
+                                <Heading size="5" style={{ color: "var(--card-heading)" }}>Bảo mật tài khoản</Heading>
+                                <Text as="div" size="2" style={{ color: "var(--muted-foreground)" }}>Quản lý lớp bảo vệ cho dữ liệu của bạn</Text>
                             </Box>
                         </Flex>
                         
                         <Flex direction="column" style={{ borderTop: "1px solid var(--gray-a6)" }}>
                             <Flex py="4" direction={{ initial: "column", sm: "row" }} align={{ initial: "start", sm: "center" }} justify="between" gap="4" style={{ borderBottom: "1px solid var(--gray-a6)" }}>
                                 <Box>
-                                    <Heading size="3">Đổi mật khẩu</Heading>
-                                    <Text as="div" size="2" color="gray" mt="1">Cập nhật mật khẩu mới 6 tháng một lần để an toàn</Text>
+                                    <Heading size="3" style={{ color: "var(--card-heading)" }}>Đổi mật khẩu</Heading>
+                                    <Text as="div" size="2" mt="1" style={{ color: "var(--muted-foreground)" }}>Cập nhật mật khẩu mới 6 tháng một lần để an toàn</Text>
                                 </Box>
                                 <Box style={{ flexShrink: 0 }}>
                                     <Button
@@ -156,8 +156,8 @@ export default function SettingsPage() {
                                 <CreditCard className="w-6 h-6" />
                             </Box>
                             <Box>
-                                <Heading size="5">Gói lưu trữ</Heading>
-                                <Text as="div" size="2" color="gray">Thông tin thanh toán & gia hạn</Text>
+                                <Heading size="5" style={{ color: "var(--card-heading)" }}>Gói lưu trữ</Heading>
+                                <Text as="div" size="2" style={{ color: "var(--muted-foreground)" }}>Thông tin thanh toán & gia hạn</Text>
                             </Box>
                         </Flex>
 
@@ -165,14 +165,14 @@ export default function SettingsPage() {
                             <Flex direction="column" gap="4" mb="5">
                                 <Box>
                                     <Flex align="center" gap="2">
-                                        <Heading size="6" style={{ color: "var(--gray-12)" }} weight="bold">FileFlow Pro</Heading>
+                                        <Heading size="6" style={{ color: "var(--card-heading)" }} weight="bold">FileFlow Pro</Heading>
                                         <Badge size="1" color="gray" variant="solid" radius="full">HOT</Badge>
                                     </Flex>
-                                    <Text as="div" size="2" color="gray" mt="2" weight="medium">Chu kỳ tiếp theo: 24/05/2024</Text>
+                                    <Text as="div" size="2" mt="2" weight="medium" style={{ color: "var(--muted-foreground)" }}>Chu kỳ tiếp theo: 24/05/2024</Text>
                                 </Box>
                                 <Flex align="baseline" gap="1">
-                                    <Heading size="8" weight="bold">$9.99</Heading>
-                                    <Text as="span" size="3" color="gray" weight="medium">/tháng</Text>
+                                    <Heading size="8" weight="bold" style={{ color: "var(--card-heading)" }}>$9.99</Heading>
+                                    <Text as="span" size="3" weight="medium" style={{ color: "var(--muted-foreground)" }}>/tháng</Text>
                                 </Flex>
                             </Flex>
 

@@ -50,17 +50,17 @@ export function DashboardHeader({ userName, onMenuClick }: DashboardHeaderProps)
                         <button className="flex items-center gap-2 hover:bg-secondary rounded-xl px-2 py-1.5 transition-colors outline-none cursor-pointer">
                             <Box style={{ width: "32px", height: "32px", borderRadius: "100%", background: "linear-gradient(to top right, var(--gray-12), var(--gray-11))" }}>
                                 <Flex align="center" justify="center" width="100%" height="100%">
-                                    <Text size="2" weight="bold" style={{ color: "white" }}>{initials}</Text>
+                                    <Text size="2" weight="bold" style={{ color: "var(--avatar-initials)" }}>{initials}</Text>
                                 </Flex>
                             </Box>
-                            <Text size="2" weight="medium" className="hidden sm:block">{displayName}</Text>
+                            <Text size="2" weight="medium" className="hidden sm:block" style={{ color: "var(--color-foreground)" }}>{displayName}</Text>
                         </button>
                     </DropdownMenu.Trigger>
 
                     <DropdownMenu.Content variant="solid" size="2" align="end" style={{ minWidth: "220px" }}>
                         <Flex direction="column" gap="1" p="2" style={{ borderBottom: "1px solid var(--gray-a4)" }}>
-                            <Text size="2" weight="bold" truncate>{displayName}</Text>
-                            <Text size="1" color="gray" truncate>{user?.email || ""}</Text>
+                            <Text size="2" weight="bold" truncate style={{ color: "var(--color-foreground)" }}>{displayName}</Text>
+                            <Text size="1" style={{ color: "var(--muted-foreground)" }} truncate>{user?.email || ""}</Text>
                         </Flex>
 
                         <DropdownMenu.Item asChild>

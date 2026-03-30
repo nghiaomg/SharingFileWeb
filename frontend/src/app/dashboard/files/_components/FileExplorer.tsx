@@ -315,14 +315,14 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
                     {folderId && folderInfo && (
                         <Flex align="center" gap="2" mb="2">
                             <Link href="/dashboard/files" className="hover:text-foreground transition-colors flex items-center gap-1">
-                                <Text size="2" color="gray" style={{ display: "flex", alignItems: "center" }}><Home className="w-4 h-4 mr-1" /> Tệp của tôi</Text>
+                                <Text size="2" style={{ display: "flex", alignItems: "center", color: "var(--muted-foreground)" }}><Home className="w-4 h-4 mr-1" /> Tệp của tôi</Text>
                             </Link>
                             <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                            <Text size="2" weight="medium">{folderInfo.name}</Text>
+                            <Text size="2" weight="medium" style={{ color: "var(--color-foreground)" }}>{folderInfo.name}</Text>
                         </Flex>
                     )}
-                    <Heading size="6" weight="bold" style={{ letterSpacing: "-0.025em", display: "flex", alignItems: "center", gap: "12px" }}>
-                        {!folderId || !folderInfo ? <Home style={{ width: 32, height: 32, color: "var(--gray-12)" }} /> : <FolderOpen style={{ width: 32, height: 32, color: "var(--amber-11)" }} />}
+                    <Heading size="6" weight="bold" style={{ letterSpacing: "-0.025em", display: "flex", alignItems: "center", gap: "12px", color: "var(--card-heading)" }}>
+                        {!folderId || !folderInfo ? <Home style={{ width: 32, height: 32, color: "var(--icon-storage)" }} /> : <FolderOpen style={{ width: 32, height: 32, color: "var(--amber-11)" }} />}
                         {folderId && folderInfo ? folderInfo.name : "Tệp của tôi"}
                     </Heading>
                 </Box>
@@ -418,12 +418,12 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
                         }}
                     >
                         <Box p="4" mb="4" style={{ borderRadius: "100%", backgroundColor: "var(--gray-a3)", transition: "all 0.3s" }}>
-                            <FolderOpen style={{ width: 64, height: 64, color: "var(--gray-a8)" }} />
+                            <FolderOpen style={{ width: 64, height: 64, color: "var(--gray-a6)" }} />
                         </Box>
-                        <Heading size="6" mb="3" style={{ color: "var(--gray-11)" }}>
+                        <Heading size="6" mb="3" style={{ color: "var(--color-foreground)" }}>
                             Thư mục trống
                         </Heading>
-                        <Text size="3" color="gray" style={{ maxWidth: "24rem" }}>
+                        <Text size="3" style={{ maxWidth: "24rem", color: "var(--muted-foreground)" }}>
                             Kéo thả tệp vào đây hoặc nhấn mũi tên tải lên ở góc trên cùng để bắt đầu.
                         </Text>
                     </Flex>
@@ -432,7 +432,7 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
                         {/* Folders */}
                         {folders.length > 0 && (
                             <Box>
-                                <Text size="2" weight="bold" color="gray" mb="4" style={{ textTransform: "uppercase", letterSpacing: "0.05em", display: "block" }}>
+                                <Text size="2" weight="bold" mb="4" style={{ textTransform: "uppercase", letterSpacing: "0.05em", display: "block", color: "var(--muted-foreground)" }}>
                                     Thư mục ({folders.length})
                                 </Text>
                                 
@@ -484,7 +484,7 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
                                                     <Flex align="center" justify="center" flexShrink="0" style={{ width: 40, height: 40, backgroundColor: "var(--brown-a3)", borderRadius: "var(--radius-3)" }}>
                                                         <FolderOpen className="w-5 h-5" style={{ color: "var(--brown-11)" }} />
                                                     </Flex>
-                                                    <Text size="3" weight="bold" truncate style={{ flex: 1 }}>{folder.name}</Text>
+                                                    <Text size="3" weight="bold" truncate style={{ flex: 1, color: "var(--color-foreground)" }}>{folder.name}</Text>
                                                 </Flex>
 
                                                 <Box position="absolute" top="0" right="0" bottom="0" m="2" style={{ display: "flex", alignItems: "center" }}>
@@ -514,7 +514,7 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
                         {/* Files */}
                         {files.length > 0 && (
                             <Box>
-                                <Text size="2" weight="bold" color="gray" mb="4" style={{ textTransform: "uppercase", letterSpacing: "0.05em", display: "block" }}>
+                                <Text size="2" weight="bold" mb="4" style={{ textTransform: "uppercase", letterSpacing: "0.05em", display: "block", color: "var(--muted-foreground)" }}>
                                     Tệp ({files.length})
                                 </Text>
                                 {viewMode === "grid" ? (
@@ -534,11 +534,11 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
                                 ) : (
                                     <Card size="1" variant="surface" style={{ padding: 0, overflow: "hidden" }}>
                                         <Flex px="4" py="3" style={{ borderBottom: "1px solid var(--gray-a4)", backgroundColor: "var(--gray-a2)" }}>
-                                            <Box style={{ flex: 5 }}><Text size="2" weight="medium" color="gray">Tên tệp</Text></Box>
-                                            <Box style={{ flex: 2 }}><Text size="2" weight="medium" color="gray">Loại</Text></Box>
-                                            <Box style={{ flex: 2, textAlign: "right" }}><Text size="2" weight="medium" color="gray">Dung lượng</Text></Box>
-                                            <Box style={{ flex: 2 }} className="ml-4"><Text size="2" weight="medium" color="gray">Ngày tạo</Text></Box>
-                                            <Box style={{ flex: 1, textAlign: "right" }}><Text size="2" weight="medium" color="gray">Thao tác</Text></Box>
+                                            <Box style={{ flex: 5 }}><Text size="2" weight="medium" style={{ color: "var(--muted-foreground)" }}>Tên tệp</Text></Box>
+                                            <Box style={{ flex: 2 }}><Text size="2" weight="medium" style={{ color: "var(--muted-foreground)" }}>Loại</Text></Box>
+                                            <Box style={{ flex: 2, textAlign: "right" }}><Text size="2" weight="medium" style={{ color: "var(--muted-foreground)" }}>Dung lượng</Text></Box>
+                                            <Box style={{ flex: 2 }} className="ml-4"><Text size="2" weight="medium" style={{ color: "var(--muted-foreground)" }}>Ngày tạo</Text></Box>
+                                            <Box style={{ flex: 1, textAlign: "right" }}><Text size="2" weight="medium" style={{ color: "var(--muted-foreground)" }}>Thao tác</Text></Box>
                                         </Flex>
                                         <Flex direction="column">
                                             {files.map((file, i) => {

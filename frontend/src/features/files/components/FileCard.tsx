@@ -125,7 +125,7 @@ export function FileCard({
                     </Flex>
                     <Box style={{ minWidth: 0, flex: 1 }}>
                         <Text as="div" size="3" weight="bold" truncate mb="1">{file.name}</Text>
-                        <Text as="div" size="2" color="gray">
+                        <Text as="div" size="2" style={{ color: "var(--muted-foreground)" }}>
                             {subtitle || defaultSubtitle}
                         </Text>
                     </Box>
@@ -155,7 +155,7 @@ export function FileCard({
                     <Text size="2" weight="bold" truncate as="div" title={file.name} style={{ lineHeight: "1.25", marginBottom: "4px" }}>
                         {file.name}
                     </Text>
-                    <Text size="1" color="gray" as="div">
+                    <Text size="1" as="div" style={{ color: "var(--muted-foreground)" }}>
                         {subtitle || defaultSubtitle}
                     </Text>
                 </Box>

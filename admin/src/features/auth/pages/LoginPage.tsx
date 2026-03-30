@@ -1,13 +1,14 @@
 import React from 'react';
-import { Card, Form, Input, Button, Typography, Alert } from 'antd';
+import { Form, Input, Button, Typography, Alert } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, Controller } from 'react-hook-form';
 import { loginSchema } from '../types/auth.types';
 import type { LoginRequest } from '../types/auth.types';
 import { useLoginMutation } from '../hooks/useAuthMutation';
+import styles from './LoginPage.module.css';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 const LoginPage: React.FC = () => {
   const { control, handleSubmit, formState: { errors } } = useForm<LoginRequest>({
@@ -22,80 +23,139 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f0f2f5' }}>
-      <Card
-        style={{ width: 400, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-        styles={{ body: { padding: '32px' } }}
-      >
-        <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <Title level={3}>Admin Panel Login</Title>
+    <div className={styles.root}>
+      {/* Background decorative elements */}
+      <div className={styles.bgGrid} />
+      <div className={styles.bgGlow} />
+
+      <div className={styles.wrapper}>
+        {/* Left panel — branding */}
+        <div className={styles.brandPanel}>
+          <div className={styles.brandInner}>
+            <div className={styles.logoMark}>
+              <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                <rect x="4" y="4" width="40" height="40" rx="4" stroke="#fff" strokeWidth="1.5" />
+                <path d="M14 34 L24 14 L34 34" stroke="#fff" strokeWidth="1.5" strokeLinejoin="round" fill="none" />
+                <path d="M17 27 L31 27" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            </div>
+            <Title level={1} className={styles.brandTitle}>Admin Panel</Title>
+            <Text className={styles.brandSubtitle}>
+              Hệ thống quản trị nâng cao<br />
+              Quản lý tệp tin &amp; người dùng
+            </Text>
+            <div className={styles.brandDivider} />
+            <Text className={styles.brandQuote}>
+              "Kiểm soát hoàn toàn — Thiết kế tinh tế"
+            </Text>
+          </div>
         </div>
 
-        {loginMutation.isError && (
-          <Alert
-            message={
-              <span style={{ color: '#fff' }}>
-                {(loginMutation.error as { response?: { data?: { msg?: string, message?: string } } })?.response?.data?.msg || 
-                 (loginMutation.error as { response?: { data?: { msg?: string, message?: string } } })?.response?.data?.message || 
-                 'Đăng nhập thất bại'}
-              </span>
-            }
-            type="error"
-            showIcon
-            style={{ marginBottom: 24, backgroundColor: '#000', borderColor: '#000' }}
-          />
-        )}
+        {/* Right panel — form */}
+        <div className={styles.formPanel}>
+          <div className={styles.formInner}>
+            <div className={styles.formHeader}>
+              <div className={styles.formLogoIcon}>
+                <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+                  <rect x="4" y="4" width="40" height="40" rx="4" stroke="currentColor" strokeWidth="1.5" />
+                  <path d="M14 34 L24 14 L34 34" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" fill="none" />
+                  <path d="M17 27 L31 27" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+              </div>
+              <Title level={2} className={styles.formTitle}>Chào mừng trở lại</Title>
+              <Text className={styles.formSubtitle}>Đăng nhập để truy cập bảng điều khiển</Text>
+            </div>
 
-        <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
-          <Form.Item
-            validateStatus={errors.username ? 'error' : ''}
-            help={errors.username?.message}
-          >
-            <Controller
-              name="username"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  size="large"
-                  prefix={<UserOutlined />}
-                  placeholder="Tên đăng nhập"
-                />
-              )}
-            />
-          </Form.Item>
+            {loginMutation.isError && (
+              <Alert
+                className={styles.errorAlert}
+                message={
+                  <span>
+                    {(loginMutation.error as { response?: { data?: { msg?: string, message?: string } } })?.response?.data?.msg ||
+                     (loginMutation.error as { response?: { data?: { msg?: string, message?: string } } })?.response?.data?.message ||
+                     'Đăng nhập thất bại'}
+                  </span>
+                }
+                type="error"
+                showIcon
+              />
+            )}
 
-          <Form.Item
-            validateStatus={errors.password ? 'error' : ''}
-            help={errors.password?.message}
-          >
-            <Controller
-              name="password"
-              control={control}
-              render={({ field }) => (
-                <Input.Password
-                  {...field}
-                  size="large"
-                  prefix={<LockOutlined />}
-                  placeholder="Mật khẩu"
-                />
-              )}
-            />
-          </Form.Item>
-
-          <Form.Item style={{ marginBottom: 0 }}>
-            <Button
-              type="primary"
-              htmlType="submit"
-              size="large"
-              block
-              loading={loginMutation.isPending}
+            <Form
+              layout="vertical"
+              className={styles.form}
+              onFinish={handleSubmit((data) => {
+                onSubmit(data);
+              })}
             >
-              Đăng nhập
-            </Button>
-          </Form.Item>
-        </Form>
-      </Card>
+              <Form.Item
+                validateStatus={errors.username ? 'error' : ''}
+                help={errors.username?.message}
+                className={styles.formItem}
+              >
+                <label className={styles.inputLabel}>Tên đăng nhập</label>
+                <Controller
+                  name="username"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      {...field}
+                      size="large"
+                      prefix={<UserOutlined className={styles.inputPrefix} />}
+                      placeholder="Nhập tên đăng nhập"
+                      className={styles.input}
+                      autoComplete="username"
+                    />
+                  )}
+                />
+              </Form.Item>
+
+              <Form.Item
+                validateStatus={errors.password ? 'error' : ''}
+                help={errors.password?.message}
+                className={styles.formItem}
+              >
+                <label className={styles.inputLabel}>Mật khẩu</label>
+                <Controller
+                  name="password"
+                  control={control}
+                  render={({ field }) => (
+                    <Input.Password
+                      {...field}
+                      size="large"
+                      prefix={<LockOutlined className={styles.inputPrefix} />}
+                      placeholder="Nhập mật khẩu"
+                      className={styles.input}
+                      autoComplete="current-password"
+                    />
+                  )}
+                />
+              </Form.Item>
+
+              <Form.Item className={styles.formItemSubmit}>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  size="large"
+                  block
+                  loading={loginMutation.isPending}
+                  className={styles.submitBtn}
+                >
+                  <span>Đăng nhập</span>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={styles.btnArrow}>
+                    <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </Button>
+              </Form.Item>
+            </Form>
+
+            <div className={styles.formFooter}>
+              <div className={styles.footerLine} />
+              <Text className={styles.footerText}>SharingFileWeb Admin &copy; {new Date().getFullYear()}</Text>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

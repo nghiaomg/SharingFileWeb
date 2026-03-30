@@ -83,14 +83,14 @@ export function PreviewModal({
             if (!open) onClose();
         }}>
             <Dialog.Content maxWidth="900px" style={{ height: "85vh", display: "flex", flexDirection: "column", padding: 0 }}>
-                <Flex justify="between" align="center" p="4" style={{ borderBottom: "1px solid var(--gray-a6)" }}>
+                <Flex justify="between" align="center" p="4" style={{ borderBottom: "1px solid var(--gray-a4)" }}>
                     <Dialog.Title style={{ margin: 0 }}>
                         <Flex align="center" gap="2">
-                            {itemType === "pdf" && <FileIcon className="w-5 h-5" color="var(--red-9)" />}
-                            {itemType === "xlsx" && <TableIcon className="w-5 h-5" color="var(--jade-9)" />}
-                            {itemType === "folder" && <Folder className="w-5 h-5" color="var(--blue-9)" />}
-                            {itemType === "unknown" && <Eye className="w-5 h-5" color="var(--indigo-9)" />}
-                            <Text truncate>Xem trước: {itemName}</Text>
+                            {itemType === "pdf" && <FileIcon className="w-5 h-5" style={{ color: "var(--icon-red)" }} />}
+                            {itemType === "xlsx" && <TableIcon className="w-5 h-5" style={{ color: "var(--icon-teal)" }} />}
+                            {itemType === "folder" && <Folder className="w-5 h-5" style={{ color: "var(--icon-blue)" }} />}
+                            {itemType === "unknown" && <Eye className="w-5 h-5" style={{ color: "var(--icon-indigo)" }} />}
+                            <Text truncate style={{ color: "var(--color-foreground)" }}>Xem trước: {itemName}</Text>
                         </Flex>
                     </Dialog.Title>
                     <Dialog.Close>
@@ -145,7 +145,7 @@ export function PreviewModal({
                             </ScrollArea>
                         ) : (
                             <Flex align="center" justify="center" height="100%">
-                                <Text color="gray">Không có dữ liệu</Text>
+                                <Text style={{ color: "var(--muted-foreground)" }}>Không có dữ liệu</Text>
                             </Flex>
                         )
                     ) : itemType === "folder" ? (
@@ -153,7 +153,7 @@ export function PreviewModal({
                             <Box p="4">
                                 {!folderChildren || folderChildren.length === 0 ? (
                                     <Flex align="center" justify="center" py="9">
-                                        <Text color="gray">Thư mục trống</Text>
+                                        <Text style={{ color: "var(--muted-foreground)" }}>Thư mục trống</Text>
                                     </Flex>
                                 ) : (
                                     <Grid columns={{ initial: "1", sm: "2", md: "3", lg: "4" }} gap="4">
@@ -171,8 +171,8 @@ export function PreviewModal({
                                                             <Icon className={`w-5 h-5`} style={{ color: "var(--gray-11)" }} />
                                                         </Box>
                                                         <Box style={{ minWidth: 0, flex: 1 }}>
-                                                            <Text as="div" size="2" weight="bold" truncate>{child.name}</Text>
-                                                            <Text as="div" size="1" color="gray">
+                                                            <Text as="div" size="2" weight="bold" truncate style={{ color: "var(--color-foreground)" }}>{child.name}</Text>
+                                                            <Text as="div" size="1" style={{ color: "var(--muted-foreground)" }}>
                                                                 {child.type === "folder" ? "Thư mục" : formatBytes(child.size)}
                                                             </Text>
                                                         </Box>
@@ -200,9 +200,9 @@ export function PreviewModal({
                         </ScrollArea>
                     ) : (
                         <Flex direction="column" align="center" justify="center" height="100%" p="6" style={{ textAlign: "center" }}>
-                            <Eye className="w-12 h-12 mb-4" style={{ opacity: 0.2 }} />
-                            <Text size="4" weight="bold" mb="2">Định dạng không hỗ trợ xem trước</Text>
-                            <Text color="gray" style={{ maxWidth: 400 }}>
+                            <Eye className="w-12 h-12 mb-4" style={{ opacity: 0.2, color: "var(--muted-foreground)" }} />
+                            <Text size="4" weight="bold" mb="2" style={{ color: "var(--color-foreground)" }}>Định dạng không hỗ trợ xem trước</Text>
+                            <Text style={{ maxWidth: 400, color: "var(--muted-foreground)" }}>
                                 Vui lòng tải xuống tệp để xem định dạng này. Tính năng xem trước hỗ trợ tệp PDF, bảng tính Excel, và Thư mục.
                             </Text>
                         </Flex>

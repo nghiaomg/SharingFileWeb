@@ -70,16 +70,16 @@ export function UploadQueueManager() {
                 // Chế độ hiển thị chi tiết đầy đủ 
                 <Card size="2" variant="surface" style={{ width: "380px", boxShadow: "var(--shadow-5)", display: "flex", flexDirection: "column", maxHeight: "400px" }}>
                     {/* Header with Drag Handle */}
-                    <Flex 
-                        align="center" 
-                        justify="between" 
-                        mb="4" 
+                    <Flex
+                        align="center"
+                        justify="between"
+                        mb="4"
                         onPointerDown={(e) => dragControls.start(e)}
                         style={{ cursor: "grab", touchAction: "none" }}
                     >
                         <Flex align="center" gap="2">
-                            <GripHorizontal className="w-4 h-4 text-gray-400" />
-                            <Text size="3" weight="bold">
+                            <GripHorizontal className="w-4 h-4" style={{ color: "var(--muted-foreground)" }} />
+                            <Text size="3" weight="bold" style={{ color: "var(--color-foreground)" }}>
                                 Đang tải lên {completedFiles}/{totalFiles}
                             </Text>
                         </Flex>
@@ -117,7 +117,7 @@ export function UploadQueueManager() {
                                             </Text>
                                             
                                             {/* Status Text */}
-                                            <Text size="1" color={isError ? "red" : isSuccess ? "green" : "gray"}>
+                                            <Text size="1" style={isError ? { color: "var(--destructive)" } : isSuccess ? { color: "var(--icon-teal)" } : { color: "var(--muted-foreground)" }}>
                                                 {isSuccess && "Thành công"}
                                                 {isUploading && `Đang tải... ${item.progress}%`}
                                                 {isPending && "Chờ đến lượt"}

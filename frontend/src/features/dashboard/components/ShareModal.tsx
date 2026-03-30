@@ -168,8 +168,8 @@ export function ShareModal({ isOpen, onClose, file }: ShareModalProps) {
                     <Flex justify="between" align="center" gap="3">
                         <Dialog.Title style={{ margin: 0, minWidth: 0 }}>
                             <Flex align="center" gap="2" style={{ minWidth: 0 }}>
-                                <Globe className="w-5 h-5 text-indigo-9" style={{ flexShrink: 0 }} />
-                                <Text truncate>Chia sẻ: {file.name}</Text>
+                                <Globe className="w-5 h-5" style={{ flexShrink: 0, color: "var(--icon-indigo)" }} />
+                                <Text truncate style={{ color: "var(--color-foreground)" }}>Chia sẻ: {file.name}</Text>
                             </Flex>
                         </Dialog.Title>
                         <Dialog.Close>
@@ -310,7 +310,7 @@ export function ShareModal({ isOpen, onClose, file }: ShareModalProps) {
                                     <Box>
                                         <Text as="div" size="2" weight="bold" mb="3">Người được chia sẻ ({accesses.length})</Text>
                                         {accesses.length === 0 ? (
-                                            <Text size="2" color="gray">Chưa chia sẻ cho ai.</Text>
+                                            <Text size="2" style={{ color: "var(--muted-foreground)" }}>Chưa chia sẻ cho ai.</Text>
                                         ) : (
                                             <Flex direction="column" gap="2">
                                                 {accesses.map((access) => (
@@ -355,7 +355,7 @@ export function ShareModal({ isOpen, onClose, file }: ShareModalProps) {
                                     <Box>
                                         <Text as="div" size="2" weight="bold" mb="3">Links chia sẻ ({links.length})</Text>
                                         {links.length === 0 ? (
-                                            <Text size="2" color="gray">Chưa có link nào.</Text>
+                                            <Text size="2" style={{ color: "var(--muted-foreground)" }}>Chưa có link nào.</Text>
                                         ) : (
                                             <Flex direction="column" gap="2">
                                                 {links.map((link) => (
@@ -401,11 +401,11 @@ export function ShareModal({ isOpen, onClose, file }: ShareModalProps) {
                                                         ) : (
                                                             <Flex align="center" justify="between">
                                                                 <Box style={{ minWidth: 0, flex: 1 }}>
-                                                                    <Text as="div" size="2" color="gray" style={{ fontFamily: "monospace" }}>{link.token.slice(0, 16)}...</Text>
+                                                                    <Text as="div" size="2" style={{ fontFamily: "monospace", color: "var(--muted-foreground)" }}>{link.token.slice(0, 16)}...</Text>
                                                                     <Flex align="center" gap="2" mt="1">
-                                                                        <Text size="1" weight="bold">{PERMISSION_LABELS[link.permission]?.label}</Text>
+                                                                        <Text size="1" weight="bold" style={{ color: "var(--color-foreground)" }}>{PERMISSION_LABELS[link.permission]?.label}</Text>
                                                                         {link.hasPassword && <Badge size="1" color="amber"><Lock className="w-3 h-3" /></Badge>}
-                                                                        {link.expiresAt && <Text size="1" color="gray">Hết hạn: {new Date(link.expiresAt).toLocaleDateString("vi-VN")}</Text>}
+                                                                        {link.expiresAt && <Text size="1" style={{ color: "var(--muted-foreground)" }}>Hết hạn: {new Date(link.expiresAt).toLocaleDateString("vi-VN")}</Text>}
                                                                     </Flex>
                                                                 </Box>
                                                                 <Flex align="center" gap="1" style={{ flexShrink: 0 }}>
