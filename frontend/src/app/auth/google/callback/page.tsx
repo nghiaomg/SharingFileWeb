@@ -1,20 +1,21 @@
 "use client";
 
-import { useEffect, useRef, Suspense } from "react";
+import { useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { loginWithGoogle } from "@/features/auth/api";
 import { Loader } from "lucide-react";
 
+const processedCodes = new Set<string>();
+
 function GoogleCallbackComponent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const code = searchParams.get("code");
-    const isProcessing = useRef(false);
 
     useEffect(() => {
-        if (code && !isProcessing.current) {
-            isProcessing.current = true;
+        if (code && !processedCodes.has(code)) {
+            processedCodes.add(code);
             loginWithGoogle(code)
                 .then(() => {
                     toast.success("Đăng nhập Google thành công!");
@@ -25,7 +26,7 @@ function GoogleCallbackComponent() {
                     toast.error("Đăng nhập Google thất bại.");
                     router.push("/login"); // Fallback
                 });
-        } else if (!code && !isProcessing.current) {
+        } else if (!code) {
             router.push("/login");
         }
     }, [code, router]);

@@ -304,7 +304,7 @@ public class AuthService {
         }
     }
 
-    public JwtResponse loginWithDribbble(String code) {
+    public JwtResponse loginWithDribbble(String code, String redirectUri) {
         try {
             org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
             
@@ -315,7 +315,7 @@ public class AuthService {
             body.put("client_id", dribbbleClientId);
             body.put("client_secret", dribbbleClientSecret);
             body.put("code", code);
-            body.put("redirect_uri", "https://sharingfile.nghiaomg.xyz/auth/google/dribbble");
+            body.put("redirect_uri", redirectUri);
 
             org.springframework.http.HttpHeaders tokenHeaders = new org.springframework.http.HttpHeaders();
             tokenHeaders.set("Accept", "application/json");

@@ -31,7 +31,9 @@ export function LoginForm() {
       toast.error("Tính năng này đang bảo trì do thiếu cấu hình.");
       return;
     }
-    const redirectUri = "https://sharingfile.nghiaomg.xyz/auth/google/dribbble";
+    const redirectUri = typeof window !== "undefined"
+      ? window.location.origin + "/auth/dribbble/callback"
+      : process.env.NEXT_PUBLIC_DRIBBBLE_CALLBACK_URL || "https://sharingfile.nghiaomg.xyz/auth/dribbble/callback";
     window.location.href = `https://dribbble.com/oauth/authorize?client_id=${dribbbleClientId}&redirect_uri=${redirectUri}&scope=public`;
   };
 

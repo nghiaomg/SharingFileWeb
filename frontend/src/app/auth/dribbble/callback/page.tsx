@@ -1,21 +1,25 @@
 "use client";
 
-import { useEffect, useRef, Suspense } from "react";
+import { useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { loginWithDribbble } from "@/features/auth/api";
 import { Loader } from "lucide-react";
 
+const processedCodes = new Set<string>();
+
 function DribbbleCallbackComponent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const code = searchParams.get("code");
-  const isProcessing = useRef(false);
 
   useEffect(() => {
-    if (code && !isProcessing.current) {
-      isProcessing.current = true;
-      loginWithDribbble(code)
+    if (code && !processedCodes.has(code)) {
+      processedCodes.add(code);
+      const redirectUri = typeof window !== "undefined"
+        ? window.location.origin + window.location.pathname
+        : process.env.NEXT_PUBLIC_DRIBBBLE_CALLBACK_URL || "https://sharingfile.nghiaomg.xyz/auth/dribbble/callback";
+      loginWithDribbble(code, redirectUri)
         .then(() => {
           toast.success("Đăng nhập Dribbble thành công!");
           router.push("/dashboard");
@@ -25,7 +29,7 @@ function DribbbleCallbackComponent() {
           toast.error("Đăng nhập Dribbble thất bại.");
           router.push("/login"); // Fallback
         });
-    } else if (!code && !isProcessing.current) {
+    } else if (!code) {
       router.push("/login");
     }
   }, [code, router]);

@@ -90,7 +90,7 @@ public class AuthController {
   @PostMapping("/dribbble")
   public ResponseEntity<?> dribbbleLogin(@Valid @RequestBody com.sharingfileweb.payload.request.DribbbleLoginRequest request) {
     try {
-        JwtResponse response = authService.loginWithDribbble(request.getCode());
+        JwtResponse response = authService.loginWithDribbble(request.getCode(), request.getRedirectUri());
         return ResponseEntity.ok(StandardResponse.success("Dribbble login successful", response));
     } catch (RuntimeException e) {
         return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));

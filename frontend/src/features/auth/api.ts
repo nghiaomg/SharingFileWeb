@@ -54,8 +54,8 @@ export async function loginWithGithub(code: string): Promise<User> {
   return userData;
 }
 
-export async function loginWithDribbble(code: string): Promise<User> {
-  const response = await apiClient.post("/auth/dribbble", { code });
+export async function loginWithDribbble(code: string, redirectUri: string): Promise<User> {
+  const response = await apiClient.post("/auth/dribbble", { code, redirectUri });
   const userData = response.data;
 
   if (userData.accessToken) {
