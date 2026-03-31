@@ -42,7 +42,8 @@ export function LoginForm() {
       return;
     }
     const redirectUri = "https://sharingfile.nghiaomg.xyz/auth/google/zalo";
-    window.location.href = `https://oauth.zaloapp.com/v4/permission?app_id=${zaloAppId}&redirect_uri=${redirectUri}`;
+    const state = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : "zalo_secure_state_12345";
+    window.location.href = `https://oauth.zaloapp.com/v4/permission?app_id=${zaloAppId}&redirect_uri=${redirectUri}&state=${state}`;
   };
 
   const handleGoogleLogin = () => {
