@@ -12,6 +12,8 @@ services:
       - ./backend/logs:/app/logs
     networks:
       - sharingfile-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     # expose port nội bộ (không map ra ngoài)
     expose:
       - "8080"          # thay bằng port thật của backend (thường 3000, 8080, 5000...)
