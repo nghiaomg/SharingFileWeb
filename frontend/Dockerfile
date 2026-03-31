@@ -28,6 +28,7 @@ RUN adduser --system --uid 1001 nextjs
 
 # Set correct permissions
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/.env ./
 
 # Automatically leverage output traces to reduce image size
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
