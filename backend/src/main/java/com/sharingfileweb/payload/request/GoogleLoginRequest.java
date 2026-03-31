@@ -2,26 +2,18 @@ package com.sharingfileweb.payload.request;
 
 import jakarta.validation.constraints.NotBlank;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class GoogleLoginRequest {
     @NotBlank
-    private String code;
+    @JsonProperty("id_token")
+    private String idToken;
 
-    @NotBlank
-    private String redirectUri;
-
-    public String getCode() {
-        return code;
+    public String getIdToken() {
+        return idToken;
     }
 
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public String getRedirectUri() {
-        return redirectUri;
-    }
-
-    public void setRedirectUri(String redirectUri) {
-        this.redirectUri = redirectUri;
+    public void setIdToken(String idToken) {
+        this.idToken = idToken;
     }
 }

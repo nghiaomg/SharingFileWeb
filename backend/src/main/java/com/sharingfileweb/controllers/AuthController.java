@@ -64,11 +64,11 @@ public class AuthController {
     }
   }
 
-  @Operation(summary = "Đăng nhập Google", description = "Đăng nhập sử dụng Google ID Token.")
+  @Operation(summary = "Đăng nhập Google", description = "Đăng nhập sử dụng Google ID Token trực tiếp.")
   @PostMapping("/google")
   public ResponseEntity<?> googleLogin(@Valid @RequestBody GoogleLoginRequest request) {
     try {
-        JwtResponse response = authService.loginWithGoogle(request.getCode(), request.getRedirectUri());
+        JwtResponse response = authService.loginWithGoogle(request.getIdToken());
         return ResponseEntity.ok(StandardResponse.success("Google login successful", response));
     } catch (RuntimeException e) {
         return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));

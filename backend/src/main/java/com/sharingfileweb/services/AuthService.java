@@ -86,40 +86,9 @@ public class AuthService {
     @Value("${sharingfileweb.app.zaloSecretKey}")
     private String zaloSecretKey;
 
-    public JwtResponse loginWithGoogle(String code, String redirectUri) {
+    public JwtResponse loginWithGoogle(String idToken) {
         try {
-            org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
-
-            // 1. Exchange code for tokens
-            String tokenUrl = "https://oauth2.googleapis.com/token";
-
-            org.springframework.http.HttpHeaders tokenHeaders = new org.springframework.http.HttpHeaders();
-            tokenHeaders.setContentType(org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED);
-
-            org.springframework.util.MultiValueMap<String, String> tokenBody = new org.springframework.util.LinkedMultiValueMap<>();
-            tokenBody.add("client_id", googleClientId);
-            tokenBody.add("client_secret", googleClientSecret);
-            tokenBody.add("code", code);
-            tokenBody.add("grant_type", "authorization_code");
-            tokenBody.add("redirect_uri", redirectUri);
-
-            org.springframework.http.HttpEntity<org.springframework.util.MultiValueMap<String, String>> tokenRequest = new org.springframework.http.HttpEntity<>(tokenBody, tokenHeaders);
-
-            org.springframework.http.ResponseEntity<java.util.Map<String, Object>> tokenResponse = restTemplate.exchange(
-                    tokenUrl,
-                    org.springframework.http.HttpMethod.POST,
-                    tokenRequest,
-                    new org.springframework.core.ParameterizedTypeReference<java.util.Map<String, Object>>() {}
-            );
-
-            java.util.Map<String, Object> tokenPayload = tokenResponse.getBody();
-            if (tokenPayload == null || !tokenPayload.containsKey("id_token")) {
-                throw new RuntimeException("Failed to get Google id_token from code: " + (tokenPayload != null ? tokenPayload.get("error_description") : "unknown error"));
-            }
-
-            String idToken = (String) tokenPayload.get("id_token");
-
-            // 2. Verify idToken
+            // 1. Verify idToken directly via GoogleIdTokenVerifier
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
                     new NetHttpTransport(), GsonFactory.getDefaultInstance())
                     .setAudience(java.util.Collections.singletonList(googleClientId))
@@ -170,9 +139,6 @@ public class AuthService {
                     user.getSubscriptionPlan(),
                     user.getMaxStorage(),
                     user.getMaxFileSize());
-        } catch (org.springframework.web.client.HttpStatusCodeException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error communicating with Google API: " + e.getResponseBodyAsString(), e);
         } catch (RuntimeException e) {
             e.printStackTrace();
             throw e;
