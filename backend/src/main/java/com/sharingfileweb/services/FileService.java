@@ -43,6 +43,9 @@ public class FileService {
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    com.sharingfileweb.repository.SharedAccessRepository sharedAccessRepository;
+
     private String getCurrentUserId() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return userDetails.getId();
@@ -265,14 +268,8 @@ public class FileService {
         return mapToResponse(file);
     }
 
-    /**
-     * Tạo presigned download URL cho file private (owner download).
-     * Client sẽ nhận URL và download trực tiếp từ B2 CDN.
-     */
     public String getPresignedDownloadUrl(String id) throws Exception {
-        String userId = getCurrentUserId();
-        StorageFile file = fileRepository.findByIdAndOwnerIdAndIsDeletedFalse(id, userId)
-                .orElseThrow(() -> new Exception("File not found or deleted"));
+        StorageFile file = getFileEntity(id);
 
         // Ưu tiên B2, fallback cho data cũ (storedPath)
         if (file.getB2FileName() != null && !file.getB2FileName().isEmpty()) {
@@ -285,8 +282,32 @@ public class FileService {
 
     public StorageFile getFileEntity(String id) throws Exception {
         String userId = getCurrentUserId();
-        return fileRepository.findByIdAndOwnerIdAndIsDeletedFalse(id, userId)
-                .orElseThrow(() -> new Exception("File not found or deleted"));
+        
+        StorageFile file = fileRepository.findById(id).orElseThrow(() -> new Exception("File not found"));
+        if (file.isDeleted()) {
+            throw new Exception("File not found or deleted");
+        }
+        
+        // Nếu là Owner thì có quyền truy cập
+        if (file.getOwnerId().equals(userId)) {
+            return file;
+        }
+        
+        // Nếu không là Owner thì phải nằm trong SharedAccess hợp lệ và chưa bị revoke (isRevoked = false)
+        org.springframework.security.core.Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
+            UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+            String userEmail = userDetails.getEmail();
+            
+            java.util.Optional<com.sharingfileweb.models.SharedAccess> accessOpt = 
+                sharedAccessRepository.findByFileIdAndRecipientEmailAndIsRevokedFalse(id, userEmail);
+            
+            if (accessOpt.isPresent()) {
+                return file;
+            }
+        }
+
+        throw new Exception("File not found or unauthorized");
     }
 
     public FileResponse getPublicFileMetadata(String id) {

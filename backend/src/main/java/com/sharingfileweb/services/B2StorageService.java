@@ -106,7 +106,7 @@ public class B2StorageService {
 
             // Xây dựng URL download
             String downloadUrl = b2Client.getDownloadByNameUrl(b2Config.getBucketName(), b2FileName);
-            return downloadUrl + "?Authorization=" + authToken;
+            return downloadUrl + "?Authorization=" + java.net.URLEncoder.encode(authToken, java.nio.charset.StandardCharsets.UTF_8);
 
         } catch (B2Exception e) {
             System.err.println("[B2] Failed to generate download URL for: " + b2FileName + " — " + e.getMessage());

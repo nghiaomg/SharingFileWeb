@@ -39,7 +39,7 @@ public class EmailService {
 
         try {
             // Build the link to the file/folder access
-            String link = frontendUrl + "/app/share/" + fileId; // adjust to actual route if needed
+            String link = frontendUrl + "/dashboard/shared"; // adjust to actual route if needed
             
             String htmlContent = buildLuxuryHtmlTemplate(recipientEmail, ownerName, fileName, link);
 
