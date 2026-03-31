@@ -8,6 +8,8 @@ services:
     restart: unless-stopped
     env_file:
       - ./backend/.env
+    volumes:
+      - ./backend/logs:/app/logs
     networks:
       - sharingfile-network
     # expose port nội bộ (không map ra ngoài)

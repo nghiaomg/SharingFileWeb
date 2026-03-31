@@ -170,11 +170,17 @@ public class AuthService {
                     user.getSubscriptionPlan(),
                     user.getMaxStorage(),
                     user.getMaxFileSize());
+        } catch (org.springframework.web.client.HttpStatusCodeException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error communicating with Google API: " + e.getResponseBodyAsString(), e);
         } catch (RuntimeException e) {
+            e.printStackTrace();
             throw e;
         } catch (IOException e) {
+            e.printStackTrace();
             throw new RuntimeException("Failed to verify Google ID Token: " + e.getMessage());
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException("Google login error: " + e.getMessage());
         }
     }
@@ -297,9 +303,14 @@ public class AuthService {
                     user.getMaxStorage(),
                     user.getMaxFileSize());
 
+        } catch (org.springframework.web.client.HttpStatusCodeException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error communicating with Github API: " + e.getResponseBodyAsString(), e);
         } catch (RuntimeException e) {
+            e.printStackTrace();
             throw e;
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException("GitHub login error: " + e.getMessage(), e);
         }
     }
@@ -399,9 +410,14 @@ public class AuthService {
                     user.getMaxStorage(),
                     user.getMaxFileSize());
 
+        } catch (org.springframework.web.client.HttpStatusCodeException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error communicating with Dribbble API: " + e.getResponseBodyAsString(), e);
         } catch (RuntimeException e) {
+            e.printStackTrace();
             throw e;
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException("Dribbble login error: " + e.getMessage(), e);
         }
     }
@@ -506,9 +522,14 @@ public class AuthService {
                     user.getMaxStorage(),
                     user.getMaxFileSize());
 
+        } catch (org.springframework.web.client.HttpStatusCodeException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error communicating with Zalo API: " + e.getResponseBodyAsString(), e);
         } catch (RuntimeException e) {
+            e.printStackTrace();
             throw e;
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException("Zalo login error: " + e.getMessage(), e);
         }
     }
