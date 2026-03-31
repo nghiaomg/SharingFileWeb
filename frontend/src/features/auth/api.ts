@@ -24,8 +24,8 @@ export async function login(data: LoginInput): Promise<User> {
   return userData;
 }
 
-export async function loginWithGoogle(code: string): Promise<User> {
-  const response = await apiClient.post("/auth/google", { code });
+export async function loginWithGoogle(code: string, redirectUri: string): Promise<User> {
+  const response = await apiClient.post("/auth/google", { code, redirectUri });
   const userData = response.data;
 
   if (userData.accessToken) {
@@ -39,8 +39,8 @@ export async function loginWithGoogle(code: string): Promise<User> {
   return userData;
 }
 
-export async function loginWithGithub(code: string): Promise<User> {
-  const response = await apiClient.post("/auth/github", { code });
+export async function loginWithGithub(code: string, redirectUri: string): Promise<User> {
+  const response = await apiClient.post("/auth/github", { code, redirectUri });
   const userData = response.data;
 
   if (userData.accessToken) {
@@ -69,8 +69,8 @@ export async function loginWithDribbble(code: string, redirectUri: string): Prom
   return userData;
 }
 
-export async function loginWithZalo(code: string): Promise<User> {
-  const response = await apiClient.post("/auth/zalo", { code });
+export async function loginWithZalo(code: string, redirectUri: string): Promise<User> {
+  const response = await apiClient.post("/auth/zalo", { code, redirectUri });
   const userData = response.data;
 
   if (userData.accessToken) {

@@ -21,7 +21,9 @@ export function LoginForm() {
       toast.error("Tính năng này đang bảo trì do thiếu cấu hình.");
       return;
     }
-    const redirectUri = "https://sharingfile.nghiaomg.xyz/auth/google/github";
+    const redirectUri = typeof window !== "undefined"
+      ? window.location.origin + "/auth/github/callback"
+      : process.env.NEXT_PUBLIC_GITHUB_CALLBACK_URL || "https://sharingfile.nghiaomg.xyz/auth/github/callback";
     window.location.href = `https://github.com/login/oauth/authorize?client_id=${githubClientId}&redirect_uri=${redirectUri}&scope=user:email`;
   };
 
@@ -43,7 +45,9 @@ export function LoginForm() {
       toast.error("Tính năng này đang bảo trì do thiếu cấu hình.");
       return;
     }
-    const redirectUri = "https://sharingfile.nghiaomg.xyz/auth/google/zalo";
+    const redirectUri = typeof window !== "undefined"
+      ? window.location.origin + "/auth/zalo/callback"
+      : process.env.NEXT_PUBLIC_ZALO_CALLBACK_URL || "https://sharingfile.nghiaomg.xyz/auth/zalo/callback";
     const state = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : "zalo_secure_state_12345";
     window.location.href = `https://oauth.zaloapp.com/v4/permission?app_id=${zaloAppId}&redirect_uri=${redirectUri}&state=${state}`;
   };
@@ -54,7 +58,9 @@ export function LoginForm() {
       toast.error("Tính năng này đang bảo trì do thiếu cấu hình.");
       return;
     }
-    const redirectUri = "https://sharingfile.nghiaomg.xyz/auth/google/callback";
+    const redirectUri = typeof window !== "undefined"
+      ? window.location.origin + "/auth/google/callback"
+      : process.env.NEXT_PUBLIC_GOOGLE_CALLBACK_URL || "https://sharingfile.nghiaomg.xyz/auth/google/callback";
     window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${redirectUri}&response_type=code&scope=email profile`;
   };
 

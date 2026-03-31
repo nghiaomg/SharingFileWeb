@@ -68,7 +68,7 @@ public class AuthController {
   @PostMapping("/google")
   public ResponseEntity<?> googleLogin(@Valid @RequestBody GoogleLoginRequest request) {
     try {
-        JwtResponse response = authService.loginWithGoogle(request.getCode());
+        JwtResponse response = authService.loginWithGoogle(request.getCode(), request.getRedirectUri());
         return ResponseEntity.ok(StandardResponse.success("Google login successful", response));
     } catch (RuntimeException e) {
         return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
@@ -79,7 +79,7 @@ public class AuthController {
   @PostMapping("/github")
   public ResponseEntity<?> githubLogin(@Valid @RequestBody com.sharingfileweb.payload.request.GithubLoginRequest request) {
     try {
-        JwtResponse response = authService.loginWithGithub(request.getCode());
+        JwtResponse response = authService.loginWithGithub(request.getCode(), request.getRedirectUri());
         return ResponseEntity.ok(StandardResponse.success("GitHub login successful", response));
     } catch (RuntimeException e) {
         return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
@@ -101,7 +101,7 @@ public class AuthController {
   @PostMapping("/zalo")
   public ResponseEntity<?> zaloLogin(@Valid @RequestBody com.sharingfileweb.payload.request.ZaloLoginRequest request) {
     try {
-        JwtResponse response = authService.loginWithZalo(request.getCode());
+        JwtResponse response = authService.loginWithZalo(request.getCode(), request.getRedirectUri());
         return ResponseEntity.ok(StandardResponse.success("Zalo login successful", response));
     } catch (RuntimeException e) {
         return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));

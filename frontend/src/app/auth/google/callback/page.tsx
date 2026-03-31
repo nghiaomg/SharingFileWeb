@@ -16,7 +16,10 @@ function GoogleCallbackComponent() {
     useEffect(() => {
         if (code && !processedCodes.has(code)) {
             processedCodes.add(code);
-            loginWithGoogle(code)
+            const redirectUri = typeof window !== "undefined"
+                ? window.location.origin + window.location.pathname
+                : process.env.NEXT_PUBLIC_GOOGLE_CALLBACK_URL || "https://sharingfile.nghiaomg.xyz/auth/google/callback";
+            loginWithGoogle(code, redirectUri)
                 .then(() => {
                     toast.success("Đăng nhập Google thành công!");
                     router.push("/dashboard");

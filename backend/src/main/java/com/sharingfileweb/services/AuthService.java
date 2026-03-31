@@ -86,7 +86,7 @@ public class AuthService {
     @Value("${sharingfileweb.app.zaloSecretKey}")
     private String zaloSecretKey;
 
-    public JwtResponse loginWithGoogle(String code) {
+    public JwtResponse loginWithGoogle(String code, String redirectUri) {
         try {
             org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
 
@@ -101,7 +101,7 @@ public class AuthService {
             tokenBody.add("client_secret", googleClientSecret);
             tokenBody.add("code", code);
             tokenBody.add("grant_type", "authorization_code");
-            tokenBody.add("redirect_uri", "https://sharingfile.nghiaomg.xyz/auth/google/callback");
+            tokenBody.add("redirect_uri", redirectUri);
 
             org.springframework.http.HttpEntity<org.springframework.util.MultiValueMap<String, String>> tokenRequest = new org.springframework.http.HttpEntity<>(tokenBody, tokenHeaders);
 
@@ -179,7 +179,7 @@ public class AuthService {
         }
     }
 
-    public JwtResponse loginWithGithub(String code) {
+    public JwtResponse loginWithGithub(String code, String redirectUri) {
         try {
             org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
             
@@ -190,7 +190,7 @@ public class AuthService {
             body.put("client_id", githubClientId);
             body.put("client_secret", githubClientSecret);
             body.put("code", code);
-            body.put("redirect_uri", "https://sharingfile.nghiaomg.xyz/auth/google/github");
+            body.put("redirect_uri", redirectUri);
 
             org.springframework.http.HttpHeaders tokenHeaders = new org.springframework.http.HttpHeaders();
             tokenHeaders.set("Accept", "application/json");
@@ -406,7 +406,7 @@ public class AuthService {
         }
     }
 
-    public JwtResponse loginWithZalo(String code) {
+    public JwtResponse loginWithZalo(String code, String redirectUri) {
         try {
             org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
 
