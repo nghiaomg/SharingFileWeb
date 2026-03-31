@@ -12,7 +12,7 @@ services:
       - sharingfile-network
     # expose port nội bộ (không map ra ngoài)
     expose:
-      - "3000"          # thay bằng port thật của backend (thường 3000, 8080, 5000...)
+      - "8080"          # thay bằng port thật của backend (thường 3000, 8080, 5000...)
 
   frontend:
     build:
@@ -24,7 +24,7 @@ services:
     networks:
       - sharingfile-network
     expose:
-      - "80"            # nếu frontend build ra static + dùng nginx bên trong
+      - "3000"            # proxy port 3000 cho nextjs
 
   admin:
     build:
