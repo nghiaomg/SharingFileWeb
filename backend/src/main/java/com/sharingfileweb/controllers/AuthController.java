@@ -68,7 +68,7 @@ public class AuthController {
   @PostMapping("/google")
   public ResponseEntity<?> googleLogin(@Valid @RequestBody GoogleLoginRequest request) {
     try {
-        JwtResponse response = authService.loginWithGoogle(request.getIdToken());
+        JwtResponse response = authService.loginWithGoogle(request.getCode());
         return ResponseEntity.ok(StandardResponse.success("Google login successful", response));
     } catch (RuntimeException e) {
         return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));

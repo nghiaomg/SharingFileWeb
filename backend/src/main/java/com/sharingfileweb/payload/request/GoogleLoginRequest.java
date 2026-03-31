@@ -4,13 +4,13 @@ import jakarta.validation.constraints.NotBlank;
 
 public class GoogleLoginRequest {
     @NotBlank
-    private String idToken;
+    private String code;
 
-    public String getIdToken() {
-        return idToken;
+    public String getCode() {
+        return code;
     }
 
-    public void setIdToken(String idToken) {
-        this.idToken = idToken;
+    public void setCode(String code) {
+        this.code = code;
     }
 }

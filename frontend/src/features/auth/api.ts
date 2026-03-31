@@ -24,8 +24,8 @@ export async function login(data: LoginInput): Promise<User> {
   return userData;
 }
 
-export async function loginWithGoogle(idToken: string): Promise<User> {
-  const response = await apiClient.post("/auth/google", { idToken });
+export async function loginWithGoogle(code: string): Promise<User> {
+  const response = await apiClient.post("/auth/google", { code });
   const userData = response.data;
 
   if (userData.accessToken) {

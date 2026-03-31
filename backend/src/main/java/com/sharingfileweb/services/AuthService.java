@@ -65,6 +65,9 @@ public class AuthService {
     @Value("${sharingfileweb.app.googleClientId}")
     private String googleClientId;
 
+    @Value("${sharingfileweb.app.googleClientSecret}")
+    private String googleClientSecret;
+
     @Value("${sharingfileweb.app.githubClientId}")
     private String githubClientId;
 
@@ -83,8 +86,40 @@ public class AuthService {
     @Value("${sharingfileweb.app.zaloSecretKey}")
     private String zaloSecretKey;
 
-    public JwtResponse loginWithGoogle(String idToken) {
+    public JwtResponse loginWithGoogle(String code) {
         try {
+            org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+
+            // 1. Exchange code for tokens
+            String tokenUrl = "https://oauth2.googleapis.com/token";
+
+            org.springframework.http.HttpHeaders tokenHeaders = new org.springframework.http.HttpHeaders();
+            tokenHeaders.setContentType(org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED);
+
+            org.springframework.util.MultiValueMap<String, String> tokenBody = new org.springframework.util.LinkedMultiValueMap<>();
+            tokenBody.add("client_id", googleClientId);
+            tokenBody.add("client_secret", googleClientSecret);
+            tokenBody.add("code", code);
+            tokenBody.add("grant_type", "authorization_code");
+            tokenBody.add("redirect_uri", "https://sharingfile.nghiaomg.xyz/auth/google/callback");
+
+            org.springframework.http.HttpEntity<org.springframework.util.MultiValueMap<String, String>> tokenRequest = new org.springframework.http.HttpEntity<>(tokenBody, tokenHeaders);
+
+            org.springframework.http.ResponseEntity<java.util.Map<String, Object>> tokenResponse = restTemplate.exchange(
+                    tokenUrl,
+                    org.springframework.http.HttpMethod.POST,
+                    tokenRequest,
+                    new org.springframework.core.ParameterizedTypeReference<java.util.Map<String, Object>>() {}
+            );
+
+            java.util.Map<String, Object> tokenPayload = tokenResponse.getBody();
+            if (tokenPayload == null || !tokenPayload.containsKey("id_token")) {
+                throw new RuntimeException("Failed to get Google id_token from code: " + (tokenPayload != null ? tokenPayload.get("error_description") : "unknown error"));
+            }
+
+            String idToken = (String) tokenPayload.get("id_token");
+
+            // 2. Verify idToken
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
                     new NetHttpTransport(), GsonFactory.getDefaultInstance())
                     .setAudience(java.util.Collections.singletonList(googleClientId))

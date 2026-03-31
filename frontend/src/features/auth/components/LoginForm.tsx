@@ -1,41 +1,19 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Eye, EyeOff, Loader, Github, Dribbble } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useLogin } from "@/features/auth/mutations";
-import { loginWithGoogle } from "@/features/auth/api";
 import { getApiErrorMessage } from "@/types/api";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-declare global {
-  interface Window {
-    google?: {
-      accounts: {
-        id: {
-          initialize: (config: object) => void;
-          prompt: (
-            momentListener?: (notification: {
-              isNotDisplayed: () => boolean;
-              isSkippedMoment: () => boolean;
-            }) => void,
-          ) => void;
-          renderButton: (parent: HTMLElement, config: object) => void;
-        };
-      };
-    };
-  }
-}
 
 export function LoginForm() {
   const [formData, setFormData] = useState({ username: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isSocialOpen, setIsSocialOpen] = useState(false);
   const loginMutation = useLogin();
-  const router = useRouter();
 
   const handleGithubLogin = () => {
     const githubClientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
@@ -67,63 +45,15 @@ export function LoginForm() {
     window.location.href = `https://oauth.zaloapp.com/v4/permission?app_id=${zaloAppId}&redirect_uri=${redirectUri}`;
   };
 
-  const handleCredentialResponse = useCallback(
-    async (response: { credential: string }) => {
-      setIsGoogleLoading(true);
-      try {
-        await loginWithGoogle(response.credential);
-        toast.success("Đăng nhập Google thành công!");
-        router.push("/dashboard");
-      } catch (err) {
-        console.error("Google login error:", err);
-        toast.error("Đăng nhập Google thất bại!");
-      } finally {
-        setIsGoogleLoading(false);
-      }
-    },
-    [router],
-  );
-
-  useEffect(() => {
-    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    if (!clientId) return;
-
-    const script = document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
-    script.defer = true;
-    script.onload = () => {
-      if (window.google) {
-        window.google.accounts.id.initialize({
-          client_id: clientId,
-          callback: handleCredentialResponse,
-        });
-      }
-    };
-    document.head.appendChild(script);
-
-    return () => {
-      if (document.head.contains(script)) {
-        document.head.removeChild(script);
-      }
-    };
-  }, [handleCredentialResponse]);
-
-  useEffect(() => {
-    if (isSocialOpen && window.google) {
-      const btnContainer = document.getElementById("google-login-button");
-      if (btnContainer && btnContainer.innerHTML === "") {
-        // Only render if not already rendered
-        window.google.accounts.id.renderButton(btnContainer, {
-          theme: "outline",
-          size: "large",
-          text: "continue_with",
-          width: 340,
-          logo_alignment: "center",
-        });
-      }
+  const handleGoogleLogin = () => {
+    const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    if (!googleClientId) {
+      toast.error("Tính năng này đang bảo trì do thiếu cấu hình.");
+      return;
     }
-  }, [isSocialOpen]);
+    const redirectUri = "https://sharingfile.nghiaomg.xyz/auth/google/callback";
+    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${redirectUri}&response_type=code&scope=email profile`;
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,9 +62,9 @@ export function LoginForm() {
 
   const errorMessage = loginMutation.isError
     ? getApiErrorMessage(
-        loginMutation.error,
-        "Sai tên đăng nhập hoặc mật khẩu!",
-      )
+      loginMutation.error,
+      "Sai tên đăng nhập hoặc mật khẩu!",
+    )
     : "";
 
   return (
@@ -200,7 +130,7 @@ export function LoginForm() {
 
       <button
         type="submit"
-        disabled={loginMutation.isPending || isGoogleLoading}
+        disabled={loginMutation.isPending}
         className="w-full py-3.5 bg-primary text-white font-bold rounded-xl transition-colors hover:bg-primary/90 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 border border-primary/40 hover:border-primary"
       >
         {loginMutation.isPending ? (
@@ -240,16 +170,31 @@ export function LoginForm() {
                 Chọn tài khoản Social
               </Dialog.Title>
               <div className="flex flex-col gap-3 items-center">
-                <div className="flex items-center justify-center w-full min-h-[44px]">
-                  {isGoogleLoading ? (
-                    <Loader className="w-5 h-5 animate-spin text-muted-foreground" />
-                  ) : (
-                    <div
-                      id="google-login-button"
-                      className="flex items-center justify-center w-[340px]"
-                    ></div>
-                  )}
-                </div>
+                <button
+                  type="button"
+                  onClick={handleGoogleLogin}
+                  className="w-[340px] flex items-center justify-center gap-2 py-2 border border-gray-300 rounded bg-white hover:bg-gray-50 transition-colors font-medium text-gray-700 relative"
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24">
+                    <path
+                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                      fill="#4285F4"
+                    />
+                    <path
+                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                      fill="#34A853"
+                    />
+                    <path
+                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                      fill="#FBBC05"
+                    />
+                    <path
+                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                      fill="#EA4335"
+                    />
+                  </svg>
+                  Continue with Google
+                </button>
                 <button
                   type="button"
                   onClick={handleGithubLogin}
