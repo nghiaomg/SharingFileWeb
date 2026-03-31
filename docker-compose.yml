@@ -14,9 +14,8 @@ services:
       - sharingfile-network
     depends_on:
       - mongodb
-    # expose port nội bộ (không map ra ngoài)
     expose:
-      - "8080"          # thay bằng port thật của backend (thường 3000, 8080, 5000...)
+      - "8080"
 
   frontend:
     build:
@@ -28,7 +27,7 @@ services:
     networks:
       - sharingfile-network
     expose:
-      - "3000"            # proxy port 3000 cho nextjs
+      - "3000"
 
   admin:
     build:
@@ -46,21 +45,16 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
-      - "443:443"                 # thêm HTTPS
+      - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/certs:/etc/nginx/certs:ro     # để lưu SSL sau này
+      - ./nginx/certs:/etc/nginx/certs:ro
     depends_on:
       - backend
       - frontend
       - admin
     networks:
       - sharingfile-network
-
-networks:
-  sharingfile-network:
-    name: sharingfile-network
-    driver: bridge
 
   mongodb:
     image: mongo:latest
@@ -72,6 +66,11 @@ networks:
       - mongodb_data:/data/db
     networks:
       - sharingfile-network
+
+networks:
+  sharingfile-network:
+    name: sharingfile-network
+    driver: bridge
 
 volumes:
   mongodb_data:
