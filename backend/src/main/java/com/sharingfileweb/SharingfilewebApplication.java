@@ -7,8 +7,11 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.util.Properties;
 
+import org.springframework.scheduling.annotation.EnableAsync;
+
 @SpringBootApplication
 @EnableScheduling
+@EnableAsync
 public class SharingfilewebApplication {
 
 	public static void main(String[] args) {

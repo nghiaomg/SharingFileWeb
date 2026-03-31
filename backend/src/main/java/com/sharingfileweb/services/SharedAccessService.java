@@ -35,6 +35,9 @@ public class SharedAccessService {
     @Autowired
     private NotificationService notificationService;
 
+    @Autowired
+    private EmailService emailService;
+
     private String getCurrentUserId() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return userDetails.getId();
@@ -88,6 +91,9 @@ public class SharedAccessService {
                     owner.getUsername() + " đã chia sẻ tệp \"" + file.getName() + "\" với bạn.",
                     metadata
             );
+
+            // Gửi qua email (Async)
+            emailService.sendShareInvitationEmail(recipientEmail, owner.getUsername(), file.getName(), fileId);
         }
 
         return results;
