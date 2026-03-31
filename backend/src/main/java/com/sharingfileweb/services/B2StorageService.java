@@ -86,14 +86,7 @@ public class B2StorageService {
         }
     }
 
-    /**
-     * Tạo presigned download URL với thời hạn giới hạn.
-     * Client sẽ download trực tiếp từ B2 CDN thay vì proxy qua server.
-     *
-     * @param b2FileName Tên file trên B2 (cần cho authorization prefix)
-     * @return URL download có thời hạn
-     */
-    public String getPresignedDownloadUrl(String b2FileName) {
+    public String getPresignedDownloadUrl(String b2FileName, String originalFileName, boolean inline) {
         try {
             // Lấy download authorization token
             String authToken = b2Client.getDownloadAuthorization(
@@ -105,8 +98,17 @@ public class B2StorageService {
             ).getAuthorizationToken();
 
             // Xây dựng URL download
+            String encodedToken = java.net.URLEncoder.encode(authToken, java.nio.charset.StandardCharsets.UTF_8);
             String downloadUrl = b2Client.getDownloadByNameUrl(b2Config.getBucketName(), b2FileName);
-            return downloadUrl + "?Authorization=" + java.net.URLEncoder.encode(authToken, java.nio.charset.StandardCharsets.UTF_8);
+
+            if (!inline && originalFileName != null && !originalFileName.isEmpty()) {
+                String encodedFileName = java.net.URLEncoder.encode(originalFileName, java.nio.charset.StandardCharsets.UTF_8).replace("+", "%20");
+                String contentDisposition = "attachment; filename=\"" + encodedFileName + "\"";
+                String encodedDisposition = java.net.URLEncoder.encode(contentDisposition, java.nio.charset.StandardCharsets.UTF_8);
+                return downloadUrl + "?Authorization=" + encodedToken + "&b2ContentDisposition=" + encodedDisposition;
+            }
+
+            return downloadUrl + "?Authorization=" + encodedToken;
 
         } catch (B2Exception e) {
             System.err.println("[B2] Failed to generate download URL for: " + b2FileName + " — " + e.getMessage());

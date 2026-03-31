@@ -148,10 +148,12 @@ public class FileController {
    */
   @Operation(summary = "Tải xuống tệp nội bộ", description = "Lấy presigned URL để tải xuống tệp trực tiếp từ cloud storage.")
   @GetMapping("/download/{id}")
-  public ResponseEntity<?> downloadPrivateFile(@Parameter(description = "ID của tệp") @PathVariable String id) {
+  public ResponseEntity<?> downloadPrivateFile(
+      @Parameter(description = "ID của tệp") @PathVariable String id,
+      @Parameter(description = "Yêu cầu URL xem trước (inline view)") @RequestParam(required = false, defaultValue = "false") boolean inline) {
     try {
       StorageFile file = fileService.getFileEntity(id);
-      String downloadUrl = fileService.getPresignedDownloadUrl(id);
+      String downloadUrl = fileService.getPresignedDownloadUrl(id, inline);
 
       return ResponseEntity.ok(StandardResponse.success("Download URL", Map.of(
           "url", downloadUrl,
@@ -182,10 +184,12 @@ public class FileController {
    */
   @Operation(summary = "Tải xuống tệp công khai (Public)", description = "Lấy presigned URL để tải xuống tệp công khai trực tiếp từ cloud storage.")
   @GetMapping("/public/download/{id}")
-  public ResponseEntity<?> downloadPublicFile(@Parameter(description = "ID tệp public") @PathVariable String id) {
+  public ResponseEntity<?> downloadPublicFile(
+      @Parameter(description = "ID tệp public") @PathVariable String id,
+      @Parameter(description = "Yêu cầu URL xem trước (inline view)") @RequestParam(required = false, defaultValue = "false") boolean inline) {
     try {
       StorageFile file = fileService.getPublicFileEntity(id);
-      String downloadUrl = fileService.getPublicPresignedDownloadUrl(id);
+      String downloadUrl = fileService.getPublicPresignedDownloadUrl(id, inline);
 
       return ResponseEntity.ok(StandardResponse.success("Download URL", Map.of(
           "url", downloadUrl,

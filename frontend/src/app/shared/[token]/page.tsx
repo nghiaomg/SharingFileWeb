@@ -129,7 +129,9 @@ export default function SharedTokenPage() {
           setFolderChildren(data.data || []);
         }
       } else if (type === "pdf" || type === "xlsx") {
-        const downloadUrl = `${API_BASE_URL}/public/share/${token}/download${query}`;
+        const urlParams = new URLSearchParams(query);
+        urlParams.set("inline", "true");
+        const downloadUrl = `${API_BASE_URL}/public/share/${token}/download?${urlParams.toString()}`;
         const res = await fetch(downloadUrl);
         if (res.ok) {
           const data = await res.json();

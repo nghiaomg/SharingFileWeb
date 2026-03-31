@@ -73,7 +73,8 @@ public class PublicShareController {
     @GetMapping("/{token}/download")
     public ResponseEntity<?> downloadFileByToken(
             @Parameter(description = "Mã token của link chia sẻ") @PathVariable String token,
-            @Parameter(description = "Mật khẩu (nếu có yêu cầu)") @RequestParam(required = false) String password) {
+            @Parameter(description = "Mật khẩu (nếu có yêu cầu)") @RequestParam(required = false) String password,
+            @Parameter(description = "Yêu cầu định dạng inline views (xem hiển thị file)") @RequestParam(required = false, defaultValue = "false") boolean inline) {
         try {
             ShareLink link = shareLinkService.validateLink(token, password);
 
@@ -92,7 +93,7 @@ public class PublicShareController {
                 return ResponseEntity.status(500).body(StandardResponse.error("File chưa được migrate lên cloud storage.", null));
             }
 
-            String downloadUrl = b2StorageService.getPresignedDownloadUrl(file.getB2FileName());
+            String downloadUrl = b2StorageService.getPresignedDownloadUrl(file.getB2FileName(), file.getName(), inline);
 
             return ResponseEntity.ok(StandardResponse.success("Download URL", Map.of(
                 "url", downloadUrl,

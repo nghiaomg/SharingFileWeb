@@ -268,12 +268,12 @@ public class FileService {
         return mapToResponse(file);
     }
 
-    public String getPresignedDownloadUrl(String id) throws Exception {
+    public String getPresignedDownloadUrl(String id, boolean inline) throws Exception {
         StorageFile file = getFileEntity(id);
 
         // Ưu tiên B2, fallback cho data cũ (storedPath)
         if (file.getB2FileName() != null && !file.getB2FileName().isEmpty()) {
-            return b2StorageService.getPresignedDownloadUrl(file.getB2FileName());
+            return b2StorageService.getPresignedDownloadUrl(file.getB2FileName(), file.getName(), inline);
         }
 
         // Fallback: file cũ vẫn trên disk — throw lỗi yêu cầu migration
@@ -341,10 +341,7 @@ public class FileService {
         return mapToResponse(file);
     }
 
-    /**
-     * Tạo presigned download URL cho file public/shared.
-     */
-    public String getPublicPresignedDownloadUrl(String id) throws Exception {
+    public String getPublicPresignedDownloadUrl(String id, boolean inline) throws Exception {
         StorageFile file = fileRepository.findById(id)
                 .orElseThrow(() -> new Exception("File not found"));
 
@@ -373,7 +370,7 @@ public class FileService {
         }
 
         if (file.getB2FileName() != null && !file.getB2FileName().isEmpty()) {
-            return b2StorageService.getPresignedDownloadUrl(file.getB2FileName());
+            return b2StorageService.getPresignedDownloadUrl(file.getB2FileName(), file.getName(), inline);
         }
 
         throw new Exception("File chưa được migrate lên cloud storage.");

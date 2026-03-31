@@ -131,7 +131,7 @@ export async function getFileBlobUrl(fileId: string): Promise<string> {
   const response = await apiClient.get<{
     message?: string;
     data?: { url: string };
-  }>(`/files/download/${fileId}`);
+  }>(`/files/download/${fileId}?inline=true`);
   if (response.data?.data?.url) {
     return response.data.data.url;
   }
