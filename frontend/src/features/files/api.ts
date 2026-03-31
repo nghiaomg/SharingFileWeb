@@ -1,5 +1,12 @@
 import apiClient from "@/lib/api-client";
-import type { FileItem, FolderItem, FolderChildren, CreateFolderInput, UpdateFolderInput, ShareFileInput } from "./schemas";
+import type {
+  FileItem,
+  FolderItem,
+  FolderChildren,
+  CreateFolderInput,
+  UpdateFolderInput,
+  ShareFileInput,
+} from "./schemas";
 
 export interface ResolvePathInput {
   path: string;
@@ -17,24 +24,31 @@ export async function getFolderById(folderId: string): Promise<FolderItem> {
   return res.data;
 }
 
-export async function getFolderChildren(folderId: string): Promise<FolderChildren> {
+export async function getFolderChildren(
+  folderId: string,
+): Promise<FolderChildren> {
   const [foldersRes, filesRes] = await Promise.all([
     apiClient.get<FolderItem[]>(`/folders/${folderId}/children`),
-    getFiles(folderId) // reusing the function below
+    getFiles(folderId), // reusing the function below
   ]);
-  
+
   return {
     folders: foldersRes.data || [],
-    files: filesRes || []
+    files: filesRes || [],
   };
 }
 
-export async function createFolder(data: CreateFolderInput): Promise<FolderItem> {
+export async function createFolder(
+  data: CreateFolderInput,
+): Promise<FolderItem> {
   const res = await apiClient.post<FolderItem>("/folders", data);
   return res.data;
 }
 
-export async function updateFolder(folderId: string, data: UpdateFolderInput): Promise<FolderItem> {
+export async function updateFolder(
+  folderId: string,
+  data: UpdateFolderInput,
+): Promise<FolderItem> {
   const res = await apiClient.put<FolderItem>(`/folders/${folderId}`, data);
   return res.data;
 }
@@ -43,7 +57,9 @@ export async function deleteFolder(folderId: string): Promise<void> {
   await apiClient.delete(`/folders/${folderId}`);
 }
 
-export async function resolveFolderPath(data: ResolvePathInput): Promise<FolderItem> {
+export async function resolveFolderPath(
+  data: ResolvePathInput,
+): Promise<FolderItem> {
   const res = await apiClient.post<FolderItem>("/folders/resolve-path", data);
   return res.data;
 }
@@ -66,8 +82,13 @@ export async function getSharedFiles(): Promise<FileItem[]> {
   return res.data;
 }
 
-export async function renameFile(fileId: string, newName: string): Promise<FileItem> {
-  const res = await apiClient.put<FileItem>(`/files/${fileId}/rename`, { name: newName });
+export async function renameFile(
+  fileId: string,
+  newName: string,
+): Promise<FileItem> {
+  const res = await apiClient.put<FileItem>(`/files/${fileId}/rename`, {
+    name: newName,
+  });
   return res.data;
 }
 
@@ -75,13 +96,22 @@ export async function deleteFile(fileId: string): Promise<void> {
   await apiClient.delete(`/files/${fileId}`);
 }
 
-export async function shareFile(fileId: string, payload: ShareFileInput): Promise<FileItem> {
+export async function shareFile(
+  fileId: string,
+  payload: ShareFileInput,
+): Promise<FileItem> {
   const res = await apiClient.put<FileItem>(`/files/${fileId}/share`, payload);
   return res.data;
 }
 
-export async function downloadFile(fileId: string, fileName: string): Promise<void> {
-  const response = await apiClient.get<{ message?: string, data?: { url: string } }>(`/files/download/${fileId}`);
+export async function downloadFile(
+  fileId: string,
+  fileName: string,
+): Promise<void> {
+  const response = await apiClient.get<{
+    message?: string;
+    data?: { url: string };
+  }>(`/files/download/${fileId}`);
   if (response.data?.data?.url) {
     // Navigate or create invisible link
     const link = document.createElement("a");
@@ -98,7 +128,10 @@ export async function downloadFile(fileId: string, fileName: string): Promise<vo
 }
 
 export async function getFileBlobUrl(fileId: string): Promise<string> {
-  const response = await apiClient.get<{ message?: string, data?: { url: string } }>(`/files/download/${fileId}`);
+  const response = await apiClient.get<{
+    message?: string;
+    data?: { url: string };
+  }>(`/files/download/${fileId}`);
   if (response.data?.data?.url) {
     return response.data.data.url;
   }
@@ -107,7 +140,9 @@ export async function getFileBlobUrl(fileId: string): Promise<string> {
 
 // ─── Chunked Upload ──────────────────────────────────────────────────────────
 export async function getUploadStatus(uploadId: string): Promise<number[]> {
-  const res = await apiClient.get<number[]>("/files/upload/status", { params: { uploadId } });
+  const res = await apiClient.get<number[]>("/files/upload/status", {
+    params: { uploadId },
+  });
   return res.data;
 }
 const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB
@@ -123,8 +158,8 @@ export interface UploadOptions {
 export async function uploadFileChunked(
   file: File,
   folderId: string,
-  options?: UploadOptions
-): Promise<{ fileItem?: FileItem; uploadId: string; }> {
+  options?: UploadOptions,
+): Promise<{ fileItem?: FileItem; uploadId: string }> {
   const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
   const uploadId = options?.existingUploadId || crypto.randomUUID();
   let uploadedChunks: number[] = [];
@@ -145,7 +180,7 @@ export async function uploadFileChunked(
   let chunksUploadedSoFar = uploadedChunks.length;
   // Report initial progress if resuming
   if (options?.onProgress && chunksUploadedSoFar > 0) {
-     options.onProgress(Math.round((chunksUploadedSoFar / totalChunks) * 100));
+    options.onProgress(Math.round((chunksUploadedSoFar / totalChunks) * 100));
   }
 
   for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
@@ -190,19 +225,31 @@ export async function uploadFileChunked(
     completeFormData.append("folderId", folderId);
   }
 
-  const completeRes = await apiClient.post<FileItem>("/files/upload/complete", completeFormData, {
-    headers: { "Content-Type": "multipart/form-data" },
-    signal: options?.signal,
-    timeout: 600000, // Timeout 10 phút chờ B2 xử lý gộp file và trả về tránh bị treo vô hạn
-  });
+  const completeRes = await apiClient.post<FileItem>(
+    "/files/upload/complete",
+    completeFormData,
+    {
+      headers: { "Content-Type": "multipart/form-data" },
+      signal: options?.signal,
+      timeout: 600000, // Timeout 10 phút chờ B2 xử lý gộp file và trả về tránh bị treo vô hạn
+    },
+  );
 
   return { fileItem: completeRes.data, uploadId };
 }
 
 // ─── Share APIs ──────────────────────────────────────────────────────────────
-import type { ShareLinkItem, SharedAccessItem, NotificationItem, CreateShareLinkInput, InternalShareInput } from "./schemas";
+import type {
+  ShareLinkItem,
+  SharedAccessItem,
+  NotificationItem,
+  CreateShareLinkInput,
+  InternalShareInput,
+} from "./schemas";
 
-export async function shareInternal(data: InternalShareInput): Promise<SharedAccessItem[]> {
+export async function shareInternal(
+  data: InternalShareInput,
+): Promise<SharedAccessItem[]> {
   const res = await apiClient.post<SharedAccessItem[]>("/share/internal", data);
   return res.data;
 }
@@ -217,18 +264,32 @@ export async function getSharedByMe(): Promise<SharedAccessItem[]> {
   return res.data;
 }
 
-export async function getAccessesForFile(fileId: string): Promise<SharedAccessItem[]> {
-  const res = await apiClient.get<SharedAccessItem[]>(`/share/access/file/${fileId}`);
+export async function getAccessesForFile(
+  fileId: string,
+): Promise<SharedAccessItem[]> {
+  const res = await apiClient.get<SharedAccessItem[]>(
+    `/share/access/file/${fileId}`,
+  );
   return res.data;
 }
 
-export async function updateAccessPermission(accessId: string, permission: string): Promise<SharedAccessItem> {
-  const res = await apiClient.put<SharedAccessItem>(`/share/access/${accessId}`, { permission });
+export async function updateAccessPermission(
+  accessId: string,
+  permission: string,
+): Promise<SharedAccessItem> {
+  const res = await apiClient.put<SharedAccessItem>(
+    `/share/access/${accessId}`,
+    { permission },
+  );
   return res.data;
 }
 
-export async function getSharedFolderContent(accessId: string): Promise<FileItem[]> {
-  const res = await apiClient.get<FileItem[]>(`/share/access/folder/${accessId}`);
+export async function getSharedFolderContent(
+  accessId: string,
+): Promise<FileItem[]> {
+  const res = await apiClient.get<FileItem[]>(
+    `/share/access/folder/${accessId}`,
+  );
   return res.data;
 }
 
@@ -240,17 +301,26 @@ export async function revokeAllFileAccess(fileId: string): Promise<void> {
   await apiClient.delete(`/share/access/file/${fileId}`);
 }
 
-export async function createShareLink(data: CreateShareLinkInput): Promise<ShareLinkItem> {
+export async function createShareLink(
+  data: CreateShareLinkInput,
+): Promise<ShareLinkItem> {
   const res = await apiClient.post<ShareLinkItem>("/share/link", data);
   return res.data;
 }
 
-export async function getShareLinksForFile(fileId: string): Promise<ShareLinkItem[]> {
-  const res = await apiClient.get<ShareLinkItem[]>(`/share/link/file/${fileId}`);
+export async function getShareLinksForFile(
+  fileId: string,
+): Promise<ShareLinkItem[]> {
+  const res = await apiClient.get<ShareLinkItem[]>(
+    `/share/link/file/${fileId}`,
+  );
   return res.data;
 }
 
-export async function updateShareLink(linkId: string, data: Partial<CreateShareLinkInput>): Promise<ShareLinkItem> {
+export async function updateShareLink(
+  linkId: string,
+  data: Partial<CreateShareLinkInput>,
+): Promise<ShareLinkItem> {
   const res = await apiClient.put<ShareLinkItem>(`/share/link/${linkId}`, data);
   return res.data;
 }
@@ -265,7 +335,9 @@ export async function getNotifications(): Promise<NotificationItem[]> {
   return res.data;
 }
 
-export async function markNotificationRead(notificationId: string): Promise<void> {
+export async function markNotificationRead(
+  notificationId: string,
+): Promise<void> {
   await apiClient.put(`/notifications/${notificationId}/read`);
 }
 

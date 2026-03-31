@@ -1,11 +1,14 @@
-
-import { useQuery, useSuspenseQuery, queryOptions } from "@tanstack/react-query";
+import {
+  useQuery,
+  useSuspenseQuery,
+  queryOptions,
+} from "@tanstack/react-query";
 import { getMe, getStorageUsage } from "./api";
 
 // ─── Query Key Factory ───────────────────────────────────────────────────────
 export const authKeys = {
-  all:          () => ["auth"] as const,
-  me:           () => [...authKeys.all(), "me"] as const,
+  all: () => ["auth"] as const,
+  me: () => [...authKeys.all(), "me"] as const,
   storageUsage: () => [...authKeys.all(), "storage-usage"] as const,
 };
 

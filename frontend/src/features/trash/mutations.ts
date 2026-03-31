@@ -10,7 +10,8 @@ export function useRestoreItem() {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ type, id }: { type: "folder" | "file"; id: string }) => restoreItem(type, id),
+    mutationFn: ({ type, id }: { type: "folder" | "file"; id: string }) =>
+      restoreItem(type, id),
     onSettled: () => {
       qc.invalidateQueries({ queryKey: trashKeys.items() });
       qc.invalidateQueries({ queryKey: fileKeys.all() });
@@ -23,7 +24,8 @@ export function useDeletePermanent() {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ type, id }: { type: "folder" | "file"; id: string }) => deletePermanent(type, id),
+    mutationFn: ({ type, id }: { type: "folder" | "file"; id: string }) =>
+      deletePermanent(type, id),
     onSettled: () => {
       qc.invalidateQueries({ queryKey: trashKeys.items() });
       qc.invalidateQueries({ queryKey: authKeys.storageUsage() });

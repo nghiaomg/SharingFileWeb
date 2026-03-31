@@ -36,15 +36,18 @@ export function SignupForm() {
     });
   };
 
-  const errorMessage = localError || (registerMutation.isError
-    ? getApiErrorMessage(registerMutation.error, "Đã xảy ra lỗi khi đăng ký!")
-    : "");
+  const errorMessage =
+    localError ||
+    (registerMutation.isError
+      ? getApiErrorMessage(registerMutation.error, "Đã xảy ra lỗi khi đăng ký!")
+      : "");
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {registerMutation.isSuccess && (
         <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 text-sm p-4 rounded-2xl font-medium flex items-center gap-2">
-          <Check className="w-4 h-4" /> Đăng ký thành công! Đang chuyển sang trang đăng nhập...
+          <Check className="w-4 h-4" /> Đăng ký thành công! Đang chuyển sang
+          trang đăng nhập...
         </div>
       )}
 
@@ -55,11 +58,15 @@ export function SignupForm() {
       )}
 
       <div className="space-y-2">
-        <label className="text-sm font-bold text-muted-foreground block">Tên đăng nhập</label>
+        <label className="text-sm font-bold text-muted-foreground block">
+          Tên đăng nhập
+        </label>
         <input
           type="text"
           value={formData.username}
-          onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+          onChange={(e) =>
+            setFormData({ ...formData, username: e.target.value })
+          }
           className="w-full px-4 py-3 bg-secondary/60 border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all text-foreground placeholder:text-muted-foreground/50"
           placeholder="Chọn tên người dùng"
           required
@@ -67,7 +74,9 @@ export function SignupForm() {
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-bold text-muted-foreground block">Email</label>
+        <label className="text-sm font-bold text-muted-foreground block">
+          Email
+        </label>
         <input
           type="email"
           value={formData.email}
@@ -79,12 +88,16 @@ export function SignupForm() {
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-bold text-muted-foreground block">Mật khẩu</label>
+        <label className="text-sm font-bold text-muted-foreground block">
+          Mật khẩu
+        </label>
         <div className="relative">
           <input
             type={showPassword ? "text" : "password"}
             value={formData.password}
-            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, password: e.target.value })
+            }
             className="w-full px-4 py-3 bg-secondary/60 border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all text-foreground pr-12 placeholder:text-muted-foreground/50"
             placeholder="••••••••"
             required
@@ -94,17 +107,25 @@ export function SignupForm() {
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
           >
-            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            {showPassword ? (
+              <EyeOff className="w-5 h-5" />
+            ) : (
+              <Eye className="w-5 h-5" />
+            )}
           </button>
         </div>
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-bold text-muted-foreground block">Xác nhận mật khẩu</label>
+        <label className="text-sm font-bold text-muted-foreground block">
+          Xác nhận mật khẩu
+        </label>
         <input
           type="password"
           value={formData.confirmPassword}
-          onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+          onChange={(e) =>
+            setFormData({ ...formData, confirmPassword: e.target.value })
+          }
           className="w-full px-4 py-3 bg-secondary/60 border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all text-foreground placeholder:text-muted-foreground/50"
           placeholder="••••••••"
           required
@@ -115,8 +136,20 @@ export function SignupForm() {
         <input type="checkbox" required className="mt-1 accent-primary" />
         <span className="text-sm text-muted-foreground">
           Tôi đồng ý với{" "}
-          <Link href="/terms" className="text-primary font-bold hover:underline">Điều khoản dịch vụ</Link> và{" "}
-          <Link href="/privacy" className="text-primary font-bold hover:underline">Chính sách bảo mật</Link>.
+          <Link
+            href="/terms"
+            className="text-primary font-bold hover:underline"
+          >
+            Điều khoản dịch vụ
+          </Link>{" "}
+          và{" "}
+          <Link
+            href="/privacy"
+            className="text-primary font-bold hover:underline"
+          >
+            Chính sách bảo mật
+          </Link>
+          .
         </span>
       </div>
 

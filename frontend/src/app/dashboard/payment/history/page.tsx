@@ -1,7 +1,17 @@
 "use client";
 
 import { Flex, Text, Box } from "@radix-ui/themes";
-import { Banknote, Download, ExternalLink, CalendarDays, FileText, CheckCircle2, XCircle, Clock, ArrowUpRight } from "lucide-react";
+import {
+  Banknote,
+  Download,
+  ExternalLink,
+  CalendarDays,
+  FileText,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  ArrowUpRight,
+} from "lucide-react";
 import { usePaymentHistory } from "@/features/payment/queries";
 import { formatDateVN } from "@/lib/format";
 
@@ -46,7 +56,9 @@ const MOCK_HISTORY = [
     amount: 99000,
     planName: "FileFlow Pro",
     createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    expiredAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000 + 15 * 60000).toISOString(),
+    expiredAt: new Date(
+      Date.now() - 7 * 24 * 60 * 60 * 1000 + 15 * 60000,
+    ).toISOString(),
     qrUrl: "",
   },
   {
@@ -56,7 +68,9 @@ const MOCK_HISTORY = [
     amount: 99000,
     planName: "FileFlow Pro",
     createdAt: new Date(Date.now() - 37 * 24 * 60 * 60 * 1000).toISOString(),
-    expiredAt: new Date(Date.now() - 37 * 24 * 60 * 60 * 1000 + 15 * 60000).toISOString(),
+    expiredAt: new Date(
+      Date.now() - 37 * 24 * 60 * 60 * 1000 + 15 * 60000,
+    ).toISOString(),
     qrUrl: "",
   },
   {
@@ -66,7 +80,9 @@ const MOCK_HISTORY = [
     amount: 990000,
     planName: "FileFlow Enterprise",
     createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-    expiredAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000 + 15 * 60000).toISOString(),
+    expiredAt: new Date(
+      Date.now() - 15 * 24 * 60 * 60 * 1000 + 15 * 60000,
+    ).toISOString(),
     qrUrl: "",
   },
   {
@@ -76,7 +92,9 @@ const MOCK_HISTORY = [
     amount: 99000,
     planName: "FileFlow Pro",
     createdAt: new Date(Date.now() - 67 * 24 * 60 * 60 * 1000).toISOString(),
-    expiredAt: new Date(Date.now() - 67 * 24 * 60 * 60 * 1000 + 15 * 60000).toISOString(),
+    expiredAt: new Date(
+      Date.now() - 67 * 24 * 60 * 60 * 1000 + 15 * 60000,
+    ).toISOString(),
     qrUrl: "",
   },
 ];
@@ -84,7 +102,7 @@ const MOCK_HISTORY = [
 export default function PaymentHistoryPage() {
   const { data: history, isLoading, isError } = usePaymentHistory();
 
-  const payments = (history && history.length > 0) ? history : MOCK_HISTORY;
+  const payments = history && history.length > 0 ? history : MOCK_HISTORY;
 
   return (
     <div className="p-4 md:p-8 pb-32 w-full h-full overflow-y-auto">
@@ -95,7 +113,9 @@ export default function PaymentHistoryPage() {
             <Banknote className="w-7 h-7 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl md:text-3xl font-black">Lịch sử thanh toán</h1>
+            <h1 className="text-2xl md:text-3xl font-black">
+              Lịch sử thanh toán
+            </h1>
             <p className="text-muted-foreground text-sm font-medium mt-0.5">
               Xem chi tiết các giao dịch thanh toán của bạn
             </p>
@@ -115,9 +135,16 @@ export default function PaymentHistoryPage() {
       )}
 
       {isError && (
-        <Box p="6" className="rounded-2xl border border-red-500/20 bg-red-500/10 text-center">
-          <Text weight="bold" className="text-red-500">Không thể tải lịch sử thanh toán.</Text>
-          <Text size="2" className="text-muted-foreground mt-1 block">Vui lòng thử lại sau.</Text>
+        <Box
+          p="6"
+          className="rounded-2xl border border-red-500/20 bg-red-500/10 text-center"
+        >
+          <Text weight="bold" className="text-red-500">
+            Không thể tải lịch sử thanh toán.
+          </Text>
+          <Text size="2" className="text-muted-foreground mt-1 block">
+            Vui lòng thử lại sau.
+          </Text>
         </Box>
       )}
 
@@ -128,27 +155,45 @@ export default function PaymentHistoryPage() {
             <table className="w-full min-w-[700px] text-left">
               <thead>
                 <tr className="border-b border-border/50">
-                  <th className="font-semibold pb-4 pl-4 text-muted-foreground text-sm">Mã giao dịch</th>
-                  <th className="font-semibold pb-4 text-muted-foreground text-sm">Ngày tạo</th>
-                  <th className="font-semibold pb-4 text-muted-foreground text-sm">Gói dịch vụ</th>
-                  <th className="font-semibold pb-4 text-muted-foreground text-sm">Số tiền</th>
-                  <th className="font-semibold pb-4 text-muted-foreground text-sm">Trạng thái</th>
-                  <th className="font-semibold pb-4 pr-4 text-right text-muted-foreground text-sm">Hành động</th>
+                  <th className="font-semibold pb-4 pl-4 text-muted-foreground text-sm">
+                    Mã giao dịch
+                  </th>
+                  <th className="font-semibold pb-4 text-muted-foreground text-sm">
+                    Ngày tạo
+                  </th>
+                  <th className="font-semibold pb-4 text-muted-foreground text-sm">
+                    Gói dịch vụ
+                  </th>
+                  <th className="font-semibold pb-4 text-muted-foreground text-sm">
+                    Số tiền
+                  </th>
+                  <th className="font-semibold pb-4 text-muted-foreground text-sm">
+                    Trạng thái
+                  </th>
+                  <th className="font-semibold pb-4 pr-4 text-right text-muted-foreground text-sm">
+                    Hành động
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/50">
                 {payments.map((payment) => {
                   const config = STATUS_CONFIG[payment.status];
                   const Icon = config.icon;
-                  const formattedAmount = new Intl.NumberFormat("vi-VN").format(payment.amount) + "đ";
+                  const formattedAmount =
+                    new Intl.NumberFormat("vi-VN").format(payment.amount) + "đ";
 
                   return (
-                    <tr key={payment.id} className="group hover:bg-muted/30 transition-colors">
+                    <tr
+                      key={payment.id}
+                      className="group hover:bg-muted/30 transition-colors"
+                    >
                       <td className="py-5 pl-4">
                         <div className="flex items-center gap-2">
                           <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
                           <div>
-                            <div className="font-bold text-sm font-mono">{payment.orderCode}</div>
+                            <div className="font-bold text-sm font-mono">
+                              {payment.orderCode}
+                            </div>
                             {payment.status === "CONFIRMED" && (
                               <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
                                 <CheckCircle2 className="w-3 h-3 text-emerald-500" />
@@ -171,7 +216,9 @@ export default function PaymentHistoryPage() {
                           ) : (
                             <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
                           )}
-                          <Text size="2" weight="bold">{payment.planName}</Text>
+                          <Text size="2" weight="bold">
+                            {payment.planName}
+                          </Text>
                         </Flex>
                       </td>
                       <td className="py-5 font-bold font-mono text-sm">
@@ -180,7 +227,11 @@ export default function PaymentHistoryPage() {
                       <td className="py-5">
                         <span
                           className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold border"
-                          style={{ color: config.color, background: config.bg, borderColor: `${config.color}30` }}
+                          style={{
+                            color: config.color,
+                            background: config.bg,
+                            borderColor: `${config.color}30`,
+                          }}
                         >
                           <Icon className="w-3.5 h-3.5" />
                           {config.label}
@@ -211,17 +262,35 @@ export default function PaymentHistoryPage() {
 
           {/* Empty state */}
           {payments.length === 0 && (
-            <Flex direction="column" align="center" justify="center" py="8" gap="3">
+            <Flex
+              direction="column"
+              align="center"
+              justify="center"
+              py="8"
+              gap="3"
+            >
               <Banknote className="w-12 h-12 text-muted-foreground/50" />
-              <Text weight="bold" className="text-muted-foreground">Chưa có giao dịch nào</Text>
-              <Text size="2" className="text-muted-foreground/70">Thanh toán qua QR Code để nâng cấp gói dịch vụ.</Text>
+              <Text weight="bold" className="text-muted-foreground">
+                Chưa có giao dịch nào
+              </Text>
+              <Text size="2" className="text-muted-foreground/70">
+                Thanh toán qua QR Code để nâng cấp gói dịch vụ.
+              </Text>
             </Flex>
           )}
 
           {/* Footer note */}
-          <Box mt="6" pt="4" style={{ borderTop: "1px solid var(--color-border)" }}>
+          <Box
+            mt="6"
+            pt="4"
+            style={{ borderTop: "1px solid var(--color-border)" }}
+          >
             <Text size="2" className="text-muted-foreground">
-              Đang hiển thị <span className="font-bold text-foreground">{payments.length}</span> giao dịch gần nhất.
+              Đang hiển thị{" "}
+              <span className="font-bold text-foreground">
+                {payments.length}
+              </span>{" "}
+              giao dịch gần nhất.
             </Text>
           </Box>
         </Box>

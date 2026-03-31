@@ -4,8 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Flex, Text, Box, Button, Badge } from "@radix-ui/themes";
 import {
-  CheckCircle2, Zap, Shield, HardDrive,
-  Crown, QrCode, Banknote, Info
+  CheckCircle2,
+  Zap,
+  Shield,
+  HardDrive,
+  Crown,
+  QrCode,
+  Banknote,
+  Info,
 } from "lucide-react";
 import { useCreatePayment, useCancelPaymentMutation } from "@/features/payment";
 import { useCurrentUser } from "@/features/auth/queries";
@@ -76,8 +82,12 @@ export default function PaymentPage() {
   const [selectedPlan, setSelectedPlan] = useState<string>("MONTHLY");
 
   const currentPlan = user?.subscriptionPlan ?? "FREE";
-  const isPro = currentPlan === "PRO" || currentPlan === "MONTHLY" || currentPlan === "YEARLY";
-  const pendingOrder = paymentStatus?.status === "PENDING" ? paymentStatus : null;
+  const isPro =
+    currentPlan === "PRO" ||
+    currentPlan === "MONTHLY" ||
+    currentPlan === "YEARLY";
+  const pendingOrder =
+    paymentStatus?.status === "PENDING" ? paymentStatus : null;
 
   const handleSelectPlan = (planId: string) => {
     if (planId === "FREE") return;
@@ -111,14 +121,22 @@ export default function PaymentPage() {
             <QrCode className="w-7 h-7 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl md:text-3xl font-black">Nạp tiền & Thanh toán</h1>
+            <h1 className="text-2xl md:text-3xl font-black">
+              Nạp tiền & Thanh toán
+            </h1>
             <p className="text-muted-foreground text-sm font-medium mt-0.5">
               Quét mã QR để nâng cấp gói dịch vụ
             </p>
           </div>
         </Flex>
 
-        <Badge size="2" color="gray" variant="soft" className="px-3 py-1.5 text-xs font-bold cursor-pointer hover:bg-secondary transition-colors" onClick={() => router.push("/dashboard/payment/history")}>
+        <Badge
+          size="2"
+          color="gray"
+          variant="soft"
+          className="px-3 py-1.5 text-xs font-bold cursor-pointer hover:bg-secondary transition-colors"
+          onClick={() => router.push("/dashboard/payment/history")}
+        >
           <Banknote className="w-3.5 h-3.5" /> Lịch sử thanh toán
         </Badge>
       </Flex>
@@ -132,10 +150,13 @@ export default function PaymentPage() {
         <Flex align="start" gap="3">
           <Info className="w-5 h-5 shrink-0 mt-0.5 text-blue-500" />
           <div className="text-sm space-y-1">
-            <Text weight="bold" className="text-blue-500 block">Thanh toán qua mã QR Ngân hàng</Text>
+            <Text weight="bold" className="text-blue-500 block">
+              Thanh toán qua mã QR Ngân hàng
+            </Text>
             <Text className="text-muted-foreground font-medium">
-              Hệ thống hỗ trợ tất cả ngân hàng Việt Nam: MB Bank, TPBank, Vietcombank, ACB, VietinBank...
-              Thanh toán được xác nhận tự động trong <strong>1–3 phút</strong> sau khi chuyển khoản thành công.
+              Hệ thống hỗ trợ tất cả ngân hàng Việt Nam: MB Bank, TPBank,
+              Vietcombank, ACB, VietinBank... Thanh toán được xác nhận tự động
+              trong <strong>1–3 phút</strong> sau khi chuyển khoản thành công.
             </Text>
           </div>
         </Flex>
@@ -143,7 +164,11 @@ export default function PaymentPage() {
 
       {/* Pending Order Alert */}
       {pendingOrder && (
-        <Box p="4" mb="8" className="rounded-2xl border border-amber-500/30 bg-amber-500/10 dark:bg-amber-500/20">
+        <Box
+          p="4"
+          mb="8"
+          className="rounded-2xl border border-amber-500/30 bg-amber-500/10 dark:bg-amber-500/20"
+        >
           <Flex align="center" justify="between" className="flex-wrap gap-4">
             <Flex align="start" gap="3">
               <div className="bg-amber-500/20 p-2 rounded-full hidden sm:block">
@@ -154,7 +179,8 @@ export default function PaymentPage() {
                   Đơn hàng #{pendingOrder.orderCode} đang chờ thanh toán
                 </strong>
                 <span className="text-amber-800 dark:text-amber-200 font-medium max-w-xl block text-sm">
-                  Bạn có 1 đơn đăng ký gói {pendingOrder.planName} chưa hoàn tất. Bạn có muốn tiếp tục thanh toán hay hủy để tạo đơn mới?
+                  Bạn có 1 đơn đăng ký gói {pendingOrder.planName} chưa hoàn
+                  tất. Bạn có muốn tiếp tục thanh toán hay hủy để tạo đơn mới?
                 </span>
               </div>
             </Flex>
@@ -163,10 +189,13 @@ export default function PaymentPage() {
                 variant="soft"
                 color="red"
                 size="3"
-                onClick={(e) => { e.stopPropagation(); cancelPayment.mutate(); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  cancelPayment.mutate();
+                }}
                 loading={cancelPayment.isPending}
                 disabled={cancelPayment.isPending}
-                style={{ cursor: 'pointer' }}
+                style={{ cursor: "pointer" }}
               >
                 Hủy đơn
               </Button>
@@ -175,7 +204,9 @@ export default function PaymentPage() {
                 color="amber"
                 size="3"
                 className="font-bold shadow-md cursor-pointer"
-                onClick={() => router.push(`/payment/checkout/${pendingOrder.orderCode}`)}
+                onClick={() =>
+                  router.push(`/payment/checkout/${pendingOrder.orderCode}`)
+                }
               >
                 Tiếp tục thanh toán
               </Button>
@@ -187,9 +218,10 @@ export default function PaymentPage() {
       {/* Plan Cards */}
       <Flex direction="column" gap="6" className="max-w-4xl mx-auto">
         {PLANS.map((plan) => {
-          const isCurrentPlan = (plan.id === "FREE" && currentPlan === "FREE") ||
+          const isCurrentPlan =
+            (plan.id === "FREE" && currentPlan === "FREE") ||
             (plan.id !== "FREE" && currentPlan === "PRO") ||
-            (plan.id === currentPlan);
+            plan.id === currentPlan;
           const isSelected = selectedPlan === plan.id;
           const isDisabled = plan.id === "FREE" || isCurrentPlan;
 
@@ -203,10 +235,14 @@ export default function PaymentPage() {
                 ${isDisabled ? "opacity-70 cursor-not-allowed" : ""}
                 ${plan.recommended ? "bg-background" : "bg-card"}
               `}
-              style={isSelected ? {
-                borderColor: "var(--primary)",
-                background: "var(--background)",
-              } : {}}
+              style={
+                isSelected
+                  ? {
+                      borderColor: "var(--primary)",
+                      background: "var(--background)",
+                    }
+                  : {}
+              }
             >
               {/* Popular badge */}
               {plan.recommended && !isCurrentPlan && (
@@ -226,7 +262,9 @@ export default function PaymentPage() {
                 {/* Left: Plan Info */}
                 <div className="flex-1 min-w-[200px]">
                   <Flex align="center" gap="2" mb="3">
-                    <div className={`p-2 rounded-xl border ${plan.recommended ? "bg-primary/20 border-primary/30" : "bg-secondary border-border"}`}>
+                    <div
+                      className={`p-2 rounded-xl border ${plan.recommended ? "bg-primary/20 border-primary/30" : "bg-secondary border-border"}`}
+                    >
                       {plan.id === "FREE" ? (
                         <HardDrive className="w-5 h-5 text-muted-foreground" />
                       ) : plan.id === "YEARLY" ? (
@@ -236,10 +274,17 @@ export default function PaymentPage() {
                       )}
                     </div>
                     <div>
-                      <Text weight="bold" size="4">{plan.name}</Text>
+                      <Text weight="bold" size="4">
+                        {plan.name}
+                      </Text>
                       <Flex align="center" gap="2" mt="1">
                         <HardDrive className="w-3.5 h-3.5 text-muted-foreground" />
-                        <Text size="2" className="text-muted-foreground font-medium">{plan.storage} lưu trữ</Text>
+                        <Text
+                          size="2"
+                          className="text-muted-foreground font-medium"
+                        >
+                          {plan.storage} lưu trữ
+                        </Text>
                       </Flex>
                     </div>
                   </Flex>
@@ -248,7 +293,9 @@ export default function PaymentPage() {
                     {plan.features.map((feature, i) => (
                       <Flex key={i} align="center" gap="2">
                         <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                        <Text size="2" className="font-medium">{feature}</Text>
+                        <Text size="2" className="font-medium">
+                          {feature}
+                        </Text>
                       </Flex>
                     ))}
                   </div>
@@ -261,7 +308,10 @@ export default function PaymentPage() {
                       {formatVND(plan.price)}
                     </div>
                     {plan.price > 0 && (
-                      <Text size="2" className="text-muted-foreground font-medium">
+                      <Text
+                        size="2"
+                        className="text-muted-foreground font-medium"
+                      >
                         {plan.id === "YEARLY" ? "/năm" : "/tháng"}
                       </Text>
                     )}
@@ -276,21 +326,11 @@ export default function PaymentPage() {
 
                   {/* CTA Button */}
                   {isCurrentPlan ? (
-                    <Button
-                      variant="soft"
-                      color="gray"
-                      size="3"
-                      disabled
-                    >
+                    <Button variant="soft" color="gray" size="3" disabled>
                       <CheckCircle2 className="w-4 h-4" /> Đang sử dụng
                     </Button>
                   ) : plan.id === "FREE" ? (
-                    <Button
-                      variant="soft"
-                      color="gray"
-                      size="3"
-                      disabled
-                    >
+                    <Button variant="soft" color="gray" size="3" disabled>
                       {isPro ? "Đã nâng cấp" : "Miễn phí"}
                     </Button>
                   ) : (
@@ -305,9 +345,17 @@ export default function PaymentPage() {
                       }}
                       loading={createPayment.isPending}
                       disabled={!!pendingOrder || createPayment.isPending}
-                      style={{ cursor: !!pendingOrder ? 'not-allowed' : 'pointer' }}
+                      style={{
+                        cursor: !!pendingOrder ? "not-allowed" : "pointer",
+                      }}
                     >
-                      {pendingOrder ? "Có đơn đang chờ" : <><QrCode className="w-4 h-4" /> Nạp tiền</>}
+                      {pendingOrder ? (
+                        "Có đơn đang chờ"
+                      ) : (
+                        <>
+                          <QrCode className="w-4 h-4" /> Nạp tiền
+                        </>
+                      )}
                     </Button>
                   )}
                 </div>

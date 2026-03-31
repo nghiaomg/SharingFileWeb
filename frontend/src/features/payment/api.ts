@@ -2,7 +2,9 @@ import apiClient from "@/lib/api-client";
 import type { CreatePaymentInput, PaymentResult } from "./schemas";
 
 // ─── Create QR Payment ───────────────────────────────────────────────────────
-export async function createQRPayment(data: CreatePaymentInput): Promise<PaymentResult> {
+export async function createQRPayment(
+  data: CreatePaymentInput,
+): Promise<PaymentResult> {
   const response = await apiClient.post<PaymentResult>("/payment/create", data);
   return response.data;
 }

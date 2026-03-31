@@ -3,8 +3,8 @@ import { ordersApi } from "../api/orders.api";
 import { orderKeys } from "../api/orders.keys";
 
 export const useOrderStatsQuery = () => {
-    return useQuery({
-        queryKey: orderKeys.stats(),
-        queryFn: () => ordersApi.getOrderStats(),
-    });
+  return useQuery({
+    queryKey: orderKeys.stats(),
+    queryFn: () => ordersApi.getOrderStats(),
+  });
 };

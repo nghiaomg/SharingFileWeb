@@ -22,7 +22,11 @@ export const metadata: Metadata = {
     template: "%s | FileFlow",
     default: "FileFlow - Lưu trữ và chia sẻ tệp an toàn",
   },
-  description: "Nền tảng lưu trữ, quản lý và chia sẻ tệp tốc độ cao, bảo mật, không giới hạn.",
+  description:
+    "Nền tảng lưu trữ, quản lý và chia sẻ tệp tốc độ cao, bảo mật, không giới hạn.",
+  other: {
+    "zalo-platform-site-verification": "E8UICRgN90LTcVKlkB4W57c-b1wLmK52Dp0",
+  },
 };
 
 export default function RootLayout({
@@ -37,8 +41,17 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <QueryProvider>
-          <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-            <Theme accentColor="gray" radius="large" scaling="100%" hasBackground={false}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem={false}
+          >
+            <Theme
+              accentColor="gray"
+              radius="large"
+              scaling="100%"
+              hasBackground={false}
+            >
               {children}
               <Toaster position="bottom-right" richColors theme="system" />
             </Theme>

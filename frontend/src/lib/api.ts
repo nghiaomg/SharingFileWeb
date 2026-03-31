@@ -1,7 +1,8 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -21,7 +22,7 @@ api.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // Interceptor for responses: handle global errors like 401 Unauthorized
@@ -32,7 +33,13 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response && error.response.status === 401 && !originalRequest._retry && originalRequest.url !== '/auth/refreshtoken' && originalRequest.url !== '/auth/signin') {
+    if (
+      error.response &&
+      error.response.status === 401 &&
+      !originalRequest._retry &&
+      originalRequest.url !== "/auth/refreshtoken" &&
+      originalRequest.url !== "/auth/signin"
+    ) {
       originalRequest._retry = true;
 
       try {
@@ -57,14 +64,14 @@ api.interceptors.response.use(
         Cookies.remove("user_data");
         // Có thể redirect user đến trang login ở client side. Thông thường kết hợp với event bus hoặc store.
         if (typeof window !== "undefined") {
-          window.location.href = '/login';
+          window.location.href = "/login";
         }
         return Promise.reject(_error);
       }
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

@@ -129,12 +129,20 @@
 }
 
 .hero-gradient {
-  background: radial-gradient(circle at top center, rgba(24, 24, 27, 0.08) 0%, transparent 80%),
-    radial-gradient(circle at bottom center, rgba(39, 39, 42, 0.04) 0%, transparent 80%);
+  background:
+    radial-gradient(
+      circle at top center,
+      rgba(24, 24, 27, 0.08) 0%,
+      transparent 80%
+    ),
+    radial-gradient(
+      circle at bottom center,
+      rgba(39, 39, 42, 0.04) 0%,
+      transparent 80%
+    );
 }
 
 @keyframes float {
-
   0%,
   100% {
     transform: translateY(0) rotate(0);
@@ -146,7 +154,6 @@
 }
 
 @keyframes bounce-subtle {
-
   0%,
   100% {
     transform: translateY(0);

@@ -7,7 +7,11 @@ import { useCurrentUser } from "@/features/auth/queries";
 import { Loader2 } from "lucide-react";
 import { UploadQueueManager } from "@/features/files/components/UploadQueueManager";
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { data: user, isLoading } = useCurrentUser();
 
@@ -21,12 +25,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex h-screen bg-background text-foreground overflow-hidden">
-      <DashboardSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <DashboardSidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+      />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <DashboardHeader userName={user?.username} onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
-        <main className="flex-1 overflow-y-auto">
-          {children}
-        </main>
+        <DashboardHeader
+          userName={user?.username}
+          onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        />
+        <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
       <UploadQueueManager />
     </div>

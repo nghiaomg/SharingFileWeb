@@ -4,7 +4,13 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { login, register, logout, updateProfile, changePassword } from "./api";
 import { authKeys } from "./queries";
-import type { LoginInput, SignupInput, UpdateProfileInput, User, ChangePasswordInput } from "./schemas";
+import type {
+  LoginInput,
+  SignupInput,
+  UpdateProfileInput,
+  User,
+  ChangePasswordInput,
+} from "./schemas";
 
 // ─── Login ───────────────────────────────────────────────────────────────────
 export function useLogin() {
@@ -80,6 +86,7 @@ export function useUpdateProfile() {
 // ─── Change Password ─────────────────────────────────────────────────────────
 export function useChangePassword() {
   return useMutation({
-    mutationFn: (input: Omit<ChangePasswordInput, 'confirmPassword'>) => changePassword(input),
+    mutationFn: (input: Omit<ChangePasswordInput, "confirmPassword">) =>
+      changePassword(input),
   });
 }

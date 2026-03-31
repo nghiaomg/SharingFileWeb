@@ -65,6 +65,24 @@ public class AuthService {
     @Value("${sharingfileweb.app.googleClientId}")
     private String googleClientId;
 
+    @Value("${sharingfileweb.app.githubClientId}")
+    private String githubClientId;
+
+    @Value("${sharingfileweb.app.githubClientSecret}")
+    private String githubClientSecret;
+
+    @Value("${sharingfileweb.app.dribbbleClientId}")
+    private String dribbbleClientId;
+
+    @Value("${sharingfileweb.app.dribbbleClientSecret}")
+    private String dribbbleClientSecret;
+
+    @Value("${sharingfileweb.app.zaloAppId}")
+    private String zaloAppId;
+
+    @Value("${sharingfileweb.app.zaloSecretKey}")
+    private String zaloSecretKey;
+
     public JwtResponse loginWithGoogle(String idToken) {
         try {
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
@@ -123,6 +141,340 @@ public class AuthService {
             throw new RuntimeException("Failed to verify Google ID Token: " + e.getMessage());
         } catch (Exception e) {
             throw new RuntimeException("Google login error: " + e.getMessage());
+        }
+    }
+
+    public JwtResponse loginWithGithub(String code) {
+        try {
+            org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+            
+            // 1. Get access token
+            String tokenUrl = "https://github.com/login/oauth/access_token";
+            
+            java.util.Map<String, String> body = new java.util.HashMap<>();
+            body.put("client_id", githubClientId);
+            body.put("client_secret", githubClientSecret);
+            body.put("code", code);
+            body.put("redirect_uri", "https://sharingfile.nghiaomg.xyz/auth/google/github");
+
+            org.springframework.http.HttpHeaders tokenHeaders = new org.springframework.http.HttpHeaders();
+            tokenHeaders.set("Accept", "application/json");
+            
+            org.springframework.http.HttpEntity<java.util.Map<String, String>> tokenRequest = new org.springframework.http.HttpEntity<>(body, tokenHeaders);
+            
+            org.springframework.http.ResponseEntity<java.util.Map<String, Object>> tokenResponse = restTemplate.exchange(
+                    tokenUrl,
+                    org.springframework.http.HttpMethod.POST,
+                    tokenRequest,
+                    new org.springframework.core.ParameterizedTypeReference<java.util.Map<String, Object>>() {}
+            );
+
+            java.util.Map<String, Object> tokenPayload = tokenResponse.getBody();
+            if (tokenPayload == null || !tokenPayload.containsKey("access_token")) {
+                throw new RuntimeException("Failed to get GitHub access token: " + (tokenPayload != null ? tokenPayload.get("error_description") : "unknown error"));
+            }
+            
+            String accessToken = (String) tokenPayload.get("access_token");
+
+            // 2. Get User Info
+            String userUrl = "https://api.github.com/user";
+            org.springframework.http.HttpHeaders userHeaders = new org.springframework.http.HttpHeaders();
+            userHeaders.set("Authorization", "Bearer " + accessToken);
+            org.springframework.http.HttpEntity<String> userReqEntity = new org.springframework.http.HttpEntity<>(userHeaders);
+            
+            org.springframework.http.ResponseEntity<java.util.Map<String, Object>> userResponse = restTemplate.exchange(
+                    userUrl,
+                    org.springframework.http.HttpMethod.GET,
+                    userReqEntity,
+                    new org.springframework.core.ParameterizedTypeReference<java.util.Map<String, Object>>() {}
+            );
+            
+            java.util.Map<String, Object> userInfo = userResponse.getBody();
+            if (userInfo == null) throw new RuntimeException("Failed to fetch GitHub user info");
+
+            String email = (String) userInfo.get("email");
+            String username = (String) userInfo.get("login");
+            String name = (String) userInfo.get("name");
+            
+            // 3. If email is null, fetch emails
+            if (email == null || email.isBlank()) {
+                String emailsUrl = "https://api.github.com/user/emails";
+                org.springframework.http.ResponseEntity<java.util.List<java.util.Map<String, Object>>> emailsResponse = restTemplate.exchange(
+                        emailsUrl,
+                        org.springframework.http.HttpMethod.GET,
+                        userReqEntity,
+                        new org.springframework.core.ParameterizedTypeReference<java.util.List<java.util.Map<String, Object>>>() {}
+                );
+                
+                java.util.List<java.util.Map<String, Object>> emails = emailsResponse.getBody();
+                if (emails != null) {
+                    for (java.util.Map<String, Object> emailObj : emails) {
+                        Boolean primary = (Boolean) emailObj.get("primary");
+                        Boolean verified = (Boolean) emailObj.get("verified");
+                        if (primary != null && primary && verified != null && verified) {
+                            email = (String) emailObj.get("email");
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            if (email == null || email.isBlank()) {
+                throw new RuntimeException("No verified primary email found on GitHub");
+            }
+            
+            final String finalEmail = email;
+            final String finalName = (name != null && !name.isBlank()) ? name : username;
+
+            // 4. Find or Create User
+            User user = userRepository.findByEmail(finalEmail).orElseGet(() -> {
+                User newUser = new User(
+                        finalName.replaceAll("\\s+", "_").toLowerCase() + "_" + UUID.randomUUID().toString().substring(0, 6),
+                        finalEmail,
+                        encoder.encode(UUID.randomUUID().toString()) // random password
+                );
+                newUser.setSubscriptionPlan("BASIC");
+                newUser.setMaxStorage(5L * 1024 * 1024 * 1024);
+                newUser.setMaxFileSize(1024L * 1024 * 1024);
+
+                Role userRole = roleRepository.findByName(ERole.ROLE_USER)
+                        .orElseThrow(() -> new RuntimeException("Role not found"));
+                Set<Role> roles = new HashSet<>();
+                roles.add(userRole);
+                newUser.setRoles(roles);
+                return userRepository.save(newUser);
+            });
+
+            String jwt = jwtUtils.generateTokenFromUsername(user.getUsername());
+            RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
+
+            List<String> roles = user.getRoles().stream()
+                    .map(r -> r.getName().name())
+                    .collect(Collectors.toList());
+
+            return new JwtResponse(jwt,
+                    refreshToken.getToken(),
+                    user.getId(),
+                    user.getUsername(),
+                    user.getEmail(),
+                    roles,
+                    user.getSubscriptionPlan(),
+                    user.getMaxStorage(),
+                    user.getMaxFileSize());
+
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("GitHub login error: " + e.getMessage(), e);
+        }
+    }
+
+    public JwtResponse loginWithDribbble(String code) {
+        try {
+            org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+            
+            // 1. Get access token
+            String tokenUrl = "https://dribbble.com/oauth/token";
+            
+            java.util.Map<String, String> body = new java.util.HashMap<>();
+            body.put("client_id", dribbbleClientId);
+            body.put("client_secret", dribbbleClientSecret);
+            body.put("code", code);
+            body.put("redirect_uri", "https://sharingfile.nghiaomg.xyz/auth/google/dribbble");
+
+            org.springframework.http.HttpHeaders tokenHeaders = new org.springframework.http.HttpHeaders();
+            tokenHeaders.set("Accept", "application/json");
+            
+            org.springframework.http.HttpEntity<java.util.Map<String, String>> tokenRequest = new org.springframework.http.HttpEntity<>(body, tokenHeaders);
+            
+            org.springframework.http.ResponseEntity<java.util.Map<String, Object>> tokenResponse = restTemplate.exchange(
+                    tokenUrl,
+                    org.springframework.http.HttpMethod.POST,
+                    tokenRequest,
+                    new org.springframework.core.ParameterizedTypeReference<java.util.Map<String, Object>>() {}
+            );
+
+            java.util.Map<String, Object> tokenPayload = tokenResponse.getBody();
+            if (tokenPayload == null || !tokenPayload.containsKey("access_token")) {
+                throw new RuntimeException("Failed to get Dribbble access token: " + (tokenPayload != null ? tokenPayload.get("error_description") : "unknown error"));
+            }
+            
+            String accessToken = (String) tokenPayload.get("access_token");
+
+            // 2. Get User Info
+            String userUrl = "https://api.dribbble.com/v2/user";
+            org.springframework.http.HttpHeaders userHeaders = new org.springframework.http.HttpHeaders();
+            userHeaders.set("Authorization", "Bearer " + accessToken);
+            org.springframework.http.HttpEntity<String> userReqEntity = new org.springframework.http.HttpEntity<>(userHeaders);
+            
+            org.springframework.http.ResponseEntity<java.util.Map<String, Object>> userResponse = restTemplate.exchange(
+                    userUrl,
+                    org.springframework.http.HttpMethod.GET,
+                    userReqEntity,
+                    new org.springframework.core.ParameterizedTypeReference<java.util.Map<String, Object>>() {}
+            );
+            
+            java.util.Map<String, Object> userInfo = userResponse.getBody();
+            if (userInfo == null) throw new RuntimeException("Failed to fetch Dribbble user info");
+
+            String username = (String) userInfo.get("login");
+            String name = (String) userInfo.get("name");
+            
+            if (username == null || username.isBlank()) {
+                throw new RuntimeException("Dribbble returned invalid user profile without login alias.");
+            }
+            
+            // Dribbble does not return email. Create a mock verified email.
+            final String finalEmail = username + "@dribbble.user";
+            final String finalName = (name != null && !name.isBlank()) ? name : username;
+
+            // 4. Find or Create User
+            User user = userRepository.findByEmail(finalEmail).orElseGet(() -> {
+                User newUser = new User(
+                        finalName.replaceAll("\\s+", "_").toLowerCase() + "_" + UUID.randomUUID().toString().substring(0, 6),
+                        finalEmail,
+                        encoder.encode(UUID.randomUUID().toString()) // random password
+                );
+                newUser.setSubscriptionPlan("BASIC");
+                newUser.setMaxStorage(5L * 1024 * 1024 * 1024);
+                newUser.setMaxFileSize(1024L * 1024 * 1024);
+
+                Role userRole = roleRepository.findByName(ERole.ROLE_USER)
+                        .orElseThrow(() -> new RuntimeException("Role not found"));
+                Set<Role> roles = new HashSet<>();
+                roles.add(userRole);
+                newUser.setRoles(roles);
+                return userRepository.save(newUser);
+            });
+
+            String jwt = jwtUtils.generateTokenFromUsername(user.getUsername());
+            RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
+
+            List<String> roles = user.getRoles().stream()
+                    .map(r -> r.getName().name())
+                    .collect(Collectors.toList());
+
+            return new JwtResponse(jwt,
+                    refreshToken.getToken(),
+                    user.getId(),
+                    user.getUsername(),
+                    user.getEmail(),
+                    roles,
+                    user.getSubscriptionPlan(),
+                    user.getMaxStorage(),
+                    user.getMaxFileSize());
+
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Dribbble login error: " + e.getMessage(), e);
+        }
+    }
+
+    public JwtResponse loginWithZalo(String code) {
+        try {
+            org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+
+            // 1. Get access token from Zalo
+            String tokenUrl = "https://oauth.zaloapp.com/v4/oa/access_token";
+
+            org.springframework.http.HttpHeaders tokenHeaders = new org.springframework.http.HttpHeaders();
+            tokenHeaders.setContentType(org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED);
+            tokenHeaders.set("secret_key", zaloSecretKey);
+
+            org.springframework.util.MultiValueMap<String, String> body = new org.springframework.util.LinkedMultiValueMap<>();
+            body.add("app_id", zaloAppId);
+            body.add("grant_type", "authorization_code");
+            body.add("code", code);
+
+            org.springframework.http.HttpEntity<org.springframework.util.MultiValueMap<String, String>> tokenRequest = new org.springframework.http.HttpEntity<>(body, tokenHeaders);
+
+            org.springframework.http.ResponseEntity<java.util.Map<String, Object>> tokenResponse = restTemplate.exchange(
+                    tokenUrl,
+                    org.springframework.http.HttpMethod.POST,
+                    tokenRequest,
+                    new org.springframework.core.ParameterizedTypeReference<java.util.Map<String, Object>>() {}
+            );
+
+            java.util.Map<String, Object> tokenPayload = tokenResponse.getBody();
+            if (tokenPayload == null || !tokenPayload.containsKey("access_token")) {
+                throw new RuntimeException("Failed to get Zalo access token: " + (tokenPayload != null ? tokenPayload.get("error_name") : "unknown error"));
+            }
+
+            String accessToken = (String) tokenPayload.get("access_token");
+
+            // 2. Get User Info from Zalo
+            String userUrl = "https://graph.zalo.me/v2.0/me?fields=id,name,picture";
+            org.springframework.http.HttpHeaders userHeaders = new org.springframework.http.HttpHeaders();
+            userHeaders.set("access_token", accessToken);
+            org.springframework.http.HttpEntity<String> userReqEntity = new org.springframework.http.HttpEntity<>(userHeaders);
+
+            org.springframework.http.ResponseEntity<java.util.Map<String, Object>> userResponse = restTemplate.exchange(
+                    userUrl,
+                    org.springframework.http.HttpMethod.GET,
+                    userReqEntity,
+                    new org.springframework.core.ParameterizedTypeReference<java.util.Map<String, Object>>() {}
+            );
+
+            java.util.Map<String, Object> userInfo = userResponse.getBody();
+            if (userInfo == null) throw new RuntimeException("Failed to fetch Zalo user info");
+
+            // Check if Zalo returned an error inside the map
+            if (userInfo.containsKey("error")) {
+                throw new RuntimeException("Zalo Graph API error: " + userInfo.get("message"));
+            }
+
+            String idStr = (String) userInfo.get("id");
+            String name = (String) userInfo.get("name");
+
+            if (idStr == null || idStr.isBlank()) {
+                throw new RuntimeException("Zalo returned invalid user profile without ID.");
+            }
+
+            // 3. Mock Email for Zalo User
+            final String finalEmail = "zalo_" + idStr + "@zalo.user";
+            final String finalName = (name != null && !name.isBlank()) ? name : "Zalo User_" + idStr.substring(0, 4);
+
+            // 4. Find or Create User
+            User user = userRepository.findByEmail(finalEmail).orElseGet(() -> {
+                User newUser = new User(
+                        "zalo" + "_" + UUID.randomUUID().toString().substring(0, 8),
+                        finalEmail,
+                        encoder.encode(UUID.randomUUID().toString()) // random password
+                );
+                newUser.setSubscriptionPlan("BASIC");
+                newUser.setMaxStorage(5L * 1024 * 1024 * 1024);
+                newUser.setMaxFileSize(1024L * 1024 * 1024);
+
+                Role userRole = roleRepository.findByName(ERole.ROLE_USER)
+                        .orElseThrow(() -> new RuntimeException("Role not found"));
+                Set<Role> roles = new HashSet<>();
+                roles.add(userRole);
+                newUser.setRoles(roles);
+                return userRepository.save(newUser);
+            });
+
+            String jwt = jwtUtils.generateTokenFromUsername(user.getUsername());
+            RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
+
+            List<String> roles = user.getRoles().stream()
+                    .map(r -> r.getName().name())
+                    .collect(Collectors.toList());
+
+            return new JwtResponse(jwt,
+                    refreshToken.getToken(),
+                    user.getId(),
+                    user.getUsername(),
+                    user.getEmail(),
+                    roles,
+                    user.getSubscriptionPlan(),
+                    user.getMaxStorage(),
+                    user.getMaxFileSize());
+
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Zalo login error: " + e.getMessage(), e);
         }
     }
 

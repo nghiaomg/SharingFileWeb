@@ -122,7 +122,6 @@ export const UpdateShareLinkSchema = z.object({
 
 export type UpdateShareLinkInput = z.infer<typeof UpdateShareLinkSchema>;
 
-
 // ─── Internal Share Input ────────────────────────────────────────────────────
 export const InternalShareSchema = z.object({
   fileId: z.string(),

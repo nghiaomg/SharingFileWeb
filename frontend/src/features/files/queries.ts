@@ -1,18 +1,26 @@
 "use client";
 
 import { useQuery, queryOptions } from "@tanstack/react-query";
-import { getRootFolder, getFolderById, getFolderChildren, getFiles, getRecentFiles, getSharedFiles } from "./api";
+import {
+  getRootFolder,
+  getFolderById,
+  getFolderChildren,
+  getFiles,
+  getRecentFiles,
+  getSharedFiles,
+} from "./api";
 
 // ─── Query Key Factory ───────────────────────────────────────────────────────
 export const fileKeys = {
-  all:            () => ["files"] as const,
-  folders:        () => [...fileKeys.all(), "folders"] as const,
-  folder:         (id: string) => [...fileKeys.folders(), id] as const,
+  all: () => ["files"] as const,
+  folders: () => [...fileKeys.all(), "folders"] as const,
+  folder: (id: string) => [...fileKeys.folders(), id] as const,
   folderChildren: (id: string) => [...fileKeys.folder(id), "children"] as const,
-  rootFolder:     () => [...fileKeys.folders(), "root"] as const,
-  fileList:       (folderId: string) => [...fileKeys.all(), "list", folderId] as const,
-  recent:         () => [...fileKeys.all(), "recent"] as const,
-  shared:         () => [...fileKeys.all(), "shared"] as const,
+  rootFolder: () => [...fileKeys.folders(), "root"] as const,
+  fileList: (folderId: string) =>
+    [...fileKeys.all(), "list", folderId] as const,
+  recent: () => [...fileKeys.all(), "recent"] as const,
+  shared: () => [...fileKeys.all(), "shared"] as const,
 };
 
 // ─── queryOptions ────────────────────────────────────────────────────────────

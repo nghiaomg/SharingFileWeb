@@ -4,7 +4,7 @@ import { useQuery, queryOptions } from "@tanstack/react-query";
 import { getTrashItems } from "./api";
 
 export const trashKeys = {
-  all:   () => ["trash"] as const,
+  all: () => ["trash"] as const,
   items: () => [...trashKeys.all(), "items"] as const,
 };
 

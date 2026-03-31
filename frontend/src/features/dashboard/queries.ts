@@ -4,7 +4,7 @@ import { useQuery, queryOptions } from "@tanstack/react-query";
 import { getDashboardCategories, getDashboardRecentFiles } from "./api";
 
 export const dashboardKeys = {
-  all:      () => ["dashboard"] as const,
+  all: () => ["dashboard"] as const,
   categories: () => [...dashboardKeys.all(), "categories"] as const,
   recentFiles: () => [...dashboardKeys.all(), "recentFiles"] as const,
 };

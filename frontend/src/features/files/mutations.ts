@@ -1,10 +1,23 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createFolder, updateFolder, deleteFolder, deleteFile, shareFile, uploadFileChunked, downloadFile, renameFile } from "./api";
+import {
+  createFolder,
+  updateFolder,
+  deleteFolder,
+  deleteFile,
+  shareFile,
+  uploadFileChunked,
+  downloadFile,
+  renameFile,
+} from "./api";
 import { fileKeys } from "./queries";
 import { authKeys } from "../auth/queries";
-import type { CreateFolderInput, UpdateFolderInput, ShareFileInput } from "./schemas";
+import type {
+  CreateFolderInput,
+  UpdateFolderInput,
+  ShareFileInput,
+} from "./schemas";
 
 // ─── Create Folder ───────────────────────────────────────────────────────────
 export function useCreateFolder() {
@@ -24,7 +37,8 @@ export function useUpdateFolder() {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateFolderInput }) => updateFolder(id, data),
+    mutationFn: ({ id, data }: { id: string; data: UpdateFolderInput }) =>
+      updateFolder(id, data),
     onSettled: () => {
       qc.invalidateQueries({ queryKey: fileKeys.folders() });
       qc.invalidateQueries({ queryKey: fileKeys.all() });
@@ -51,8 +65,18 @@ export function useUploadFile() {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ file, folderId, onProgress }: { file: File; folderId: string; onProgress?: (p: number) => void }) => {
-      const { fileItem } = await uploadFileChunked(file, folderId, { onProgress });
+    mutationFn: async ({
+      file,
+      folderId,
+      onProgress,
+    }: {
+      file: File;
+      folderId: string;
+      onProgress?: (p: number) => void;
+    }) => {
+      const { fileItem } = await uploadFileChunked(file, folderId, {
+        onProgress,
+      });
       return fileItem;
     },
     onSettled: () => {
@@ -80,7 +104,8 @@ export function useRenameFile() {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ fileId, newName }: { fileId: string; newName: string }) => renameFile(fileId, newName),
+    mutationFn: ({ fileId, newName }: { fileId: string; newName: string }) =>
+      renameFile(fileId, newName),
     onSettled: () => {
       qc.invalidateQueries({ queryKey: fileKeys.all() });
     },
@@ -92,7 +117,13 @@ export function useShareFile() {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ fileId, payload }: { fileId: string; payload: ShareFileInput }) => shareFile(fileId, payload),
+    mutationFn: ({
+      fileId,
+      payload,
+    }: {
+      fileId: string;
+      payload: ShareFileInput;
+    }) => shareFile(fileId, payload),
     onSettled: () => {
       qc.invalidateQueries({ queryKey: fileKeys.all() });
     },
@@ -102,6 +133,7 @@ export function useShareFile() {
 // ─── Download File ───────────────────────────────────────────────────────────
 export function useDownloadFile() {
   return useMutation({
-    mutationFn: ({ fileId, fileName }: { fileId: string; fileName: string }) => downloadFile(fileId, fileName),
+    mutationFn: ({ fileId, fileName }: { fileId: string; fileName: string }) =>
+      downloadFile(fileId, fileName),
   });
 }

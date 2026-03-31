@@ -16,7 +16,7 @@ export function ChangePasswordModal({ isOpen, onClose }: Props) {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [validationError, setValidationError] = useState<string | null>(null);
-  
+
   const [successMsg, setSuccessMsg] = useState("");
   const mutation = useChangePassword();
 
@@ -24,7 +24,11 @@ export function ChangePasswordModal({ isOpen, onClose }: Props) {
     e.preventDefault();
     setValidationError(null);
 
-    const result = ChangePasswordSchema.safeParse({ currentPassword, newPassword, confirmPassword });
+    const result = ChangePasswordSchema.safeParse({
+      currentPassword,
+      newPassword,
+      confirmPassword,
+    });
     if (!result.success) {
       setValidationError(result.error.issues[0].message);
       return;
@@ -59,7 +63,11 @@ export function ChangePasswordModal({ isOpen, onClose }: Props) {
           <h2 className="text-xl font-bold flex items-center gap-2">
             <Lock className="w-5 h-5 text-primary" /> Đổi mật khẩu
           </h2>
-          <button type="button" onClick={handleClose} className="p-2 hover:bg-secondary/80 rounded-full transition-colors">
+          <button
+            type="button"
+            onClick={handleClose}
+            className="p-2 hover:bg-secondary/80 rounded-full transition-colors"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -81,12 +89,17 @@ export function ChangePasswordModal({ isOpen, onClose }: Props) {
               )}
               {mutation.isError && (
                 <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-500 text-sm rounded-xl mb-4">
-                  {getApiErrorMessage(mutation.error, "Đã xảy ra lỗi khi đổi mật khẩu.")}
+                  {getApiErrorMessage(
+                    mutation.error,
+                    "Đã xảy ra lỗi khi đổi mật khẩu.",
+                  )}
                 </div>
               )}
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">Mật khẩu hiện tại</label>
+                <label className="block text-sm font-medium mb-1.5">
+                  Mật khẩu hiện tại
+                </label>
                 <input
                   type="password"
                   className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow"
@@ -97,7 +110,9 @@ export function ChangePasswordModal({ isOpen, onClose }: Props) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">Mật khẩu mới</label>
+                <label className="block text-sm font-medium mb-1.5">
+                  Mật khẩu mới
+                </label>
                 <input
                   type="password"
                   className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow"
@@ -108,7 +123,9 @@ export function ChangePasswordModal({ isOpen, onClose }: Props) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">Xác nhận mật khẩu mới</label>
+                <label className="block text-sm font-medium mb-1.5">
+                  Xác nhận mật khẩu mới
+                </label>
                 <input
                   type="password"
                   className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow"
@@ -131,7 +148,9 @@ export function ChangePasswordModal({ isOpen, onClose }: Props) {
                   disabled={mutation.isPending}
                   className="px-5 py-2.5 text-sm font-bold bg-primary hover:bg-primary/90 text-white rounded-xl transition-colors flex items-center gap-2"
                 >
-                  {mutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {mutation.isPending && (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  )}
                   Cập nhật
                 </button>
               </div>

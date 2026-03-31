@@ -1,6 +1,13 @@
 import apiClient from "@/lib/api-client";
 import Cookies from "js-cookie";
-import type { User, LoginInput, SignupInput, UpdateProfileInput, StorageUsage, ChangePasswordInput } from "./schemas";
+import type {
+  User,
+  LoginInput,
+  SignupInput,
+  UpdateProfileInput,
+  StorageUsage,
+  ChangePasswordInput,
+} from "./schemas";
 
 export async function login(data: LoginInput): Promise<User> {
   const response = await apiClient.post("/auth/signin", data);
@@ -19,6 +26,51 @@ export async function login(data: LoginInput): Promise<User> {
 
 export async function loginWithGoogle(idToken: string): Promise<User> {
   const response = await apiClient.post("/auth/google", { idToken });
+  const userData = response.data;
+
+  if (userData.accessToken) {
+    Cookies.set("access_token", userData.accessToken, { expires: 1 });
+    if (userData.refreshToken) {
+      Cookies.set("refresh_token", userData.refreshToken, { expires: 30 });
+    }
+    Cookies.set("user_data", JSON.stringify(userData), { expires: 1 });
+  }
+
+  return userData;
+}
+
+export async function loginWithGithub(code: string): Promise<User> {
+  const response = await apiClient.post("/auth/github", { code });
+  const userData = response.data;
+
+  if (userData.accessToken) {
+    Cookies.set("access_token", userData.accessToken, { expires: 1 });
+    if (userData.refreshToken) {
+      Cookies.set("refresh_token", userData.refreshToken, { expires: 30 });
+    }
+    Cookies.set("user_data", JSON.stringify(userData), { expires: 1 });
+  }
+
+  return userData;
+}
+
+export async function loginWithDribbble(code: string): Promise<User> {
+  const response = await apiClient.post("/auth/dribbble", { code });
+  const userData = response.data;
+
+  if (userData.accessToken) {
+    Cookies.set("access_token", userData.accessToken, { expires: 1 });
+    if (userData.refreshToken) {
+      Cookies.set("refresh_token", userData.refreshToken, { expires: 30 });
+    }
+    Cookies.set("user_data", JSON.stringify(userData), { expires: 1 });
+  }
+
+  return userData;
+}
+
+export async function loginWithZalo(code: string): Promise<User> {
+  const response = await apiClient.post("/auth/zalo", { code });
   const userData = response.data;
 
   if (userData.accessToken) {
@@ -75,6 +127,8 @@ export async function upgradePlan(): Promise<User> {
   return getMe();
 }
 
-export async function changePassword(data: Omit<ChangePasswordInput, 'confirmPassword'>): Promise<void> {
+export async function changePassword(
+  data: Omit<ChangePasswordInput, "confirmPassword">,
+): Promise<void> {
   await apiClient.put("/user/password", data);
 }

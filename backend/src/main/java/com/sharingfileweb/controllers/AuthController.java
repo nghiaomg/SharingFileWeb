@@ -75,6 +75,39 @@ public class AuthController {
     }
   }
 
+  @Operation(summary = "Đăng nhập GitHub", description = "Đăng nhập sử dụng GitHub OAuth Code.")
+  @PostMapping("/github")
+  public ResponseEntity<?> githubLogin(@Valid @RequestBody com.sharingfileweb.payload.request.GithubLoginRequest request) {
+    try {
+        JwtResponse response = authService.loginWithGithub(request.getCode());
+        return ResponseEntity.ok(StandardResponse.success("GitHub login successful", response));
+    } catch (RuntimeException e) {
+        return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
+    }
+  }
+
+  @Operation(summary = "Đăng nhập Dribbble", description = "Đăng nhập sử dụng Dribbble OAuth Code.")
+  @PostMapping("/dribbble")
+  public ResponseEntity<?> dribbbleLogin(@Valid @RequestBody com.sharingfileweb.payload.request.DribbbleLoginRequest request) {
+    try {
+        JwtResponse response = authService.loginWithDribbble(request.getCode());
+        return ResponseEntity.ok(StandardResponse.success("Dribbble login successful", response));
+    } catch (RuntimeException e) {
+        return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
+    }
+  }
+
+  @Operation(summary = "Đăng nhập Zalo", description = "Đăng nhập sử dụng Zalo OAuth Code.")
+  @PostMapping("/zalo")
+  public ResponseEntity<?> zaloLogin(@Valid @RequestBody com.sharingfileweb.payload.request.ZaloLoginRequest request) {
+    try {
+        JwtResponse response = authService.loginWithZalo(request.getCode());
+        return ResponseEntity.ok(StandardResponse.success("Zalo login successful", response));
+    } catch (RuntimeException e) {
+        return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
+    }
+  }
+
   @Operation(summary = "Đăng ký tải khoản", description = "Tạo tài khoản mới trong hệ thống.")
   @PostMapping("/signup")
   public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
