@@ -12,8 +12,8 @@ services:
       - ./backend/logs:/app/logs
     networks:
       - sharingfile-network
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    depends_on:
+      - mongodb
     # expose port nội bộ (không map ra ngoài)
     expose:
       - "8080"          # thay bằng port thật của backend (thường 3000, 8080, 5000...)
@@ -61,3 +61,17 @@ networks:
   sharingfile-network:
     name: sharingfile-network
     driver: bridge
+
+  mongodb:
+    image: mongo:latest
+    container_name: sharingfile-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - sharingfile-network
+
+volumes:
+  mongodb_data:
