@@ -45,6 +45,9 @@ public class UserService {
 
     private UserDetailsImpl getCurrentUserDetails() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
+            throw new RuntimeException("Error: Unauthorized user");
+        }
         return (UserDetailsImpl) authentication.getPrincipal();
     }
 
