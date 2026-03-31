@@ -78,18 +78,19 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, setCollap
       breakpoint="lg"
       collapsedWidth="0"
       width={250}
-      theme="light"
-      style={{ boxShadow: '2px 0 8px rgba(0,21,41,0.05)', zIndex: 2 }}
+      theme="dark"
+      style={{ boxShadow: '2px 0 8px rgba(0,0,0,0.4)', zIndex: 2 }}
     >
-      <div style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid #f0f0f0', overflow: 'hidden' }}>
-        <h2 style={{ margin: 0, fontWeight: 700, color: '#1677ff', fontSize: collapsed ? '1.2rem' : '1.5rem', transition: 'all 0.2s', whiteSpace: 'nowrap' }}>
+      <div style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden', background: '#161616' }}>
+        <h2 style={{ margin: 0, fontWeight: 700, color: '#c084fc', fontSize: collapsed ? '1.2rem' : '1.5rem', transition: 'all 0.2s', whiteSpace: 'nowrap' }}>
           {collapsed ? 'SF' : 'Sharing File'}
         </h2>
       </div>
       <Menu
         mode="inline"
+        theme="dark"
         selectedKeys={[getSelectedKey()]}
-        style={{ borderRight: 0, padding: '16px 8px' }}
+        style={{ borderRight: 0, padding: '16px 8px', background: 'transparent' }}
         items={menuItems}
         onClick={({ key }) => navigate(key)}
       />

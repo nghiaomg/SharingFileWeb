@@ -99,7 +99,7 @@ export const UserDetailDrawer: React.FC<UserDetailDrawerProps> = ({
               title="Gói cước"
               value={user.subscriptionPlan}
               prefix={isPro ? <CrownOutlined style={{ color: '#faad14' }} /> : <Tag>FREE</Tag>}
-              valueStyle={{ fontSize: 18 }}
+              styles={{ content: { fontSize: 18 } }}
             />
           </Col>
           <Col span={8}>
@@ -107,7 +107,7 @@ export const UserDetailDrawer: React.FC<UserDetailDrawerProps> = ({
               title="2FA"
               value={user.twoFactorEnabled ? 'Bật' : 'Tắt'}
               prefix={user.twoFactorEnabled ? <LockOutlined style={{ color: '#52c41a' }} /> : <UnlockOutlined style={{ color: '#8c8c8c' }} />}
-              valueStyle={{ fontSize: 18 }}
+              styles={{ content: { fontSize: 18 } }}
             />
           </Col>
           <Col span={8}>
@@ -115,7 +115,7 @@ export const UserDetailDrawer: React.FC<UserDetailDrawerProps> = ({
               title="Vai trò"
               value={isAdmin ? 'Admin' : 'User'}
               prefix={<SafetyOutlined style={{ color: isAdmin ? '#ff4d4f' : '#1677ff' }} />}
-              valueStyle={{ fontSize: 18, color: isAdmin ? '#ff4d4f' : '#1677ff' }}
+              styles={{ content: { fontSize: 18, color: isAdmin ? '#ff4d4f' : '#1677ff' } }}
             />
           </Col>
         </Row>
@@ -241,7 +241,7 @@ export const UserDetailDrawer: React.FC<UserDetailDrawerProps> = ({
           items={[
             {
               color: 'green',
-              children: (
+              content: (
                 <div>
                   <Text>Đăng nhập vào hệ thống</Text>
                   <br />
@@ -253,7 +253,7 @@ export const UserDetailDrawer: React.FC<UserDetailDrawerProps> = ({
             },
             {
               color: 'blue',
-              children: (
+              content: (
                 <div>
                   <Text>Tạo tài khoản</Text>
                   <br />
@@ -265,7 +265,7 @@ export const UserDetailDrawer: React.FC<UserDetailDrawerProps> = ({
             },
             ...(isPro ? [{
               color: 'gold',
-              children: (
+              content: (
                 <div>
                   <Text>Nâng cấp lên PRO</Text>
                   <br />

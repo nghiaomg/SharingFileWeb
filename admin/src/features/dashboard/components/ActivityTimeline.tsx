@@ -111,7 +111,7 @@ export const ActivityTimeline: React.FC = () => {
   return (
     <Timeline
       items={activities.map((activity) => ({
-        dot: (
+        icon: (
           <div
             style={{
               width: 32,
@@ -127,7 +127,7 @@ export const ActivityTimeline: React.FC = () => {
             {getIconForType(activity.type)}
           </div>
         ),
-        children: (
+        content: (
           <div style={{ paddingBottom: 8 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
               <Text strong style={{ fontSize: 13 }}>{activity.title}</Text>

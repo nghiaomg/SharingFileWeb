@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
     LayoutDashboard, FolderOpen, Clock, Share2, Trash2, Settings,
-    HardDrive, Crown, X, Zap, FileUp
+    HardDrive, Crown, X, Zap, FileUp, QrCode
 } from "lucide-react";
 import { useStorageUsage } from "@/features/auth/queries";
 import { getCurrentUser } from "@/features/auth/api";
@@ -22,6 +22,7 @@ const navItems = [
     { href: "/dashboard/recent", icon: Clock, label: "Gần đây" },
     { href: "/dashboard/shared", icon: Share2, label: "Được chia sẻ" },
     { href: "/dashboard/trash", icon: Trash2, label: "Thùng rác" },
+    { href: "/dashboard/payment", icon: QrCode, label: "Nạp tiền" },
 ];
 
 const bottomItems = [

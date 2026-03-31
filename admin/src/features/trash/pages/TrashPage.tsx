@@ -326,7 +326,7 @@ const TrashPage: React.FC = () => {
               title="Tổng mục"
               value={stats.totalItems}
               prefix={<DeleteOutlined />}
-              valueStyle={{ color: '#1677ff' }}
+              styles={{ content: { color: '#1677ff' } }}
             />
           </Card>
         </Col>
@@ -336,7 +336,7 @@ const TrashPage: React.FC = () => {
               title="Tệp tin"
               value={stats.totalFiles}
               prefix={<FileOutlined style={{ color: '#1677ff' }} />}
-              valueStyle={{ color: '#1677ff' }}
+              styles={{ content: { color: '#1677ff' } }}
             />
           </Card>
         </Col>
@@ -346,7 +346,7 @@ const TrashPage: React.FC = () => {
               title="Thư mục"
               value={stats.totalFolders}
               prefix={<FolderOutlined style={{ color: '#fa8c16' }} />}
-              valueStyle={{ color: '#fa8c16' }}
+              styles={{ content: { color: '#fa8c16' } }}
             />
           </Card>
         </Col>
@@ -357,7 +357,7 @@ const TrashPage: React.FC = () => {
               value={stats.totalSize as number}
               formatter={(val) => formatBytes(val as number)}
               prefix={<DeleteOutlined style={{ color: '#ff4d4f' }} />}
-              valueStyle={{ color: '#ff4d4f' }}
+              styles={{ content: { color: '#ff4d4f' } }}
             />
           </Card>
         </Col>
@@ -525,7 +525,7 @@ const TrashPage: React.FC = () => {
         {selectedItem && (
           <div>
             <Card size="small" style={{ marginBottom: 16 }}>
-              <Space direction="vertical" align="center">
+              <Space orientation="vertical" align="center">
                 {selectedItem.itemType === 'file' ? (
                   <FileOutlined style={{ fontSize: 48, color: '#1677ff' }} />
                 ) : (
@@ -558,7 +558,7 @@ const TrashPage: React.FC = () => {
                 items={[
                   {
                     color: 'green',
-                    children: (
+                    content: (
                       <div>
                         <Text strong>Mục bị xóa</Text>
                         <br />
@@ -570,7 +570,7 @@ const TrashPage: React.FC = () => {
                   },
                   {
                     color: 'orange',
-                    children: (
+                    content: (
                       <div>
                         <Text strong>Hết hạn khôi phục</Text>
                         <br />

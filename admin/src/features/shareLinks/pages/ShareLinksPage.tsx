@@ -116,7 +116,7 @@ const ShareLinksPage: React.FC = () => {
       fixed: 'left',
       width: 150,
       render: (_, record) => (
-        <Space direction="vertical" size={0}>
+        <Space orientation="vertical" size={0}>
           <Text copyable={{ text: record.token }} style={{ fontFamily: 'monospace', fontSize: 12 }}>
             {record.token?.substring(0, 12)}...
           </Text>
@@ -268,7 +268,7 @@ const ShareLinksPage: React.FC = () => {
               title="Tổng liên kết"
               value={stats.total}
               prefix={<LinkOutlined />}
-              valueStyle={{ color: '#1677ff' }}
+              styles={{ content: { color: '#1677ff' } }}
             />
           </Card>
         </Col>
@@ -278,7 +278,7 @@ const ShareLinksPage: React.FC = () => {
               title="Đang hoạt động"
               value={stats.active}
               prefix={<CheckCircleOutlined style={{ color: '#52c41a' }} />}
-              valueStyle={{ color: '#52c41a' }}
+              styles={{ content: { color: '#52c41a' } }}
             />
           </Card>
         </Col>
@@ -288,7 +288,7 @@ const ShareLinksPage: React.FC = () => {
               title="Đã thu hồi"
               value={stats.revoked}
               prefix={<CloseCircleOutlined style={{ color: '#ff4d4f' }} />}
-              valueStyle={{ color: '#ff4d4f' }}
+              styles={{ content: { color: '#ff4d4f' } }}
             />
           </Card>
         </Col>
@@ -299,7 +299,7 @@ const ShareLinksPage: React.FC = () => {
               value={stats.withPassword}
               prefix={<LockOutlined style={{ color: '#faad14' }} />}
               suffix={`/ ${stats.total}`}
-              valueStyle={{ color: '#faad14' }}
+              styles={{ content: { color: '#faad14' } }}
             />
           </Card>
         </Col>

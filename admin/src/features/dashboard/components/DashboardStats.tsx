@@ -39,7 +39,7 @@ export const DashboardStats: React.FC = () => {
             title="Tổng người dùng"
             value={totalUsers}
             prefix={<UserOutlined style={{ color: '#1677ff' }} />}
-            valueStyle={{ color: '#1677ff', fontWeight: 'bold' }}
+            styles={{ content: { color: '#1677ff', fontWeight: 'bold' } }}
           />
         </Card>
       </Col>
@@ -49,7 +49,7 @@ export const DashboardStats: React.FC = () => {
             title="Tổng tệp tin"
             value={totalFiles}
             prefix={<FileTextOutlined style={{ color: '#52c41a' }} />}
-            valueStyle={{ color: '#52c41a', fontWeight: 'bold' }}
+            styles={{ content: { color: '#52c41a', fontWeight: 'bold' } }}
           />
         </Card>
       </Col>
@@ -60,7 +60,7 @@ export const DashboardStats: React.FC = () => {
             value={totalStorage}
             formatter={(val) => formatBytes(val as number)}
             prefix={<DatabaseOutlined style={{ color: '#faad14' }} />}
-            valueStyle={{ color: '#faad14', fontWeight: 'bold' }}
+            styles={{ content: { color: '#faad14', fontWeight: 'bold' } }}
           />
         </Card>
       </Col>
@@ -70,7 +70,7 @@ export const DashboardStats: React.FC = () => {
             title="Liên kết hoạt động"
             value={activeLinks}
             prefix={<LinkOutlined style={{ color: '#eb2f96' }} />}
-            valueStyle={{ color: '#eb2f96', fontWeight: 'bold' }}
+            styles={{ content: { color: '#eb2f96', fontWeight: 'bold' } }}
           />
         </Card>
       </Col>

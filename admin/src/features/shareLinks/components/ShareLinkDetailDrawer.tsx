@@ -230,7 +230,7 @@ export const ShareLinkDetailDrawer: React.FC<ShareLinkDetailDrawerProps> = ({
           items={[
             {
               color: 'green',
-              children: (
+              content: (
                 <div>
                   <Text strong>Liên kết được tạo</Text>
                   <br />
@@ -246,7 +246,7 @@ export const ShareLinkDetailDrawer: React.FC<ShareLinkDetailDrawerProps> = ({
             },
             ...(link.expiresAt ? [{
               color: isExpired ? 'red' : 'blue',
-              children: (
+              content: (
                 <div>
                   <Text strong>Ngày hết hạn</Text>
                   <br />
@@ -265,7 +265,7 @@ export const ShareLinkDetailDrawer: React.FC<ShareLinkDetailDrawerProps> = ({
               ),
             }] : [{
               color: 'gold',
-              children: (
+              content: (
                 <div>
                   <Text strong>Không có thời hạn</Text>
                   <br />
@@ -275,7 +275,7 @@ export const ShareLinkDetailDrawer: React.FC<ShareLinkDetailDrawerProps> = ({
             }]),
             ...(link.isRevoked ? [{
               color: 'red',
-              children: (
+              content: (
                 <div>
                   <Text strong style={{ color: '#ff4d4f' }}>Liên kết đã bị thu hồi</Text>
                   <br />

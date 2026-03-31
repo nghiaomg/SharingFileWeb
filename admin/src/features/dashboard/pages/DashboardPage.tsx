@@ -164,7 +164,7 @@ const DashboardPage: React.FC = () => {
                     title="Thư mục"
                     value={totalFolders}
                     prefix={<FolderOutlined style={{ color: '#fa8c16' }} />}
-                    valueStyle={{ color: '#fa8c16', fontSize: 24 }}
+                    styles={{ content: { color: '#fa8c16', fontSize: 24 } }}
                   />
                 </Tooltip>
               </Col>
@@ -174,7 +174,7 @@ const DashboardPage: React.FC = () => {
                     title="Link hoạt động"
                     value={activeLinks}
                     prefix={<LinkOutlined style={{ color: '#eb2f96' }} />}
-                    valueStyle={{ color: '#eb2f96', fontSize: 24 }}
+                    styles={{ content: { color: '#eb2f96', fontSize: 24 } }}
                   />
                 </Tooltip>
               </Col>
@@ -185,7 +185,7 @@ const DashboardPage: React.FC = () => {
                     value={linksWithPassword}
                     suffix={`/ ${activeLinks}`}
                     prefix={<SafetyCertificateOutlined style={{ color: '#52c41a' }} />}
-                    valueStyle={{ color: '#52c41a', fontSize: 24 }}
+                    styles={{ content: { color: '#52c41a', fontSize: 24 } }}
                   />
                 </Tooltip>
               </Col>
@@ -195,7 +195,7 @@ const DashboardPage: React.FC = () => {
                     title="Đã hết hạn"
                     value={expiredLinks}
                     prefix={<ClockCircleOutlined style={{ color: '#ff4d4f' }} />}
-                    valueStyle={{ color: '#ff4d4f', fontSize: 24 }}
+                    styles={{ content: { color: '#ff4d4f', fontSize: 24 } }}
                   />
                 </Tooltip>
               </Col>

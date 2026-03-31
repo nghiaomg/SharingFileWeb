@@ -264,7 +264,7 @@ const FoldersPage: React.FC = () => {
               title="Tổng thư mục"
               value={folderStats.total}
               prefix={<FolderOutlined />}
-              valueStyle={{ color: '#1677ff' }}
+              styles={{ content: { color: '#1677ff' } }}
             />
           </Card>
         </Col>
@@ -274,7 +274,7 @@ const FoldersPage: React.FC = () => {
               title="Đang hoạt động"
               value={folderStats.active}
               prefix={<FolderOutlined style={{ color: '#52c41a' }} />}
-              valueStyle={{ color: '#52c41a' }}
+              styles={{ content: { color: '#52c41a' } }}
             />
           </Card>
         </Col>
@@ -284,7 +284,7 @@ const FoldersPage: React.FC = () => {
               title="Trong thùng rác"
               value={folderStats.deleted}
               prefix={<DeleteOutlined style={{ color: '#ff4d4f' }} />}
-              valueStyle={{ color: '#ff4d4f' }}
+              styles={{ content: { color: '#ff4d4f' } }}
             />
           </Card>
         </Col>

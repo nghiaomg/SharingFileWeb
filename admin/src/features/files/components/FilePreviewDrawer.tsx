@@ -269,7 +269,7 @@ export const FilePreviewDrawer: React.FC<FilePreviewDrawerProps> = ({
           </Space>
         }
       >
-        <Space direction="vertical" style={{ width: '100%' }}>
+        <Space orientation="vertical" style={{ width: '100%' }}>
           <div>
             <Text type="secondary" style={{ fontSize: 12 }}>Liên kết tải xuống:</Text>
             <div style={{ marginTop: 4 }}>

@@ -12,7 +12,7 @@ export function Footer() {
                     <div className="col-span-1 md:col-span-1">
                         <Link href="/" className="flex items-center gap-2 mb-6 group">
                             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center group-hover:rotate-12 transition-transform duration-300">
-                                <FileUp className="text-white w-5 h-5" />
+                                <FileUp className="text-primary-foreground w-5 h-5" />
                             </div>
                             <span className="text-lg font-bold">FileFlow</span>
                         </Link>

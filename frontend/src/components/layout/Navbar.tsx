@@ -5,6 +5,7 @@ import Link from "next/link";
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import { FileUp, ChevronDown, Menu, X } from "lucide-react";
 import { motion } from "framer-motion";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 export function Navbar() {
     const [isOpen, setIsOpen] = React.useState(false);
@@ -14,7 +15,7 @@ export function Navbar() {
             <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                 <Link href="/" className="flex items-center gap-2 group">
                     <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center border border-primary/30">
-                        <FileUp className="text-white w-6 h-6" />
+                        <FileUp className="text-primary-foreground w-6 h-6" />
                     </div>
                     <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
                         FileFlow
@@ -77,10 +78,11 @@ export function Navbar() {
                 </NavigationMenu.Root>
 
                 <div className="hidden md:flex items-center gap-4 shrink-0">
+                    <ThemeToggle />
                     <Link href="/login" className="whitespace-nowrap text-sm font-medium hover:text-primary transition-colors px-4 py-2">
                         Đăng nhập
                     </Link>
-                    <Link href="/signup" className="whitespace-nowrap bg-primary text-white text-sm font-medium px-6 py-2 rounded-full border border-primary/40 hover:bg-primary/90 hover:border-primary transition-all">
+                    <Link href="/signup" className="whitespace-nowrap bg-primary text-primary-foreground text-sm font-medium px-6 py-2 rounded-full border border-primary/40 hover:bg-primary/90 hover:border-primary transition-all">
                         Bắt đầu ngay
                     </Link>
                 </div>
@@ -104,9 +106,13 @@ export function Navbar() {
                     <Link href="#pricing" className="py-2 border-b border-border">Bảng giá</Link>
                     <Link href="/docs" className="py-2 border-b border-border">Tài liệu</Link>
                     <Link href="/contact" className="py-2 border-b border-border">Liên hệ</Link>
-                    <div className="flex flex-col gap-2 pt-2">
+                    <div className="flex flex-col gap-4 pt-2">
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm">Giao diện</span>
+                            <ThemeToggle />
+                        </div>
                         <Link href="/login" className="w-full text-center py-2 rounded-lg border border-border">Đăng nhập</Link>
-                        <Link href="/signup" className="w-full text-center py-2 rounded-lg bg-primary text-white">Đăng ký</Link>
+                        <Link href="/signup" className="w-full text-center py-2 rounded-lg bg-primary text-primary-foreground">Đăng ký</Link>
                     </div>
                 </motion.div>
             )}

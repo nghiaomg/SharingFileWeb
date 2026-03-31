@@ -155,7 +155,7 @@ export const FolderDetailDrawer: React.FC<FolderDetailDrawerProps> = ({
           items={[
             {
               color: 'green',
-              children: (
+              content: (
                 <div>
                   <Text strong>Thư mục được tạo</Text>
                   <br />
@@ -171,7 +171,7 @@ export const FolderDetailDrawer: React.FC<FolderDetailDrawerProps> = ({
             },
             ...(folder.updatedAt && folder.updatedAt !== folder.createdAt ? [{
               color: 'blue',
-              children: (
+              content: (
                 <div>
                   <Text strong>Cập nhật lần cuối</Text>
                   <br />
@@ -187,7 +187,7 @@ export const FolderDetailDrawer: React.FC<FolderDetailDrawerProps> = ({
             }] : []),
             ...(isDeleted ? [{
               color: 'red',
-              children: (
+              content: (
                 <div>
                   <Text strong style={{ color: '#ff4d4f' }}>Đã chuyển vào thùng rác</Text>
                   <br />

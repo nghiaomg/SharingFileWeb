@@ -323,7 +323,7 @@ const UsersPage: React.FC = () => {
               title="Tổng người dùng"
               value={stats.total}
               prefix={<TeamOutlined />}
-              valueStyle={{ color: '#1677ff' }}
+              styles={{ content: { color: '#1677ff' } }}
             />
           </Card>
         </Col>
@@ -333,7 +333,7 @@ const UsersPage: React.FC = () => {
               title="Người dùng PRO"
               value={stats.proCount}
               prefix={<CrownOutlined />}
-              valueStyle={{ color: '#faad14' }}
+              styles={{ content: { color: '#faad14' } }}
             />
           </Card>
         </Col>
@@ -343,7 +343,7 @@ const UsersPage: React.FC = () => {
               title="Người dùng FREE"
               value={stats.freeCount}
               prefix={<UserOutlined />}
-              valueStyle={{ color: '#8c8c8c' }}
+              styles={{ content: { color: '#8c8c8c' } }}
             />
           </Card>
         </Col>
@@ -353,7 +353,7 @@ const UsersPage: React.FC = () => {
               title="Quản trị viên"
               value={stats.adminCount}
               prefix={<SafetyOutlined />}
-              valueStyle={{ color: '#ff4d4f' }}
+              styles={{ content: { color: '#ff4d4f' } }}
             />
           </Card>
         </Col>

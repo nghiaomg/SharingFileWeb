@@ -42,7 +42,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ collapsed, setCollapse
   ];
 
   return (
-    <Header style={{ padding: '0 16px', background: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 4px rgba(0,21,41,0.08)', zIndex: 1 }}>
+    <Header style={{ padding: '0 16px', background: '#161616', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 4px rgba(0,0,0,0.4)', zIndex: 1, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
       <Button
         type="text"
         icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}

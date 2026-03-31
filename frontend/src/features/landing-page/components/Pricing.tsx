@@ -139,7 +139,7 @@ function PricingCard({ plan }: { plan: { name: string, price: string, desc: stri
                 }`}
         >
             {plan.popular && (
-                <span className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-primary text-white text-xs font-bold rounded-full border border-primary/30">
+                <span className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-primary text-primary-foreground text-xs font-bold rounded-full border border-primary/30">
                     PHỔ BIẾN NHẤT
                 </span>
             )}
@@ -164,7 +164,7 @@ function PricingCard({ plan }: { plan: { name: string, price: string, desc: stri
 
             <button
                 className={`w-full py-4 rounded-2xl font-bold transition-all flex items-center justify-center gap-2 group ${plan.popular
-                        ? "bg-primary text-white hover:bg-primary/90 border border-primary/40 hover:border-primary"
+                        ? "bg-primary text-primary-foreground hover:bg-primary/90 border border-primary/40 hover:border-primary"
                         : "bg-muted text-foreground hover:bg-muted/80"
                     }`}
             >

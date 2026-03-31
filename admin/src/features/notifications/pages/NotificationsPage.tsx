@@ -301,7 +301,7 @@ const NotificationsPage: React.FC = () => {
               title="Tổng thông báo"
               value={stats.total}
               prefix={<BellOutlined />}
-              valueStyle={{ color: '#1677ff' }}
+              styles={{ content: { color: '#1677ff' } }}
             />
           </Card>
         </Col>
@@ -311,7 +311,7 @@ const NotificationsPage: React.FC = () => {
               title="Chưa đọc"
               value={stats.unread}
               prefix={<NotificationOutlined style={{ color: '#ff4d4f' }} />}
-              valueStyle={{ color: '#ff4d4f' }}
+              styles={{ content: { color: '#ff4d4f' } }}
             />
           </Card>
         </Col>
@@ -321,7 +321,7 @@ const NotificationsPage: React.FC = () => {
               title="Đã đọc"
               value={stats.read}
               prefix={<CheckCircleOutlined style={{ color: '#52c41a' }} />}
-              valueStyle={{ color: '#52c41a' }}
+              styles={{ content: { color: '#52c41a' } }}
             />
           </Card>
         </Col>
@@ -331,7 +331,7 @@ const NotificationsPage: React.FC = () => {
               title="Chia sẻ"
               value={stats.shareNotifications}
               prefix={<ShareAltOutlined style={{ color: '#722ed1' }} />}
-              valueStyle={{ color: '#722ed1' }}
+              styles={{ content: { color: '#722ed1' } }}
             />
           </Card>
         </Col>
@@ -424,7 +424,7 @@ const NotificationsPage: React.FC = () => {
               size="small"
               style={{ marginBottom: 16, background: selectedNotification.isRead ? '#fafafa' : '#f6ffed' }}
             >
-              <Space direction="vertical" style={{ width: '100%' }}>
+              <Space orientation="vertical" style={{ width: '100%' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   {!selectedNotification.isRead && <Badge status="processing" />}
                   <Tag color={getNotificationColor(selectedNotification.type)} icon={getNotificationIcon(selectedNotification.type)}>
@@ -475,7 +475,7 @@ const NotificationsPage: React.FC = () => {
                 items={[
                   {
                     color: selectedNotification.isRead ? 'green' : 'blue',
-                    children: (
+                    content: (
                       <div>
                         <Text strong>{selectedNotification.isRead ? 'Đã đọc' : 'Thông báo mới'}</Text>
                         <br />

@@ -52,7 +52,7 @@ export function Hero() {
                         <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
                             <Link
                                 href="/login"
-                                className="group w-full sm:w-auto px-8 py-4 bg-primary text-white font-semibold rounded-2xl transition-colors hover:bg-primary/90 flex items-center justify-center gap-2 border border-primary/40 hover:border-primary"
+                                className="group w-full sm:w-auto px-8 py-4 bg-primary text-primary-foreground font-semibold rounded-2xl transition-colors hover:bg-primary/90 flex items-center justify-center gap-2 border border-primary/40 hover:border-primary"
                             >
                                 Bắt đầu tải tệp lên
                                 <ArrowRight className="w-5 h-5" />
@@ -146,7 +146,7 @@ export function Hero() {
                             <div className="flex items-center gap-3 bg-muted/50 p-3 rounded-xl border border-border">
                                 <LinkIcon className="w-5 h-5 text-muted-foreground shrink-0" />
                                 <span className="text-sm text-muted-foreground truncate flex-1">fileflow.io/s/x7a9...</span>
-                                <button className="bg-primary hover:bg-primary/90 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition-colors border border-primary/30">
+                                <button className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs px-3 py-1.5 rounded-lg font-medium transition-colors border border-primary/30">
                                     Sao chép
                                 </button>
                             </div>

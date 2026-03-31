@@ -8,6 +8,7 @@ import { useCurrentUser } from "@/features/auth/queries";
 import { useLogout } from "@/features/auth/mutations";
 import { NotificationBell } from "./NotificationBell";
 import { Flex, Box, TextField, IconButton, DropdownMenu, Text } from "@radix-ui/themes";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 interface DashboardHeaderProps {
     userName?: string;
@@ -41,6 +42,8 @@ export function DashboardHeader({ userName, onMenuClick }: DashboardHeaderProps)
 
             {/* Actions */}
             <Flex align="center" gap="3" ml="4">
+                <ThemeToggle />
+
                 {/* Notifications */}
                 <NotificationBell />
 
@@ -81,8 +84,8 @@ export function DashboardHeader({ userName, onMenuClick }: DashboardHeaderProps)
 
                         <DropdownMenu.Separator />
 
-                        <DropdownMenu.Item 
-                            color="red" 
+                        <DropdownMenu.Item
+                            color="red"
                             className="flex items-center gap-2 w-full cursor-pointer"
                             onClick={() => logoutMutation.mutate()}
                         >

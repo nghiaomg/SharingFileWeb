@@ -2,39 +2,40 @@
 
 import { CheckCircle2, Zap, Shield, HardDrive, Infinity, Crown } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { upgradePlan } from "@/features/auth/api";
-import { authKeys, useCurrentUser } from "@/features/auth/queries";
-import { toast } from "sonner";
+import { useCreatePaymentMutation } from "@/features/payment/mutations";
+import { usePaymentStatusQuery } from "@/features/payment/queries";
+import { useCurrentUser } from "@/features/auth/queries";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { useState } from "react";
 
 export default function UpgradePage() {
     const router = useRouter();
-    const queryClient = useQueryClient();
     const { data: user } = useCurrentUser();
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
+    // Payment Status polling
+    const { data: paymentStatus } = usePaymentStatusQuery();
+
+    // Create new payment order mutation
+    const createPaymentMutation = useCreatePaymentMutation();
+
     const isPro = user?.subscriptionPlan === "PRO";
+    const pendingOrder = paymentStatus?.status === "PENDING" ? paymentStatus : null;
 
-    const upgradeMutation = useMutation({
-        mutationFn: upgradePlan,
-        onSuccess: () => {
-            toast.success("Nâng cấp thành công! Chào mừng bạn đến với FileFlow Pro.");
-            queryClient.invalidateQueries({ queryKey: authKeys.all() });
-            router.push("/dashboard");
-        },
-        onError: (error: Error) => {
-            toast.error("Có lỗi xảy ra khi nâng cấp: " + error.message);
+    const handleUpgradeClick = () => {
+        if (pendingOrder) {
+            router.push(`/payment/checkout/${pendingOrder.orderCode}`);
+        } else {
+            setIsConfirmOpen(true);
         }
-    });
-
-    const handleUpgrade = () => {
-        setIsConfirmOpen(true);
     };
 
     const confirmUpgrade = async () => {
-        upgradeMutation.mutate();
+        const order = await createPaymentMutation.mutateAsync({ planName: "PRO" });
+        setIsConfirmOpen(false);
+        if (order?.orderCode) {
+            router.push(`/payment/checkout/${order.orderCode}`);
+        }
     };
 
     return (
@@ -80,7 +81,7 @@ export default function UpgradePage() {
                         </div>
                     </div>
 
-                    <button 
+                    <button
                         className={`w-full py-4 rounded-xl border-2 font-bold transition-colors cursor-pointer ${!isPro ? "bg-secondary text-muted-foreground border-border" : "border-primary text-primary hover:bg-primary/5"}`}
                         disabled={!isPro}
                         onClick={() => router.push("/dashboard")}
@@ -127,12 +128,12 @@ export default function UpgradePage() {
                         </div>
                     </div>
 
-                    <button 
+                    <button
                         className={`w-full py-4 rounded-xl font-bold shadow-md transition-all ${isPro ? "bg-card text-muted-foreground cursor-not-allowed border border-border" : "bg-primary text-white hover:bg-primary/90 hover:shadow-lg cursor-pointer"}`}
-                        disabled={isPro || upgradeMutation.isPending}
-                        onClick={handleUpgrade}
+                        disabled={isPro || createPaymentMutation.isPending}
+                        onClick={handleUpgradeClick}
                     >
-                        {upgradeMutation.isPending ? "Đang xử lý..." : isPro ? "Đang sử dụng" : "Nâng cấp ngay"}
+                        {createPaymentMutation.isPending ? "Đang xử lý..." : pendingOrder ? "Tiếp tục thanh toán" : isPro ? "Đang sử dụng" : "Nâng cấp ngay"}
                     </button>
 
                     <p className="text-center text-xs text-muted-foreground mt-4 font-medium">Hủy bỏ bất cứ lúc nào. Không ràng buộc.</p>
@@ -140,7 +141,7 @@ export default function UpgradePage() {
 
             </div>
 
-            <ConfirmModal 
+            <ConfirmModal
                 isOpen={isConfirmOpen}
                 onClose={() => setIsConfirmOpen(false)}
                 onConfirm={confirmUpgrade}
@@ -153,13 +154,14 @@ export default function UpgradePage() {
                             <li>Tăng kích thước tải lên thành không giới hạn</li>
                             <li>Băng thông bảo mật AES 256 tối đa</li>
                         </ul>
-                        <p className="text-emerald-500 font-medium">Ấn Xác nhận để tiến hành thanh toán (Mock).</p>
+                        <p className="text-emerald-500 font-medium">Ấn Xác nhận để tiến hành tạo mã QR thanh toán.</p>
                     </div>
                 }
-                confirmText="Tiến hành nâng cấp"
+                confirmText={createPaymentMutation.isPending ? "Đang tạo mã..." : "Mở mã QR"}
                 color="gray"
                 icon={<Crown className="w-6 h-6 text-primary" />}
             />
+
         </div>
     );
 }

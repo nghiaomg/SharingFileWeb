@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Sans, Geist_Mono } from "next/font/google";
 import { QueryProvider } from "@/components/providers/QueryProvider";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { Toaster } from "sonner";
 import "@radix-ui/themes/styles.css";
 import { Theme } from "@radix-ui/themes";
@@ -32,14 +33,16 @@ export default function RootLayout({
   return (
     <html lang="vi" suppressHydrationWarning>
       <body
-        className={`${dmSans.variable} ${geistMono.variable} antialiased dark`}
+        className={`${dmSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
         <QueryProvider>
-          <Theme accentColor="gray" radius="large" scaling="100%" hasBackground={false}>
-            {children}
-            <Toaster position="bottom-right" richColors theme="system" />
-          </Theme>
+          <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+            <Theme accentColor="gray" radius="large" scaling="100%" hasBackground={false}>
+              {children}
+              <Toaster position="bottom-right" richColors theme="system" />
+            </Theme>
+          </ThemeProvider>
         </QueryProvider>
       </body>
     </html>

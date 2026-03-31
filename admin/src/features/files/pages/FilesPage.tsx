@@ -334,7 +334,7 @@ const FilesPage: React.FC = () => {
               title="Tổng tệp tin"
               value={stats.total}
               prefix={<FileOutlined />}
-              valueStyle={{ color: '#1677ff' }}
+              styles={{ content: { color: '#1677ff' } }}
             />
           </Card>
         </Col>
@@ -344,7 +344,7 @@ const FilesPage: React.FC = () => {
               title="Đang hoạt động"
               value={stats.active}
               prefix={<ThunderboltOutlined style={{ color: '#52c41a' }} />}
-              valueStyle={{ color: '#52c41a' }}
+              styles={{ content: { color: '#52c41a' } }}
             />
           </Card>
         </Col>
@@ -354,7 +354,7 @@ const FilesPage: React.FC = () => {
               title="Trong thùng rác"
               value={stats.deleted}
               prefix={<DeleteOutlined style={{ color: '#ff4d4f' }} />}
-              valueStyle={{ color: '#ff4d4f' }}
+              styles={{ content: { color: '#ff4d4f' } }}
             />
           </Card>
         </Col>
@@ -365,7 +365,7 @@ const FilesPage: React.FC = () => {
               value={stats.totalSize}
               formatter={(val) => formatBytes(val as number)}
               prefix={<SafetyOutlined style={{ color: '#faad14' }} />}
-              valueStyle={{ color: '#faad14' }}
+              styles={{ content: { color: '#faad14' } }}
             />
           </Card>
         </Col>
