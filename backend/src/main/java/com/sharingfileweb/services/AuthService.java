@@ -411,7 +411,7 @@ public class AuthService {
             org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
 
             // 1. Get access token from Zalo
-            String tokenUrl = "https://oauth.zaloapp.com/v4/oa/access_token";
+            String tokenUrl = "https://oauth.zaloapp.com/v4/access_token";
 
             org.springframework.http.HttpHeaders tokenHeaders = new org.springframework.http.HttpHeaders();
             tokenHeaders.setContentType(org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED);
