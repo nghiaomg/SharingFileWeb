@@ -30,17 +30,15 @@ export const AppProviders: React.FC<{ children: React.ReactNode }> = ({ children
               colorBgContainer: 'rgba(255,255,255,0.04)',
               colorBorder: 'rgba(255,255,255,0.1)',
               colorText: '#ffffff',
-              colorPlaceholderText: 'rgba(255,255,255,0.2)',
-              hoverColorBorder: 'rgba(255,255,255,0.2)',
+              colorTextPlaceholder: 'rgba(255,255,255,0.2)',
+              hoverBorderColor: 'rgba(255,255,255,0.2)',
               activeBorderColor: 'rgba(255,255,255,0.35)',
               activeShadow: '0 0 0 3px rgba(255,255,255,0.06)',
             },
             Button: {
               colorBgContainer: '#ffffff',
-              colorBgGhost: 'transparent',
               colorBorder: '#ffffff',
               colorText: '#0a0a0a',
-              colorTextGhost: '#ffffff',
               fontWeight: 600,
             },
             Form: {
@@ -77,7 +75,7 @@ export const AppProviders: React.FC<{ children: React.ReactNode }> = ({ children
               colorSuccessBorder: 'rgba(34,197,94,0.2)',
               colorWarningBorder: 'rgba(234,179,8,0.2)',
               colorText: '#ffffff',
-              colorTextDescriptionText: 'rgba(255,255,255,0.6)',
+              colorTextDescription: 'rgba(255,255,255,0.6)',
             },
           },
         }}

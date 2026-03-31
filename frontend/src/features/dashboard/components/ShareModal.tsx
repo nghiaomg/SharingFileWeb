@@ -7,7 +7,7 @@ import { useFileAccesses, useFileLinks } from "@/features/files/share-queries";
 import type { FileItem, ShareLinkItem } from "@/features/files/schemas";
 import { toast } from "sonner";
 import { getApiErrorMessage } from "@/types/api";
-import { Dialog, Tabs, Flex, Text, TextField, Button, IconButton, Select, Box, Card, Badge, Callout } from "@radix-ui/themes";
+import { Dialog, Tabs, Flex, Text, TextField, Button, IconButton, Select, Box, Badge, Callout } from "@radix-ui/themes";
 
 interface ShareModalProps {
     isOpen: boolean;
@@ -16,7 +16,7 @@ interface ShareModalProps {
 }
 
 const PERMISSION_LABELS: Record<string, { label: string; icon: typeof Eye; color: string }> = {
-    VIEW: { label: "Xem", icon: Eye, color: "var(--indigo-a9)" },
+    VIEW: { label: "Xem", icon: Eye, color: "var(--gray-12)" },
     DOWNLOAD: { label: "Tải xuống", icon: Download, color: "var(--jade-a9)" },
 };
 
@@ -30,8 +30,9 @@ function PermissionSelectLocal({ value, onChange }: { value: string; onChange: (
                     <Button
                         key={key}
                         type="button"
-                        variant={isActive ? "soft" : "outline"}
-                        color={isActive ? (key === "VIEW" ? "indigo" : "jade") : "gray"}
+                        variant={isActive ? "soft" : "ghost"}
+                        color={isActive ? (key === "VIEW" ? "gray" : "jade") : "gray"}
+                        highContrast={isActive && key === "VIEW"}
                         onClick={() => onChange(key)}
                         style={{ cursor: "pointer" }}
                     >
@@ -85,8 +86,8 @@ export function ShareModal({ isOpen, onClose, file }: ShareModalProps) {
 
     const handleUpdateLink = (linkId: string) => {
         updateLinkMutation.mutate(
-            { 
-                linkId, 
+            {
+                linkId,
                 data: {
                     permission: editLinkPermission as "VIEW" | "DOWNLOAD",
                     password: editLinkPassword === "" ? null : editLinkPassword,
@@ -162,71 +163,76 @@ export function ShareModal({ isOpen, onClose, file }: ShareModalProps) {
         <Dialog.Root open={isOpen} onOpenChange={(open) => {
             if (!open) onClose();
         }}>
-            <Dialog.Content maxWidth="800px" style={{ display: 'flex', flexDirection: 'column', padding: 0, maxHeight: '90vh' }}>
+            <Dialog.Content maxWidth="500px" style={{ display: 'flex', flexDirection: 'column', padding: 0, maxHeight: '90vh', overflow: 'hidden', border: 'none', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
                 {/* Header */}
-                <Box p="4" style={{ borderBottom: "1px solid var(--gray-a6)" }}>
+                <Box pt="5" px="5" pb="3">
                     <Flex justify="between" align="center" gap="3">
-                        <Dialog.Title style={{ margin: 0, minWidth: 0 }}>
-                            <Flex align="center" gap="2" style={{ minWidth: 0 }}>
-                                <Globe className="w-5 h-5" style={{ flexShrink: 0, color: "var(--icon-indigo)" }} />
-                                <Text truncate style={{ color: "var(--color-foreground)" }}>Chia sẻ: {file.name}</Text>
+                        <Dialog.Title style={{ margin: 0, minWidth: 0, fontWeight: 600 }}>
+                            <Flex align="center" gap="3" style={{ minWidth: 0 }}>
+                                <div style={{ backgroundColor: 'var(--gray-a3)', padding: '8px', borderRadius: '12px' }}>
+                                    <Globe className="w-5 h-5" style={{ color: "var(--gray-12)" }} />
+                                </div>
+                                <Text truncate size="4" style={{ color: "var(--color-foreground)" }}>Chia sẻ tệp</Text>
                             </Flex>
                         </Dialog.Title>
                         <Dialog.Close>
-                            <IconButton variant="ghost" color="gray" style={{ flexShrink: 0 }}>
-                                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path fillRule="evenodd" clipRule="evenodd" d="M11.7816 4.03157C12.0062 3.80702 12.0062 3.44295 11.7816 3.2184C11.5571 2.99385 11.193 2.99385 10.9685 3.2184L7.50005 6.68682L4.03164 3.2184C3.80708 2.99385 3.44301 2.99385 3.21846 3.2184C2.99391 3.44295 2.99391 3.80702 3.21846 4.03157L6.68688 7.49999L3.21846 10.9684C2.99391 11.193 2.99391 11.557 3.21846 11.7816C3.44301 12.0061 3.80708 12.0061 4.03164 11.7816L7.50005 8.31316L10.9685 11.7816C11.193 12.0061 11.5571 12.0061 11.7816 11.7816C12.0062 11.557 12.0062 11.193 11.7816 10.9684L8.31322 7.49999L11.7816 4.03157Z" fill="currentColor"/>
-                                </svg>
+                            <IconButton variant="ghost" color="gray" style={{ flexShrink: 0, borderRadius: 'full' }}>
+                                <X className="w-4 h-4" />
                             </IconButton>
                         </Dialog.Close>
                     </Flex>
+                    <Text size="2" color="gray" mt="2" truncate style={{ display: 'block' }}>{file.name}</Text>
                 </Box>
 
                 <Box flexGrow="1" style={{ overflowY: "auto", overflowX: "hidden" }}>
                     <Tabs.Root defaultValue="invite">
-                        <Tabs.List size="2">
-                            <Tabs.Trigger value="invite"><Flex gap="2" align="center"><Users className="w-4 h-4" /> Mời người xem</Flex></Tabs.Trigger>
-                            <Tabs.Trigger value="link"><Flex gap="2" align="center"><LinkIcon className="w-4 h-4" /> Tạo link</Flex></Tabs.Trigger>
-                            <Tabs.Trigger value="manage"><Flex gap="2" align="center"><ShieldCheck className="w-4 h-4" /> Quản lý</Flex></Tabs.Trigger>
-                        </Tabs.List>
+                        <Box px="5">
+                            <Tabs.List size="2" style={{ boxShadow: 'none', borderBottom: '2px solid var(--gray-a3)' }}>
+                                <Tabs.Trigger value="invite" style={{ paddingBottom: '12px' }}><Flex gap="2" align="center"><Users className="w-4 h-4" /> Mời qua Email</Flex></Tabs.Trigger>
+                                <Tabs.Trigger value="link" style={{ paddingBottom: '12px' }}><Flex gap="2" align="center"><LinkIcon className="w-4 h-4" /> Liên kết</Flex></Tabs.Trigger>
+                                <Tabs.Trigger value="manage" style={{ paddingBottom: '12px' }}><Flex gap="2" align="center"><ShieldCheck className="w-4 h-4" /> Thu hồi</Flex></Tabs.Trigger>
+                            </Tabs.List>
+                        </Box>
 
                         <Box p="5">
                             {/* ── Tab: Invite ─────────────────────────────────────── */}
                             <Tabs.Content value="invite">
-                                <Flex direction="column" gap="4">
+                                <Flex direction="column" gap="5">
                                     <Box>
-                                        <Text as="div" size="2" weight="bold" mb="2">Quyền truy cập</Text>
+                                        <Text as="div" size="2" weight="medium" color="gray" mb="2">Cấp quyền</Text>
                                         <PermissionSelectLocal value={invitePermission} onChange={setInvitePermission} />
                                     </Box>
 
                                     <Box>
-                                        <Text as="div" size="2" weight="bold" mb="2">Email người nhận</Text>
+                                        <Text as="div" size="2" weight="medium" color="gray" mb="2">Địa chỉ Email</Text>
                                         <Flex gap="2">
                                             <Box flexGrow="1">
-                                                <TextField.Root 
-                                                    placeholder="Nhập email..." 
-                                                    value={emailInput} 
+                                                <TextField.Root
+                                                    placeholder="nghia@example.com..."
+                                                    value={emailInput}
                                                     onChange={(e) => setEmailInput(e.target.value)}
                                                     onKeyDown={(e) => e.key === "Enter" && handleAddEmail()}
                                                     size="3"
+                                                    variant="soft"
                                                 />
                                             </Box>
-                                            <IconButton size="3" variant="soft" onClick={handleAddEmail}>
+                                            <IconButton size="3" variant="soft" color="gray" highContrast onClick={handleAddEmail} style={{ cursor: 'pointer' }}>
                                                 <Plus className="w-5 h-5" />
                                             </IconButton>
                                         </Flex>
                                     </Box>
 
                                     {emails.length > 0 && (
-                                        <Flex wrap="wrap" gap="2">
+                                        <Flex wrap="wrap" gap="2" p="3" style={{ backgroundColor: 'var(--gray-a2)', borderRadius: 'var(--radius-3)' }}>
                                             {emails.map((email) => (
-                                                <Badge key={email} size="2" variant="soft" color="indigo" style={{ padding: '0px 10px', height: '32px' }}>
+                                                <Badge key={email} size="2" variant="surface" color="gray" highContrast style={{ padding: '4px 10px', height: 'auto', borderRadius: '16px' }}>
                                                     <Flex align="center" gap="2">
                                                         {email}
-                                                        <IconButton 
-                                                            size="1" 
-                                                            variant="ghost" 
-                                                            color="red" 
+                                                        <IconButton
+                                                            size="1"
+                                                            variant="ghost"
+                                                            color="gray"
+                                                            style={{ cursor: 'pointer', height: '16px', width: '16px', minHeight: '16px' }}
                                                             onClick={() => setEmails((p) => p.filter((e) => e !== email))}
                                                         >
                                                             <X className="w-3 h-3" />
@@ -239,53 +245,57 @@ export function ShareModal({ isOpen, onClose, file }: ShareModalProps) {
 
                                     <Button
                                         size="3"
-                                        style={{ width: "100%" }}
+                                        color="gray"
+                                        highContrast
+                                        style={{ width: "100%", marginTop: "8px", cursor: 'pointer' }}
                                         onClick={handleSendInvites}
                                         disabled={shareInternalMutation.isPending || emails.length === 0}
                                         loading={shareInternalMutation.isPending}
                                     >
-                                        Gửi lời mời ({emails.length})
+                                        Gửi lời mời truy cập
                                     </Button>
                                 </Flex>
                             </Tabs.Content>
 
                             {/* ── Tab: Link ───────────────────────────────────────── */}
                             <Tabs.Content value="link">
-                                <Flex direction="column" gap="4">
+                                <Flex direction="column" gap="5">
                                     <Box>
-                                        <Text as="div" size="2" weight="bold" mb="2">Quyền cho link</Text>
+                                        <Text as="div" size="2" weight="medium" color="gray" mb="2">Quyền truy cập</Text>
                                         <PermissionSelectLocal value={linkPermission} onChange={setLinkPermission} />
                                     </Box>
 
                                     <Box>
-                                        <Text as="div" size="2" weight="bold" mb="2">Mật khẩu bảo vệ (tùy chọn)</Text>
-                                        <TextField.Root 
+                                        <Text as="div" size="2" weight="medium" color="gray" mb="2">Bảo mật bằng Mật khẩu (Không bắt buộc)</Text>
+                                        <TextField.Root
                                             type="password"
-                                            placeholder="Để trống nếu không cần"
+                                            placeholder="Nhập mật khẩu..."
                                             value={linkPassword}
                                             onChange={(e) => setLinkPassword(e.target.value)}
                                             size="3"
+                                            variant="soft"
                                         />
                                     </Box>
 
                                     <Box>
-                                        <Text as="div" size="2" weight="bold" mb="2">Hết hạn sau (ngày)</Text>
-                                        <TextField.Root 
+                                        <Text as="div" size="2" weight="medium" color="gray" mb="2">Tự động hết hạn (Số ngày - Tuỳ chọn)</Text>
+                                        <TextField.Root
                                             type="number"
                                             min="1"
-                                            placeholder="Để trống = vĩnh viễn"
+                                            placeholder="Bỏ trống để vô thời hạn"
                                             value={linkExpiry.toString()}
                                             onChange={(e) => setLinkExpiry(e.target.value === "" ? "" : Number(e.target.value))}
                                             size="3"
+                                            variant="soft"
                                         />
                                     </Box>
 
                                     {generatedLink && (
-                                        <Callout.Root color="jade" variant="soft">
+                                        <Callout.Root color="jade" variant="soft" mt="2">
                                             <Flex justify="between" align="center" width="100%" gap="3">
                                                 <Text size="2" truncate style={{ minWidth: 0 }}>{generatedLink}</Text>
-                                                <Button size="1" style={{ flexShrink: 0 }} onClick={() => { navigator.clipboard.writeText(generatedLink); toast.success("Đã sao chép!"); }}>
-                                                    <Copy className="w-3.5 h-3.5" /> Copy
+                                                <Button size="1" variant="solid" color="jade" style={{ flexShrink: 0, cursor: 'pointer' }} onClick={() => { navigator.clipboard.writeText(generatedLink); toast.success("Đã sao chép link!"); }}>
+                                                    <Copy className="w-3.5 h-3.5 mr-1" /> Copy
                                                 </Button>
                                             </Flex>
                                         </Callout.Root>
@@ -293,12 +303,14 @@ export function ShareModal({ isOpen, onClose, file }: ShareModalProps) {
 
                                     <Button
                                         size="3"
-                                        style={{ width: "100%" }}
+                                        color="gray"
+                                        highContrast
+                                        style={{ width: "100%", marginTop: "8px", cursor: 'pointer' }}
                                         onClick={handleCreateLink}
                                         disabled={createLinkMutation.isPending}
                                         loading={createLinkMutation.isPending}
                                     >
-                                        Tạo link chia sẻ
+                                        Tạo liên kết chia sẻ mới
                                     </Button>
                                 </Flex>
                             </Tabs.Content>
@@ -310,42 +322,41 @@ export function ShareModal({ isOpen, onClose, file }: ShareModalProps) {
                                     <Box>
                                         <Text as="div" size="2" weight="bold" mb="3">Người được chia sẻ ({accesses.length})</Text>
                                         {accesses.length === 0 ? (
-                                            <Text size="2" style={{ color: "var(--muted-foreground)" }}>Chưa chia sẻ cho ai.</Text>
+                                            <Text size="2" style={{ color: "var(--gray-a10)" }}>Tệp này chưa được chia sẻ với ai.</Text>
                                         ) : (
                                             <Flex direction="column" gap="2">
                                                 {accesses.map((access) => (
-                                                    <Card key={access.id} variant="surface">
-                                                        <Flex align="center" justify="between">
-                                                            <Box style={{ minWidth: 0, flex: 1 }}>
-                                                                <Text as="div" size="2" weight="bold" truncate>{access.recipientEmail}</Text>
-                                                                <Text as="div" size="1" color="gray">{PERMISSION_LABELS[access.permission]?.label || access.permission}</Text>
-                                                            </Box>
-                                                            <Flex align="center" gap="2" style={{ flexShrink: 0 }}>
-                                                                <Select.Root 
-                                                                    value={access.permission} 
-                                                                    onValueChange={(val) => 
-                                                                        updatePermissionMutation.mutate(
-                                                                            { accessId: access.id, permission: val },
-                                                                            { onSuccess: () => { toast.success("Đã cập nhật"); refetchAccesses(); } }
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    <Select.Trigger />
-                                                                    <Select.Content>
-                                                                        <Select.Item value="VIEW">Xem</Select.Item>
-                                                                        <Select.Item value="DOWNLOAD">Tải xuống</Select.Item>
-                                                                    </Select.Content>
-                                                                </Select.Root>
-                                                                <IconButton 
-                                                                    variant="soft" 
-                                                                    color="red"
-                                                                    onClick={() => revokeAccessMutation.mutate(access.id, { onSuccess: () => refetchAccesses() })}
-                                                                >
-                                                                    <Trash2 className="w-4 h-4" />
-                                                                </IconButton>
-                                                            </Flex>
+                                                    <Flex key={access.id} align="center" justify="between" p="3" style={{ backgroundColor: "var(--gray-a2)", borderRadius: "var(--radius-3)" }}>
+                                                        <Box style={{ minWidth: 0, flex: 1 }}>
+                                                            <Text as="div" size="2" weight="bold" truncate>{access.recipientEmail}</Text>
+                                                            <Text as="div" size="1" color="gray">{PERMISSION_LABELS[access.permission]?.label || access.permission}</Text>
+                                                        </Box>
+                                                        <Flex align="center" gap="2" style={{ flexShrink: 0 }}>
+                                                            <Select.Root
+                                                                value={access.permission}
+                                                                onValueChange={(val) =>
+                                                                    updatePermissionMutation.mutate(
+                                                                        { accessId: access.id, permission: val },
+                                                                        { onSuccess: () => { toast.success("Cập nhật quyền thành công"); refetchAccesses(); } }
+                                                                    )
+                                                                }
+                                                            >
+                                                                <Select.Trigger variant="ghost" />
+                                                                <Select.Content>
+                                                                    <Select.Item value="VIEW">Chỉ Xem</Select.Item>
+                                                                    <Select.Item value="DOWNLOAD">Tải xuống</Select.Item>
+                                                                </Select.Content>
+                                                            </Select.Root>
+                                                            <IconButton
+                                                                variant="ghost"
+                                                                color="red"
+                                                                onClick={() => revokeAccessMutation.mutate(access.id, { onSuccess: () => refetchAccesses() })}
+                                                                style={{ cursor: 'pointer' }}
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </IconButton>
                                                         </Flex>
-                                                    </Card>
+                                                    </Flex>
                                                 ))}
                                             </Flex>
                                         )}
@@ -353,75 +364,79 @@ export function ShareModal({ isOpen, onClose, file }: ShareModalProps) {
 
                                     {/* Share Links */}
                                     <Box>
-                                        <Text as="div" size="2" weight="bold" mb="3">Links chia sẻ ({links.length})</Text>
+                                        <Text as="div" size="2" weight="bold" mb="3">Liên kết chia sẻ ({links.length})</Text>
                                         {links.length === 0 ? (
-                                            <Text size="2" style={{ color: "var(--muted-foreground)" }}>Chưa có link nào.</Text>
+                                            <Text size="2" style={{ color: "var(--gray-a10)" }}>Tệp này chưa có liên kết nào.</Text>
                                         ) : (
                                             <Flex direction="column" gap="2">
                                                 {links.map((link) => (
-                                                    <Card key={link.id} variant="surface">
+                                                    <Box key={link.id} p="3" style={{ backgroundColor: "var(--gray-a2)", borderRadius: "var(--radius-3)" }}>
                                                         {editingLinkId === link.id ? (
                                                             <Flex direction="column" gap="3">
                                                                 <Flex gap="2">
                                                                     <Select.Root value={editLinkPermission} onValueChange={setEditLinkPermission}>
-                                                                        <Select.Trigger style={{ flex: 1 }} />
+                                                                        <Select.Trigger variant="soft" style={{ flex: 1 }} />
                                                                         <Select.Content>
-                                                                            <Select.Item value="VIEW">Xem</Select.Item>
-                                                                            <Select.Item value="DOWNLOAD">Tải xuống</Select.Item>
+                                                                            <Select.Item value="VIEW">Chỉ xem</Select.Item>
+                                                                            <Select.Item value="DOWNLOAD">Được tải xuống</Select.Item>
                                                                         </Select.Content>
-                                                                </Select.Root>
+                                                                    </Select.Root>
                                                                     <Select.Root value={editLinkExpiry.toString()} onValueChange={(v) => setEditLinkExpiry(v === "" ? "" : Number(v))}>
-                                                                        <Select.Trigger style={{ flex: 1 }} />
+                                                                        <Select.Trigger variant="soft" style={{ flex: 1 }} />
                                                                         <Select.Content>
-                                                                            <Select.Item value="">Giữ nguyên</Select.Item>
-                                                                            <Select.Item value="-1">Không bao giờ</Select.Item>
+                                                                            <Select.Item value="">Không đổi</Select.Item>
+                                                                            <Select.Item value="-1">Vô thời hạn</Select.Item>
                                                                             <Select.Item value="1">1 ngày</Select.Item>
                                                                             <Select.Item value="7">7 ngày</Select.Item>
                                                                             <Select.Item value="30">30 ngày</Select.Item>
                                                                         </Select.Content>
                                                                     </Select.Root>
                                                                 </Flex>
-                                                                <TextField.Root 
+                                                                <TextField.Root
                                                                     type="password"
-                                                                    placeholder={link.hasPassword ? "Mật khẩu mới (tuỳ chọn)" : "Thêm mật khẩu (tuỳ chọn)"}
+                                                                    placeholder={link.hasPassword ? "Đổi mật khẩu bảo vệ mới..." : "Bảo vệ bằng mật khẩu..."}
                                                                     value={editLinkPassword}
                                                                     onChange={(e) => setEditLinkPassword(e.target.value)}
+                                                                    variant="soft"
                                                                 />
-                                                                <Flex gap="2" justify="end">
-                                                                    <Button variant="soft" color="gray" onClick={() => setEditingLinkId(null)}>Hủy</Button>
-                                                                    <Button 
+                                                                <Flex gap="2" justify="end" mt="1">
+                                                                    <Button variant="ghost" color="gray" onClick={() => setEditingLinkId(null)} style={{ cursor: 'pointer' }}>Đóng</Button>
+                                                                    <Button
+                                                                        color="gray"
+                                                                        highContrast
                                                                         onClick={() => handleUpdateLink(link.id)}
                                                                         disabled={updateLinkMutation.isPending}
                                                                         loading={updateLinkMutation.isPending}
+                                                                        style={{ cursor: 'pointer' }}
                                                                     >
-                                                                        Lưu
+                                                                        Cập nhật
                                                                     </Button>
                                                                 </Flex>
                                                             </Flex>
                                                         ) : (
                                                             <Flex align="center" justify="between">
                                                                 <Box style={{ minWidth: 0, flex: 1 }}>
-                                                                    <Text as="div" size="2" style={{ fontFamily: "monospace", color: "var(--muted-foreground)" }}>{link.token.slice(0, 16)}...</Text>
-                                                                    <Flex align="center" gap="2" mt="1">
-                                                                        <Text size="1" weight="bold" style={{ color: "var(--color-foreground)" }}>{PERMISSION_LABELS[link.permission]?.label}</Text>
-                                                                        {link.hasPassword && <Badge size="1" color="amber"><Lock className="w-3 h-3" /></Badge>}
-                                                                        {link.expiresAt && <Text size="1" style={{ color: "var(--muted-foreground)" }}>Hết hạn: {new Date(link.expiresAt).toLocaleDateString("vi-VN")}</Text>}
+                                                                    <Text as="div" size="2" style={{ fontFamily: "monospace", color: "var(--gray-a11)" }}>{window.location.host}/...{link.token.slice(-6)}</Text>
+                                                                    <Flex align="center" gap="2" mt="2">
+                                                                        <Badge size="1" color={link.permission === "VIEW" ? "gray" : "jade"} highContrast={link.permission === "VIEW"} variant="soft">{PERMISSION_LABELS[link.permission]?.label}</Badge>
+                                                                        {link.hasPassword && <Badge size="1" color="gray" variant="soft"><Lock className="w-3 h-3" /></Badge>}
+                                                                        {link.expiresAt && <Text size="1" style={{ color: "var(--gray-a10)" }}>Hết hạn: {new Date(link.expiresAt).toLocaleDateString("vi-VN")}</Text>}
                                                                     </Flex>
                                                                 </Box>
                                                                 <Flex align="center" gap="1" style={{ flexShrink: 0 }}>
-                                                                    <IconButton variant="soft" color="indigo" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/shared/${link.token}`); toast.success("Đã sao chép"); }}>
+                                                                    <IconButton variant="ghost" color="gray" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/shared/${link.token}`); toast.success("Đã copy link"); }} style={{ cursor: 'pointer' }}>
                                                                         <Copy className="w-4 h-4" />
                                                                     </IconButton>
-                                                                    <IconButton variant="soft" color="orange" onClick={() => startEditLink(link)}>
+                                                                    <IconButton variant="ghost" color="gray" onClick={() => startEditLink(link)} style={{ cursor: 'pointer' }}>
                                                                         <Pencil className="w-4 h-4" />
                                                                     </IconButton>
-                                                                    <IconButton variant="soft" color="red" onClick={() => revokeLinkMutation.mutate(link.id, { onSuccess: () => refetchLinks() })}>
+                                                                    <IconButton variant="ghost" color="red" onClick={() => revokeLinkMutation.mutate(link.id, { onSuccess: () => refetchLinks() })} style={{ cursor: 'pointer' }}>
                                                                         <Trash2 className="w-4 h-4" />
                                                                     </IconButton>
                                                                 </Flex>
                                                             </Flex>
                                                         )}
-                                                    </Card>
+                                                    </Box>
                                                 ))}
                                             </Flex>
                                         )}
@@ -430,14 +445,6 @@ export function ShareModal({ isOpen, onClose, file }: ShareModalProps) {
                             </Tabs.Content>
                         </Box>
                     </Tabs.Root>
-                </Box>
-
-                <Box p="4" style={{ borderTop: "1px solid var(--gray-a6)" }}>
-                    <Flex justify="end">
-                        <Dialog.Close>
-                            <Button variant="soft" color="gray">Đóng</Button>
-                        </Dialog.Close>
-                    </Flex>
                 </Box>
             </Dialog.Content>
         </Dialog.Root>

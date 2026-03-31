@@ -21,9 +21,9 @@ export const paymentStatusQueryOptions = queryOptions({
   staleTime: 0, // Always fetch latest
   // react-query v5 syntax for refetchInterval function
   refetchInterval: (query) => {
-    // If we have an active pending order, poll every 5s
+    // If we have an active pending order, poll every 2.5s for faster QR confirmation
     if (query.state.data?.status === "PENDING") {
-      return 5000;
+      return 2500;
     }
     return false;
   },

@@ -7,7 +7,7 @@ import {
   CheckCircle2, Zap, Shield, HardDrive,
   Crown, QrCode, Banknote, Info
 } from "lucide-react";
-import { useCreatePayment } from "@/features/payment";
+import { useCreatePayment, useCancelPaymentMutation } from "@/features/payment";
 import { useCurrentUser } from "@/features/auth/queries";
 import { usePaymentStatusQuery } from "@/features/payment/queries";
 import type { Plan } from "@/features/payment/schemas";
@@ -71,6 +71,7 @@ export default function PaymentPage() {
   const { data: user } = useCurrentUser();
   const { data: paymentStatus } = usePaymentStatusQuery();
   const createPayment = useCreatePayment();
+  const cancelPayment = useCancelPaymentMutation();
 
   const [selectedPlan, setSelectedPlan] = useState<string>("MONTHLY");
 
@@ -139,6 +140,49 @@ export default function PaymentPage() {
           </div>
         </Flex>
       </Box>
+
+      {/* Pending Order Alert */}
+      {pendingOrder && (
+        <Box p="4" mb="8" className="rounded-2xl border border-amber-500/30 bg-amber-500/10 dark:bg-amber-500/20">
+          <Flex align="center" justify="between" className="flex-wrap gap-4">
+            <Flex align="start" gap="3">
+              <div className="bg-amber-500/20 p-2 rounded-full hidden sm:block">
+                <Info className="w-5 h-5 text-amber-700 dark:text-amber-400" />
+              </div>
+              <div className="mt-0.5">
+                <strong className="text-amber-900 dark:text-amber-100 block text-base mb-1">
+                  Đơn hàng #{pendingOrder.orderCode} đang chờ thanh toán
+                </strong>
+                <span className="text-amber-800 dark:text-amber-200 font-medium max-w-xl block text-sm">
+                  Bạn có 1 đơn đăng ký gói {pendingOrder.planName} chưa hoàn tất. Bạn có muốn tiếp tục thanh toán hay hủy để tạo đơn mới?
+                </span>
+              </div>
+            </Flex>
+            <Flex gap="3" align="center">
+              <Button
+                variant="soft"
+                color="red"
+                size="3"
+                onClick={(e) => { e.stopPropagation(); cancelPayment.mutate(); }}
+                loading={cancelPayment.isPending}
+                disabled={cancelPayment.isPending}
+                style={{ cursor: 'pointer' }}
+              >
+                Hủy đơn
+              </Button>
+              <Button
+                variant="solid"
+                color="amber"
+                size="3"
+                className="font-bold shadow-md cursor-pointer"
+                onClick={() => router.push(`/payment/checkout/${pendingOrder.orderCode}`)}
+              >
+                Tiếp tục thanh toán
+              </Button>
+            </Flex>
+          </Flex>
+        </Box>
+      )}
 
       {/* Plan Cards */}
       <Flex direction="column" gap="6" className="max-w-4xl mx-auto">
@@ -260,8 +304,10 @@ export default function PaymentPage() {
                         handleProceedToPayment();
                       }}
                       loading={createPayment.isPending}
+                      disabled={!!pendingOrder || createPayment.isPending}
+                      style={{ cursor: !!pendingOrder ? 'not-allowed' : 'pointer' }}
                     >
-                      {pendingOrder ? "Tiếp tục thanh toán" : <><QrCode className="w-4 h-4" /> Nạp tiền</>}
+                      {pendingOrder ? "Có đơn đang chờ" : <><QrCode className="w-4 h-4" /> Nạp tiền</>}
                     </Button>
                   )}
                 </div>

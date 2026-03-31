@@ -5,13 +5,10 @@ import { useRouter } from "next/navigation";
 import { useCreatePaymentMutation } from "@/features/payment/mutations";
 import { usePaymentStatusQuery } from "@/features/payment/queries";
 import { useCurrentUser } from "@/features/auth/queries";
-import { ConfirmModal } from "@/components/ui/ConfirmModal";
-import { useState } from "react";
 
 export default function UpgradePage() {
     const router = useRouter();
     const { data: user } = useCurrentUser();
-    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
     // Payment Status polling
     const { data: paymentStatus } = usePaymentStatusQuery();
@@ -22,19 +19,14 @@ export default function UpgradePage() {
     const isPro = user?.subscriptionPlan === "PRO";
     const pendingOrder = paymentStatus?.status === "PENDING" ? paymentStatus : null;
 
-    const handleUpgradeClick = () => {
+    const handleUpgradeClick = async () => {
         if (pendingOrder) {
             router.push(`/payment/checkout/${pendingOrder.orderCode}`);
         } else {
-            setIsConfirmOpen(true);
-        }
-    };
-
-    const confirmUpgrade = async () => {
-        const order = await createPaymentMutation.mutateAsync({ planName: "PRO" });
-        setIsConfirmOpen(false);
-        if (order?.orderCode) {
-            router.push(`/payment/checkout/${order.orderCode}`);
+            const order = await createPaymentMutation.mutateAsync({ planName: "PRO" });
+            if (order?.orderCode) {
+                router.push(`/payment/checkout/${order.orderCode}`);
+            }
         }
     };
 
@@ -138,30 +130,7 @@ export default function UpgradePage() {
 
                     <p className="text-center text-xs text-muted-foreground mt-4 font-medium">Hủy bỏ bất cứ lúc nào. Không ràng buộc.</p>
                 </div>
-
             </div>
-
-            <ConfirmModal
-                isOpen={isConfirmOpen}
-                onClose={() => setIsConfirmOpen(false)}
-                onConfirm={confirmUpgrade}
-                title="Xác nhận nâng cấp gói PRO"
-                description={
-                    <div className="space-y-3">
-                        <p>Bạn đang tiến hành nâng cấp lên <strong>FileFlow Pro</strong> với giá <strong>99.000đ/tháng</strong>.</p>
-                        <ul className="text-sm list-disc pl-5 text-muted-foreground">
-                            <li>Lưu trữ không giới hạn không gian 2TB</li>
-                            <li>Tăng kích thước tải lên thành không giới hạn</li>
-                            <li>Băng thông bảo mật AES 256 tối đa</li>
-                        </ul>
-                        <p className="text-emerald-500 font-medium">Ấn Xác nhận để tiến hành tạo mã QR thanh toán.</p>
-                    </div>
-                }
-                confirmText={createPaymentMutation.isPending ? "Đang tạo mã..." : "Mở mã QR"}
-                color="gray"
-                icon={<Crown className="w-6 h-6 text-primary" />}
-            />
-
         </div>
     );
 }

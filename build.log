@@ -1,0 +1,317 @@
+--progress is a global compose flag, better use `docker compose --progress xx build ...
+#1 [internal] load local bake definitions
+#1 reading from stdin 1.04kB done
+#1 DONE 0.0s
+
+#2 [admin internal] load build definition from Dockerfile
+#2 transferring dockerfile: 439B 0.0s done
+#2 DONE 0.1s
+
+#3 [frontend internal] load build definition from Dockerfile
+#3 transferring dockerfile: 1.10kB 0.0s done
+#3 DONE 0.1s
+
+#4 [backend internal] load build definition from Dockerfile
+#4 transferring dockerfile: 389B 0.0s done
+#4 DONE 0.1s
+
+#5 [frontend internal] load metadata for docker.io/library/node:20-alpine
+#5 ...
+
+#6 [admin internal] load metadata for docker.io/library/nginx:alpine
+#6 DONE 0.1s
+
+#7 [auth] library/node:pull token for registry-1.docker.io
+#7 DONE 0.0s
+
+#8 [auth] library/eclipse-temurin:pull token for registry-1.docker.io
+#8 DONE 0.0s
+
+#9 [auth] library/maven:pull token for registry-1.docker.io
+#9 DONE 0.0s
+
+#10 [backend internal] load metadata for docker.io/library/eclipse-temurin:17-jre-alpine
+#10 DONE 1.6s
+
+#5 [admin internal] load metadata for docker.io/library/node:20-alpine
+#5 DONE 1.7s
+
+#11 [admin internal] load .dockerignore
+#11 transferring context: 72B 0.0s done
+#11 DONE 0.1s
+
+#12 [frontend internal] load .dockerignore
+#12 transferring context: 90B 0.0s done
+#12 DONE 0.1s
+
+#13 [backend internal] load metadata for docker.io/library/maven:3.9.6-eclipse-temurin-17-alpine
+#13 ...
+
+#14 [frontend internal] load build context
+#14 DONE 0.0s
+
+#15 [admin internal] load build context
+#15 DONE 0.0s
+
+#16 [frontend deps 1/5] FROM docker.io/library/node:20-alpine@sha256:f598378b5240225e6beab68fa9f356db1fb8efe55173e6d4d8153113bb8f333c
+#16 resolve docker.io/library/node:20-alpine@sha256:f598378b5240225e6beab68fa9f356db1fb8efe55173e6d4d8153113bb8f333c 0.1s done
+#16 DONE 0.1s
+
+#17 [frontend runner 3/7] RUN addgroup --system --gid 1001 nodejs
+#17 CACHED
+
+#18 [admin stage-1 1/2] FROM docker.io/library/nginx:alpine@sha256:e7257f1ef28ba17cf7c248cb8ccf6f0c6e0228ab9c315c152f9c203cd34cf6d1
+#18 resolve docker.io/library/nginx:alpine@sha256:e7257f1ef28ba17cf7c248cb8ccf6f0c6e0228ab9c315c152f9c203cd34cf6d1 0.1s done
+#18 CACHED
+
+#19 [admin builder 2/5] WORKDIR /app
+#19 CACHED
+
+#20 [frontend runner 4/7] RUN adduser --system --uid 1001 nextjs
+#20 CACHED
+
+#13 [backend internal] load metadata for docker.io/library/maven:3.9.6-eclipse-temurin-17-alpine
+#13 DONE 2.0s
+
+#21 [backend internal] load .dockerignore
+#21 transferring context: 76B 0.0s done
+#21 DONE 0.1s
+
+#14 [frontend internal] load build context
+#14 transferring context: 9.19kB 0.0s done
+#14 DONE 0.2s
+
+#15 [admin internal] load build context
+#15 transferring context: 11.90kB 0.1s done
+#15 DONE 0.2s
+
+#22 [backend internal] load build context
+#22 DONE 0.0s
+
+#23 [frontend deps 4/5] COPY package.json package-lock.json* pnpm-lock.yaml* ./
+#23 CACHED
+
+#24 [frontend deps 2/5] RUN apk add --no-cache libc6-compat
+#24 CACHED
+
+#25 [frontend deps 3/5] WORKDIR /app
+#25 CACHED
+
+#26 [frontend deps 5/5] RUN corepack enable pnpm && pnpm install
+#26 CACHED
+
+#27 [admin builder 3/6] COPY package.json package-lock.json* pnpm-lock.yaml* ./
+#27 CACHED
+
+#28 [admin builder 4/6] RUN corepack enable pnpm && pnpm install
+#28 CACHED
+
+#29 [backend stage-1 1/3] FROM docker.io/library/eclipse-temurin:17-jre-alpine@sha256:7aa804a1824d18d06c68598fe1c2953b5b203823731be7b9298bb3e0f1920b0d
+#29 resolve docker.io/library/eclipse-temurin:17-jre-alpine@sha256:7aa804a1824d18d06c68598fe1c2953b5b203823731be7b9298bb3e0f1920b0d 0.2s done
+#29 DONE 0.2s
+
+#30 [backend build 1/6] FROM docker.io/library/maven:3.9.6-eclipse-temurin-17-alpine@sha256:ffddac7b04101358048f872fba9d978b2a1f9647955d158c1e565233cb95577d
+#30 resolve docker.io/library/maven:3.9.6-eclipse-temurin-17-alpine@sha256:ffddac7b04101358048f872fba9d978b2a1f9647955d158c1e565233cb95577d 0.2s done
+#30 DONE 0.2s
+
+#22 [backend internal] load build context
+#22 transferring context: 11.24kB 0.1s done
+#22 DONE 0.1s
+
+#31 [admin builder 5/6] COPY . .
+#31 ...
+
+#32 [backend build 2/6] WORKDIR /app
+#32 CACHED
+
+#33 [backend build 3/6] COPY pom.xml .
+#33 CACHED
+
+#34 [backend build 4/6] RUN mvn dependency:go-offline -B
+#34 CACHED
+
+#35 [backend build 5/6] COPY src ./src
+#35 CACHED
+
+#36 [backend stage-1 2/3] WORKDIR /app
+#36 CACHED
+
+#37 [backend build 6/6] RUN mvn clean package -DskipTests
+#37 CACHED
+
+#38 [backend stage-1 3/3] COPY --from=build /app/target/*.jar app.jar
+#38 CACHED
+
+#31 [admin builder 5/6] COPY . .
+#31 DONE 0.4s
+
+#39 [backend] exporting to image
+#39 exporting layers 0.0s done
+#39 exporting manifest sha256:0140657287486772e7e51231c7a704377b0789825e61af8b4561bffe0f137edf 0.0s done
+#39 exporting config sha256:72d1e7a9d5d5005c919bfd5412e013066ee6b6285519f23d34d79d533076824f done
+#39 exporting attestation manifest sha256:db53930ab77212af19e344be6af36b86bd3524bf06eefefaf6f4b011db4669d5 0.1s done
+#39 exporting manifest list sha256:0251020ef484970f9cc064419a0b0077f0cf453ab05cef0bb9b9d45cfac56be0
+#39 exporting manifest list sha256:0251020ef484970f9cc064419a0b0077f0cf453ab05cef0bb9b9d45cfac56be0 0.1s done
+#39 naming to docker.io/library/sharingfileweb-backend:latest 0.0s done
+#39 unpacking to docker.io/library/sharingfileweb-backend:latest
+#39 unpacking to docker.io/library/sharingfileweb-backend:latest 0.0s done
+#39 DONE 0.6s
+
+#40 [admin builder 6/6] RUN corepack enable pnpm && pnpm run build
+#40 ...
+
+#41 [backend] resolving provenance for metadata file
+#41 DONE 0.1s
+
+#42 [frontend builder 3/5] COPY --from=deps /app/node_modules ./node_modules
+#42 ...
+
+#40 [admin builder 6/6] RUN corepack enable pnpm && pnpm run build
+#40 2.505 
+#40 2.505 > admin@0.0.0 build /app
+#40 2.505 > tsc -b && vite build
+#40 2.505 
+#40 16.65 vite v5.4.21 building for production...
+#40 16.77 transforming...
+#40 ...
+
+#42 [frontend builder 3/5] COPY --from=deps /app/node_modules ./node_modules
+#42 DONE 22.1s
+
+#43 [frontend builder 4/5] COPY . .
+#43 DONE 0.6s
+
+#40 [admin builder 6/6] RUN corepack enable pnpm && pnpm run build
+#40 ...
+
+#44 [frontend builder 5/5] RUN corepack enable pnpm && pnpm run build
+#44 1.803 ! Corepack is about to download https://registry.npmjs.org/pnpm/-/pnpm-10.33.0.tgz
+#44 6.748 
+#44 6.748 > frontend@0.1.0 build /app
+#44 6.748 > next build
+#44 6.748 
+#44 9.546 Γû▓ Next.js 16.1.6 (Turbopack)
+#44 9.546 
+#44 9.552 ΓÜá The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+#44 9.604   Creating an optimized production build ...
+#44 ...
+
+#40 [admin builder 6/6] RUN corepack enable pnpm && pnpm run build
+#40 35.74 Γ£ô 3316 modules transformed.
+#40 47.15 rendering chunks...
+#40 47.70 computing gzip size...
+#40 47.98 dist/index.html                     0.46 kB Γöé gzip:   0.29 kB
+#40 47.98 dist/assets/index-DUc-hl82.css      9.29 kB Γöé gzip:   2.52 kB
+#40 47.98 dist/assets/index-Drti36sh.js   2,409.85 kB Γöé gzip: 755.28 kB
+#40 47.98 
+#40 47.98 (!) Some chunks are larger than 500 kB after minification. Consider:
+#40 47.98 - Using dynamic import() to code-split the application
+#40 47.98 - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+#40 47.98 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+#40 47.98 Γ£ô built in 31.27s
+#40 DONE 49.5s
+
+#44 [frontend builder 5/5] RUN corepack enable pnpm && pnpm run build
+#44 ...
+
+#45 [admin stage-1 2/2] COPY --from=builder /app/dist /usr/share/nginx/html
+#45 DONE 0.9s
+
+#44 [frontend builder 5/5] RUN corepack enable pnpm && pnpm run build
+#44 ...
+
+#46 [admin] exporting to image
+#46 exporting layers
+#46 exporting layers 1.0s done
+#46 exporting manifest sha256:5ea0fef81de7d7758770ce8593ac4aad4440648d7b0ff2f08941e6b2933032fb 0.1s done
+#46 exporting config sha256:35c02e40a0367517897e18aaa716032b2c0f9af7caa6dac8daba88cbcce96067
+#46 exporting config sha256:35c02e40a0367517897e18aaa716032b2c0f9af7caa6dac8daba88cbcce96067 0.1s done
+#46 exporting attestation manifest sha256:c6e885f04bf49dcf75a9845a59480bad7dea0076edbae6f777cdb39eb478f147
+#46 exporting attestation manifest sha256:c6e885f04bf49dcf75a9845a59480bad7dea0076edbae6f777cdb39eb478f147 0.1s done
+#46 exporting manifest list sha256:303c35c36ce0cab95c75861f2908558337b1afa15d75033bfb581f7b73e1c3c2
+#46 exporting manifest list sha256:303c35c36ce0cab95c75861f2908558337b1afa15d75033bfb581f7b73e1c3c2 0.0s done
+#46 naming to docker.io/library/sharingfileweb-admin:latest 0.0s done
+#46 unpacking to docker.io/library/sharingfileweb-admin:latest 0.1s done
+#46 DONE 1.7s
+
+#44 [frontend builder 5/5] RUN corepack enable pnpm && pnpm run build
+#44 ...
+
+#47 [admin] resolving provenance for metadata file
+#47 DONE 0.0s
+
+#44 [frontend builder 5/5] RUN corepack enable pnpm && pnpm run build
+#44 37.96 Γ£ô Compiled successfully in 26.7s
+#44 37.97   Running TypeScript ...
+#44 60.43   Collecting page data using 11 workers ...
+#44 65.04   Generating static pages using 11 workers (0/24) ...
+#44 65.97   Generating static pages using 11 workers (6/24) 
+#44 66.68   Generating static pages using 11 workers (12/24) 
+#44 68.02   Generating static pages using 11 workers (18/24) 
+#44 68.02 Γ£ô Generating static pages using 11 workers (24/24) in 3.0s
+#44 68.03   Finalizing page optimization ...
+#44 69.97 
+#44 69.98 Route (app)
+#44 69.98 Γöî Γùï /
+#44 69.98 Γö£ Γùï /_not-found
+#44 69.98 Γö£ Γùï /admin/orders
+#44 69.98 Γö£ Γùï /contact
+#44 69.98 Γö£ Γùï /dashboard
+#44 69.98 Γö£ Γùï /dashboard/billing
+#44 69.98 Γö£ Γùï /dashboard/files
+#44 69.98 Γö£ ╞Æ /dashboard/files/[folderId]
+#44 69.98 Γö£ Γùï /dashboard/notifications
+#44 69.98 Γö£ Γùï /dashboard/payment
+#44 69.98 Γö£ Γùï /dashboard/payment/failed
+#44 69.98 Γö£ Γùï /dashboard/payment/history
+#44 69.98 Γö£ Γùï /dashboard/payment/success
+#44 69.98 Γö£ Γùï /dashboard/profile
+#44 69.98 Γö£ Γùï /dashboard/recent
+#44 69.98 Γö£ Γùï /dashboard/settings
+#44 69.98 Γö£ Γùï /dashboard/shared
+#44 69.98 Γö£ Γùï /dashboard/trash
+#44 69.98 Γö£ Γùï /dashboard/upgrade
+#44 69.98 Γö£ Γùï /docs
+#44 69.98 Γö£ Γùï /login
+#44 69.98 Γö£ ╞Æ /payment/checkout/[orderCode]
+#44 69.98 Γö£ Γùï /products/file-sharing
+#44 69.98 Γö£ ╞Æ /shared/[token]
+#44 69.98 Γö£ ╞Æ /shared/file/[id]
+#44 69.98 Γöö Γùï /signup
+#44 69.98 
+#44 69.98 
+#44 69.98 ╞Æ Proxy (Middleware)
+#44 69.98 
+#44 69.98 Γùï  (Static)   prerendered as static content
+#44 69.98 ╞Æ  (Dynamic)  server-rendered on demand
+#44 69.98 
+#44 DONE 70.4s
+
+#48 [frontend runner 5/7] COPY --from=builder /app/public ./public
+#48 DONE 0.2s
+
+#49 [frontend runner 6/7] COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+#49 DONE 1.4s
+
+#50 [frontend runner 7/7] COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+#50 DONE 0.3s
+
+#51 [frontend] exporting to image
+#51 exporting layers
+#51 exporting layers 3.4s done
+#51 exporting manifest sha256:b270704bdfea7b7ac8990641cc447abe57726142159e77be8c6fb2edc15c02f6 0.0s done
+#51 exporting config sha256:6b96c661d0329a9889cee1b7e7916a2d4f5aa582333b8c332a7b39adfc982e2f 0.0s done
+#51 exporting attestation manifest sha256:08f2e627cac39950af3d89f9f13140aad83a7cb5ef2243c8174f33581c8a908f
+#51 exporting attestation manifest sha256:08f2e627cac39950af3d89f9f13140aad83a7cb5ef2243c8174f33581c8a908f 0.1s done
+#51 exporting manifest list sha256:aa76eed1083061171d999c137956aaf0423b1b7f4d3eadae8202082eb9707c37
+#51 exporting manifest list sha256:aa76eed1083061171d999c137956aaf0423b1b7f4d3eadae8202082eb9707c37 0.0s done
+#51 naming to docker.io/library/sharingfileweb-frontend:latest done
+#51 unpacking to docker.io/library/sharingfileweb-frontend:latest
+#51 unpacking to docker.io/library/sharingfileweb-frontend:latest 2.2s done
+#51 DONE 5.9s
+
+#52 [frontend] resolving provenance for metadata file
+#52 DONE 0.2s
+ frontend  Built
+ admin  Built
+ backend  Built

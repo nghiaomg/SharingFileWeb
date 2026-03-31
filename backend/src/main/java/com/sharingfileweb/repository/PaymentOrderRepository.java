@@ -3,6 +3,10 @@ package com.sharingfileweb.repository;
 import java.util.List;
 import java.util.Optional;
 
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import com.sharingfileweb.models.PaymentOrder;
@@ -13,4 +17,12 @@ public interface PaymentOrderRepository extends MongoRepository<PaymentOrder, St
     Optional<PaymentOrder> findByOrderCode(String orderCode);
     boolean existsByOrderCode(String orderCode);
     boolean existsByTransactionId(String transactionId);
+    List<PaymentOrder> findByUserIdOrderByCreatedAtDesc(String userId);
+
+    Page<PaymentOrder> findAll(Pageable pageable);
+    Page<PaymentOrder> findByStatus(String status, Pageable pageable);
+    Page<PaymentOrder> findByUserId(String userId, Pageable pageable);
+    
+    @Query("{ 'userId': ?0, 'status': ?1 }")
+    Page<PaymentOrder> findByUserIdAndStatusPage(String userId, String status, Pageable pageable);
 }

@@ -77,27 +77,27 @@ export default function CheckoutPage() {
     }
 
     return (
-        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 py-12 md:p-8">
+        <div className="min-h-[calc(100vh-4rem)] bg-background flex flex-col items-center pt-4 pb-8 px-4 md:pt-8 md:pb-12 md:px-8">
             <div className="max-w-4xl w-full">
 
-                <Button variant="ghost" color="gray" className="mb-8 hover:bg-muted cursor-pointer" onClick={() => router.push("/dashboard/payment")}>
+                <Button variant="ghost" color="gray" className="mb-4 hover:bg-muted cursor-pointer" onClick={() => router.push("/dashboard/payment")}>
                     <ChevronLeft className="w-4 h-4 mr-2" /> Quay lại
                 </Button>
 
                 <div className="w-full flex flex-col items-center">
 
                     {/* Minimalist Header */}
-                    <div className="text-center mb-10 space-y-3">
-                        <div className="bg-primary/10 w-16 h-16 rounded-2xl mx-auto flex items-center justify-center mb-4">
-                            <QrCode className="w-8 h-8 text-primary" />
+                    <div className="text-center mb-6 space-y-2">
+                        <div className="bg-primary/10 w-14 h-14 rounded-2xl mx-auto flex items-center justify-center mb-3">
+                            <QrCode className="w-7 h-7 text-primary" />
                         </div>
-                        <h1 className="text-3xl md:text-4xl font-black text-foreground">Thanh toán đơn hàng</h1>
-                        <p className="text-muted-foreground text-lg max-w-lg mx-auto">
+                        <h1 className="text-3xl md:text-3xl font-black text-foreground">Thanh toán đơn hàng</h1>
+                        <p className="text-muted-foreground max-w-lg mx-auto">
                             Mở ứng dụng ngân hàng và quét mã QR bên dưới. Hệ thống sẽ xác nhận tự động.
                         </p>
                     </div>
 
-                    <div className="w-full flex flex-col lg:flex-row gap-12 items-center lg:items-start justify-center">
+                    <div className="w-full flex flex-col lg:flex-row gap-8 items-center lg:items-start justify-center">
 
                         {/* Left: QR Code Zone - No borders, no shadows */}
                         <div className="flex flex-col items-center max-w-sm w-full">

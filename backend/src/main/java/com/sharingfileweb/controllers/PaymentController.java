@@ -59,4 +59,30 @@ public class PaymentController {
         }
     }
 
+    @Operation(summary = "Hủy đơn thanh toán", description = "Hủy đơn hàng PENDING hiện tại")
+    @PostMapping("/cancel")
+    @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
+    public ResponseEntity<?> cancelPaymentOrder() {
+        try {
+            UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            paymentService.cancelActiveOrder(userDetails.getId());
+            return ResponseEntity.ok(StandardResponse.success("Hủy đơn hàng thành công", null));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
+        }
+    }
+
+    @Operation(summary = "Lấy lịch sử thanh toán", description = "Lấy toàn bộ danh sách đơn hàng của user")
+    @GetMapping("/history")
+    @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
+    public ResponseEntity<?> getPaymentHistory() {
+        try {
+            UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            java.util.List<PaymentOrderResponse> history = paymentService.getPaymentHistory(userDetails.getId());
+            return ResponseEntity.ok(StandardResponse.success("Lấy lịch sử thanh toán thành công", history));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
+        }
+    }
+
 }

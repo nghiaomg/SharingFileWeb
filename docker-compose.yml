@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: sharingfile-backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    networks:
+      - sharingfile-network
+    # expose port nội bộ (không map ra ngoài)
+    expose:
+      - "3000"          # thay bằng port thật của backend (thường 3000, 8080, 5000...)
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: sharingfile-frontend
+    restart: unless-stopped
+    env_file:
+      - ./frontend/.env
+    networks:
+      - sharingfile-network
+    expose:
+      - "80"            # nếu frontend build ra static + dùng nginx bên trong
+
+  admin:
+    build:
+      context: ./admin
+    container_name: sharingfile-admin
+    restart: unless-stopped
+    networks:
+      - sharingfile-network
+    expose:
+      - "80"
+
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: nginx-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"                 # thêm HTTPS
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro     # để lưu SSL sau này
+    depends_on:
+      - backend
+      - frontend
+      - admin
+    networks:
+      - sharingfile-network
+
+networks:
+  sharingfile-network:
+    name: sharingfile-network
+    driver: bridge

@@ -8,4 +8,4 @@ export { createQRPayment, checkPaymentStatus, getPaymentHistory } from "./api";
 export { paymentKeys, usePaymentHistory, usePaymentStatusQuery as usePaymentStatus } from "./queries";
 
 // ─── Mutations ────────────────────────────────────────────────────────────────
-export { useCreatePaymentMutation as useCreatePayment, useRefreshPaymentHistory, useInvalidateUserAuth } from "./mutations";
+export { useCreatePaymentMutation as useCreatePayment, useRefreshPaymentHistory, useInvalidateUserAuth, useCancelPaymentMutation } from "./mutations";

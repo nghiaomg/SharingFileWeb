@@ -15,6 +15,12 @@ export async function checkPaymentStatus(): Promise<PaymentResult | null> {
 
 // ─── Get Payment History ──────────────────────────────────────────────────────
 export async function getPaymentHistory(): Promise<PaymentResult[]> {
-  const response = await apiClient.get<PaymentResult[]>("/payments/history");
+  const response = await apiClient.get<PaymentResult[]>("/payment/history");
+  return response.data;
+}
+
+// ─── Cancel Payment Order ────────────────────────────────────────────────────
+export async function cancelPayment(): Promise<void> {
+  const response = await apiClient.post("/payment/cancel");
   return response.data;
 }

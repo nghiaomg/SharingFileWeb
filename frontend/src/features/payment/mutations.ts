@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createQRPayment } from "./api";
+import { createQRPayment, cancelPayment } from "./api";
 import { paymentKeys } from "./queries";
 import { authKeys } from "@/features/auth/queries";
 import { toast } from "sonner";
@@ -37,6 +37,21 @@ export function useInvalidateUserAuth() {
   return useMutation({
     mutationFn: async () => {
       await queryClient.invalidateQueries({ queryKey: authKeys.all() });
+    },
+  });
+}
+
+export function useCancelPaymentMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: cancelPayment,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: paymentKeys.status() });
+      toast.success("Đã hủy đơn hàng chờ thanh toán.");
+    },
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, "Không thể hủy đơn hàng."));
     },
   });
 }
