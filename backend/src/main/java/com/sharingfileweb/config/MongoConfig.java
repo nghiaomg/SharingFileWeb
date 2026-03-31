@@ -19,7 +19,7 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
     public MongoClient mongoClient() {
         String uri = System.getProperty("MONGO_URI");
         if (uri == null) {
-            uri = "mongodb://localhost:27017/sharingfileweb";
+            uri = "mongodb://localhost:27018/sharingfileweb";
         }
         return MongoClients.create(uri);
     }
