@@ -10,16 +10,14 @@ export const AdminLayout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <Layout style={{ minHeight: '100vh', background: '#0f0f0f' }}>
+    <Layout style={{ minHeight: '100vh' }}>
       <AdminSidebar collapsed={collapsed} setCollapsed={setCollapsed} />
-      <Layout style={{ background: '#0f0f0f' }}>
+      <Layout>
         <AdminHeader collapsed={collapsed} setCollapsed={setCollapsed} />
-        <Content style={{ margin: 0, overflow: 'initial', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ padding: 16, background: '#0f0f0f', flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <Suspense fallback={<div style={{ textAlign: 'center', padding: '50px' }}><Spin size="large" /></div>}>
-              <Outlet />
-            </Suspense>
-          </div>
+        <Content style={{ padding: '20px 24px', overflow: 'initial' }}>
+          <Suspense fallback={<div style={{ textAlign: 'center', padding: '60px' }}><Spin size="large" /></div>}>
+            <Outlet />
+          </Suspense>
         </Content>
       </Layout>
     </Layout>

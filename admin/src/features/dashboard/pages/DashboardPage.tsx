@@ -1,227 +1,183 @@
-import React, { useState } from 'react';
-import { Typography, Row, Col, Card, Segmented, Space, Statistic, Progress, Tag, Tooltip } from 'antd';
+import React from 'react';
+import { Row, Col, Progress, Typography, Skeleton } from 'antd';
 import {
-  FolderOutlined,
-  LinkOutlined,
-  SafetyCertificateOutlined,
-  ClockCircleOutlined,
+  UserOutlined, FileTextOutlined, DatabaseOutlined, LinkOutlined, FileImageOutlined,
 } from '@ant-design/icons';
-import { DashboardStats } from '../components/DashboardStats';
-import { StorageCategoryChart } from '../components/StorageCategoryChart';
-import { RecentFilesTable } from '../components/RecentFilesTable';
+import { useDashboardStats } from '../hooks/useDashboardStats';
+import { useStorageUsageQuery, useDashboardRecentFilesQuery } from '../hooks/useDashboardQuery';
 import { ActivityTimeline } from '../components/ActivityTimeline';
-import { TopStorageUsers } from '../components/TopStorageUsers';
-import { useUsersQuery } from '@/features/users/hooks/useUsersHooks';
-import { useFilesQuery } from '@/features/files/hooks/useFilesHooks';
-import { useFoldersQuery } from '@/features/folders/hooks/useFoldersHooks';
-import { useShareLinksQuery } from '@/features/shareLinks/hooks/useShareLinksHooks';
-import { useStorageUsageQuery } from '../hooks/useDashboardQuery';
+import { formatBytes } from '@/shared/utils';
 import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime';
 
-dayjs.extend(relativeTime);
+const { Text } = Typography;
 
-const { Title, Text } = Typography;
+/* ── Stat ── */
+const Stat: React.FC<{ value: number | string; icon: React.ReactNode; accent: string }> = ({ value, icon, accent }) => (
+  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+    <div style={{
+      width: 44, height: 44, borderRadius: 10,
+      background: `${accent}18`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20,
+    }}>
+      {icon}
+    </div>
+    <span style={{ fontSize: 26, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>
+      {value}
+    </span>
+  </div>
+);
 
-const formatBytes = (bytes: number): string => {
-  if (bytes === 0) return '0 B';
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+/* ── Card ── */
+const Card: React.FC<{ children: React.ReactNode; style?: React.CSSProperties }> = ({ children, style }) => (
+  <div style={{ background: 'var(--bg-surface)', borderRadius: 12, padding: '18px 20px', ...style }}>
+    {children}
+  </div>
+);
+
+/* ── Storage ── */
+const StorageBar: React.FC = () => {
+  const { data: su } = useStorageUsageQuery();
+  if (!su) return <Skeleton.Button active style={{ width: '100%', height: 40 }} />;
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+        <Text style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Storage</Text>
+        <Text style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
+          {formatBytes(su.used)} / {formatBytes(su.limit)}
+        </Text>
+      </div>
+      <Progress
+        percent={Math.min(Math.round(su.percentUsed), 100)}
+        strokeColor={{ '0%': 'var(--accent)', '100%': '#52c41a' }}
+        trailColor="var(--progress-track)"
+        size={['default', 8]}
+        showInfo={false}
+      />
+    </div>
+  );
 };
 
-type ViewMode = 'overview' | 'detailed' | 'analytics';
+/* ── Access bars ── */
+const AccessBars: React.FC = () => {
+  const { publicFiles, restrictedFiles, privateFiles, totalFiles } = useDashboardStats();
+  const total = totalFiles || 1;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {[
+        { label: 'Public',     value: publicFiles,    color: '#52c41a' },
+        { label: 'Restricted', value: restrictedFiles, color: '#faad14' },
+        { label: 'Private',    value: privateFiles,  color: '#8c8c8c' },
+      ].map(bar => (
+        <div key={bar.label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 13, color: 'var(--text-secondary)', width: 80 }}>{bar.label}</span>
+          <div style={{ flex: 1, height: 6, borderRadius: 3, background: 'var(--progress-track)', overflow: 'hidden' }}>
+            <div style={{ width: `${Math.round((bar.value / total) * 100)}%`, height: '100%', borderRadius: 3, background: bar.color }} />
+          </div>
+          <span style={{ fontSize: 13, color: 'var(--text-secondary)', width: 32, textAlign: 'right' }}>{bar.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
 
+/* ── Plan badges ── */
+const PlanBadges: React.FC = () => {
+  const { freeUsers, proUsers } = useDashboardStats();
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {[
+        ['FREE', freeUsers],
+        ['PRO',  proUsers],
+      ].map(([plan, count]) => (
+        <div key={plan} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{
+            fontSize: 11, fontWeight: 700,
+            background: plan === 'PRO' ? '#fffbe6' : 'var(--bg-hover)',
+            color: plan === 'PRO' ? '#d48806' : 'var(--text-muted)',
+            padding: '3px 10px', borderRadius: 5,
+          }}>
+            {plan}
+          </span>
+          <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>{count}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+/* ── Recent files ── */
+const RecentFiles: React.FC = () => {
+  const { data: files, isLoading } = useDashboardRecentFilesQuery();
+  if (isLoading) return <Skeleton active paragraph={{ rows: 6 }} />;
+  if (!files?.length) return <Text style={{ fontSize: 14, color: 'var(--text-muted)' }}>No files</Text>;
+  return (
+    <div>
+      {files.slice(0, 8).map((f) => (
+        <div key={f.id} style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          padding: '9px 0',
+          borderBottom: '1px solid var(--progress-track)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
+            <FileImageOutlined style={{ fontSize: 14, color: '#52c41a', flexShrink: 0 }} />
+            <Text style={{ fontSize: 14, color: 'var(--text-primary)' }} ellipsis>{f.name}</Text>
+          </div>
+          <Text style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 12, flexShrink: 0 }}>
+            {formatBytes(f.size)} · {dayjs(f.createdAt).format('DD/MM')}
+          </Text>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+/* ── DashboardPage ── */
 const DashboardPage: React.FC = () => {
-  const [viewMode, setViewMode] = useState<ViewMode>('overview');
-  const { data: users } = useUsersQuery();
-  const { data: files } = useFilesQuery();
-  const { data: folders } = useFoldersQuery();
-  const { data: shareLinks } = useShareLinksQuery();
-  const { data: storageUsage } = useStorageUsageQuery();
-
-  const totalFiles = files?.length || 0;
-  const totalFolders = folders?.length || 0;
-  const activeLinks = shareLinks?.filter(link => !link.isRevoked).length || 0;
-
-  // Calculate growth metrics (simulated based on data)
-  const publicFiles = files?.filter(f => f.accessMode === 'PUBLIC').length || 0;
-  const restrictedFiles = files?.filter(f => f.accessMode === 'RESTRICTED').length || 0;
-  const privateFiles = files?.filter(f => f.accessMode === 'PRIVATE').length || 0;
-
-  // User statistics
-  const proUsers = users?.filter(u => u.subscriptionPlan === 'PRO').length || 0;
-  const freeUsers = users?.filter(u => u.subscriptionPlan === 'FREE').length || 0;
-
-  // Share link statistics
-  const linksWithPassword = shareLinks?.filter(l => l.hasPassword).length || 0;
-  const expiredLinks = shareLinks?.filter(l => l.expiresAt && dayjs(l.expiresAt).isBefore(dayjs())).length || 0;
+  const { totalUsers, totalFiles, totalStorage, activeLinks } = useDashboardStats();
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <Title level={2} style={{ margin: 0 }}>Bảng điều khiển</Title>
-        <Space>
-          <Segmented
-            options={[
-              { label: 'Tổng quan', value: 'overview' },
-              { label: 'Chi tiết', value: 'detailed' },
-              { label: 'Phân tích', value: 'analytics' },
-            ]}
-            value={viewMode}
-            onChange={(value) => setViewMode(value as ViewMode)}
-          />
-        </Space>
-      </div>
-
-      {/* Main Stats Cards */}
-      <DashboardStats />
-
-      {/* Storage Usage Progress */}
-      {storageUsage && (
-        <Card style={{ marginBottom: 24 }} loading={!storageUsage}>
-          <Row gutter={24} align="middle">
-            <Col span={16}>
-              <div>
-                <Text strong>Tổng dung lượng đã sử dụng</Text>
-                <Progress
-                  percent={Math.round(storageUsage.percentUsed)}
-                  strokeColor={{
-                    '0%': '#108ee9',
-                    '100%': '#87d068',
-                  }}
-                  format={() => `${formatBytes(storageUsage.used)} / ${formatBytes(storageUsage.limit)}`}
-                />
-              </div>
-            </Col>
-            <Col span={8}>
-              <Row gutter={16}>
-                <Col span={12}>
-                  <Statistic
-                    title="Gói FREE"
-                    value={freeUsers}
-                    suffix="người"
-                    prefix={<Tag color="default">FREE</Tag>}
-                  />
-                </Col>
-                <Col span={12}>
-                  <Statistic
-                    title="Gói PRO"
-                    value={proUsers}
-                    suffix="người"
-                    prefix={<Tag color="gold">PRO</Tag>}
-                  />
-                </Col>
-              </Row>
-            </Col>
-          </Row>
-        </Card>
-      )}
-
-      <Row gutter={[24, 24]}>
-        {/* Storage Categories Chart */}
-        <Col xs={24} lg={viewMode === 'overview' ? 12 : 8}>
-          <StorageCategoryChart />
+      {/* Row 1: 4 stats */}
+      <Row gutter={[20, 20]} style={{ marginBottom: 20 }}>
+        <Col xs={12} sm={6}>
+          <Stat value={totalUsers}          icon={<UserOutlined      style={{ color: '#1677ff' }} />} accent="#1677ff" />
         </Col>
+        <Col xs={12} sm={6}>
+          <Stat value={totalFiles}          icon={<FileTextOutlined  style={{ color: '#52c41a' }} />} accent="#52c41a" />
+        </Col>
+        <Col xs={12} sm={6}>
+          <Stat value={formatBytes(totalStorage)} icon={<DatabaseOutlined style={{ color: '#faad14' }} />} accent="#faad14" />
+        </Col>
+        <Col xs={12} sm={6}>
+          <Stat value={activeLinks}         icon={<LinkOutlined     style={{ color: '#eb2f96' }} />} accent="#eb2f96" />
+        </Col>
+      </Row>
 
-        {/* File Distribution */}
-        {viewMode !== 'overview' && (
-          <Col xs={24} lg={8}>
-            <Card title="Phân bố quyền truy cập" size="small">
-              <div style={{ marginBottom: 16 }}>
-                <Row justify="space-between">
-                  <Text>Công khai</Text>
-                  <Text strong>{publicFiles} tệp</Text>
-                </Row>
-                <Progress percent={totalFiles > 0 ? Math.round((publicFiles / totalFiles) * 100) : 0} strokeColor="#52c41a" />
-              </div>
-              <div style={{ marginBottom: 16 }}>
-                <Row justify="space-between">
-                  <Text>Hạn chế</Text>
-                  <Text strong>{restrictedFiles} tệp</Text>
-                </Row>
-                <Progress percent={totalFiles > 0 ? Math.round((restrictedFiles / totalFiles) * 100) : 0} strokeColor="#faad14" />
-              </div>
-              <div>
-                <Row justify="space-between">
-                  <Text>Riêng tư</Text>
-                  <Text strong>{privateFiles} tệp</Text>
-                </Row>
-                <Progress percent={totalFiles > 0 ? Math.round((privateFiles / totalFiles) * 100) : 0} strokeColor="#8c8c8c" />
-              </div>
-            </Card>
-          </Col>
-        )}
+      {/* Row 2: Storage + Plan + Access */}
+      <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
+        <Col xs={24} sm={14}>
+          <Card><StorageBar /></Card>
+        </Col>
+        <Col xs={12} sm={5}>
+          <Card style={{ height: '100%' }}><PlanBadges /></Card>
+        </Col>
+        <Col xs={12} sm={5}>
+          <Card style={{ height: '100%' }}><AccessBars /></Card>
+        </Col>
+      </Row>
 
-        {/* Quick Stats */}
-        <Col xs={24} lg={viewMode === 'overview' ? 12 : 8}>
-          <Card title="Thống kê nhanh" size="small">
-            <Row gutter={[16, 16]}>
-              <Col span={12}>
-                <Tooltip title="Tổng số thư mục trong hệ thống">
-                  <Statistic
-                    title="Thư mục"
-                    value={totalFolders}
-                    prefix={<FolderOutlined style={{ color: '#fa8c16' }} />}
-                    styles={{ content: { color: '#fa8c16', fontSize: 24 } }}
-                  />
-                </Tooltip>
-              </Col>
-              <Col span={12}>
-                <Tooltip title="Link chia sẻ đang hoạt động">
-                  <Statistic
-                    title="Link hoạt động"
-                    value={activeLinks}
-                    prefix={<LinkOutlined style={{ color: '#eb2f96' }} />}
-                    styles={{ content: { color: '#eb2f96', fontSize: 24 } }}
-                  />
-                </Tooltip>
-              </Col>
-              <Col span={12}>
-                <Tooltip title="Link có mật khẩu bảo vệ">
-                  <Statistic
-                    title="Bảo mật"
-                    value={linksWithPassword}
-                    suffix={`/ ${activeLinks}`}
-                    prefix={<SafetyCertificateOutlined style={{ color: '#52c41a' }} />}
-                    styles={{ content: { color: '#52c41a', fontSize: 24 } }}
-                  />
-                </Tooltip>
-              </Col>
-              <Col span={12}>
-                <Tooltip title="Link đã hết hạn">
-                  <Statistic
-                    title="Đã hết hạn"
-                    value={expiredLinks}
-                    prefix={<ClockCircleOutlined style={{ color: '#ff4d4f' }} />}
-                    styles={{ content: { color: '#ff4d4f', fontSize: 24 } }}
-                  />
-                </Tooltip>
-              </Col>
-            </Row>
+      {/* Row 3: Activity + Recent files */}
+      <Row gutter={[16, 16]}>
+        <Col xs={24} md={10}>
+          <Card><ActivityTimeline /></Card>
+        </Col>
+        <Col xs={24} md={14}>
+          <Card>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <Text style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>Recent files</Text>
+            </div>
+            <RecentFiles />
           </Card>
-        </Col>
-
-        {/* Analytics View - Additional Charts */}
-        {viewMode === 'analytics' && (
-          <>
-            <Col xs={24} lg={12}>
-              <Card title="Hoạt động hệ thống" size="small">
-                <ActivityTimeline />
-              </Card>
-            </Col>
-            <Col xs={24} lg={12}>
-              <Card title="Top người dùng sử dụng dung lượng" size="small">
-                <TopStorageUsers />
-              </Card>
-            </Col>
-          </>
-        )}
-
-        {/* Recent Files */}
-        <Col xs={24}>
-          <RecentFilesTable />
         </Col>
       </Row>
     </div>

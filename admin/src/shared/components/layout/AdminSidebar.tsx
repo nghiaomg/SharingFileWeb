@@ -11,17 +11,16 @@ import {
   BellOutlined,
   DeleteOutlined,
 } from '@ant-design/icons';
+import { useTheme } from '@/shared/contexts/useTheme';
 
 const { Sider } = Layout;
 
-interface AdminSidebarProps {
-  collapsed: boolean;
-  setCollapsed: (val: boolean) => void;
-}
-
-export const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, setCollapsed }) => {
+export const AdminSidebar: React.FC<{ collapsed: boolean; setCollapsed: (v: boolean) => void }> = ({
+  collapsed, setCollapsed,
+}) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { mode } = useTheme();
 
   const menuItems: MenuProps['items'] = [
     {
@@ -29,8 +28,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, setCollap
       key: 'overview',
       type: 'group',
       children: [
-        { key: '/dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
-        { key: '/notifications', icon: <BellOutlined />, label: 'Thông báo' },
+        { key: '/dashboard',    icon: <DashboardOutlined />, label: 'Dashboard' },
+        { key: '/notifications', icon: <BellOutlined />,     label: 'Thông báo' },
       ],
     },
     {
@@ -38,9 +37,9 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, setCollap
       key: 'data',
       type: 'group',
       children: [
-        { key: '/files', icon: <FileOutlined />, label: 'Tệp tin (Files)' },
-        { key: '/folders', icon: <FolderOpenOutlined />, label: 'Thư mục' },
-        { key: '/share-links', icon: <LinkOutlined />, label: 'Liên kết chia sẻ' },
+        { key: '/files',       icon: <FileOutlined />,       label: 'Tệp tin' },
+        { key: '/folders',      icon: <FolderOpenOutlined />, label: 'Thư mục' },
+        { key: '/share-links',  icon: <LinkOutlined />,       label: 'Liên kết chia sẻ' },
       ],
     },
     {
@@ -48,51 +47,55 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, setCollap
       key: 'system',
       type: 'group',
       children: [
-        { key: '/users', icon: <UserOutlined />, label: 'Người dùng' },
-        { key: '/trash', icon: <DeleteOutlined />, label: 'Thùng rác' },
+        { key: '/users', icon: <UserOutlined />,     label: 'Người dùng' },
+        { key: '/trash', icon: <DeleteOutlined />,   label: 'Thùng rác' },
       ],
     },
   ];
 
-  const getSelectedKey = () => {
-    const path = location.pathname;
-    const flatPaths = [
-      '/dashboard', '/notifications',
-      '/files', '/folders', '/share-links',
-      '/users', '/trash'
-    ];
-    const match = flatPaths.find(p => path.startsWith(p));
-    return match ? match : '/dashboard';
-  };
+  const selected = [
+    '/dashboard', '/notifications',
+    '/files', '/folders', '/share-links',
+    '/users', '/trash',
+  ].find(p => location.pathname.startsWith(p)) ?? '/dashboard';
 
   return (
     <Sider
-      trigger={null}
       collapsible
       collapsed={collapsed}
-      onBreakpoint={(broken) => {
-        if (broken) {
-          setCollapsed(true);
-        }
-      }}
+      onBreakpoint={broken => { if (broken) setCollapsed(true); }}
       breakpoint="lg"
-      collapsedWidth="0"
-      width={250}
-      theme="dark"
-      style={{ boxShadow: '2px 0 8px rgba(0,0,0,0.4)', zIndex: 2 }}
+      collapsedWidth={0}
+      width={248}
+      style={{
+        boxShadow: 'var(--sidebar-shadow)',
+        zIndex: 2,
+        background: 'var(--sidebar-bg)',
+        borderRight: 'var(--sidebar-border)',
+        overflow: 'hidden',
+      }}
     >
-      <div style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden', background: '#161616' }}>
-        <h2 style={{ margin: 0, fontWeight: 700, color: '#c084fc', fontSize: collapsed ? '1.2rem' : '1.5rem', transition: 'all 0.2s', whiteSpace: 'nowrap' }}>
+      {/* Logo */}
+      <div className="sidebar-logo">
+        <span style={{
+          fontWeight: 800,
+          fontSize: collapsed ? 16 : 18,
+          color: 'var(--sidebar-logo-color)',
+          transition: 'font-size 0.2s',
+          letterSpacing: '-0.5px',
+        }}>
           {collapsed ? 'SF' : 'Sharing File'}
-        </h2>
+        </span>
       </div>
+
+      {/* Menu */}
       <Menu
         mode="inline"
-        theme="dark"
-        selectedKeys={[getSelectedKey()]}
-        style={{ borderRight: 0, padding: '16px 8px', background: 'transparent' }}
+        theme={mode}
+        selectedKeys={[selected]}
         items={menuItems}
         onClick={({ key }) => navigate(key)}
+        style={{ borderRight: 0, padding: '12px 8px', background: 'transparent' }}
       />
     </Sider>
   );

@@ -1,69 +1,78 @@
-import React from 'react';
-import { Layout, Dropdown, Space, Avatar, Button } from 'antd';
+import React, { useState } from 'react';
+import { Layout, Dropdown, Space, Avatar, Button, Tooltip } from 'antd';
 import type { MenuProps } from 'antd';
-import { UserOutlined, LogoutOutlined, MenuFoldOutlined, MenuUnfoldOutlined, LockOutlined } from '@ant-design/icons';
+import {
+  UserOutlined,
+  LogoutOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  LockOutlined,
+  SunOutlined,
+  MoonOutlined,
+} from '@ant-design/icons';
 import { useAuthStore, useLogoutMutation } from '@/features/auth';
 import { ChangePasswordModal } from '@/features/auth/components/ChangePasswordModal';
+import { useTheme } from '@/shared/contexts/useTheme';
 
 const { Header } = Layout;
 
-interface AdminHeaderProps {
-  collapsed: boolean;
-  setCollapsed: (val: boolean) => void;
-}
-
-export const AdminHeader: React.FC<AdminHeaderProps> = ({ collapsed, setCollapsed }) => {
-  const user = useAuthStore((state) => state.user);
+export const AdminHeader: React.FC<{ collapsed: boolean; setCollapsed: (v: boolean) => void }> = ({
+  collapsed, setCollapsed,
+}) => {
+  const user = useAuthStore(s => s.user);
   const logoutMutation = useLogoutMutation();
+  const { mode, toggle } = useTheme();
+  const [pwdOpen, setPwdOpen] = useState(false);
 
-  const handleLogout = () => {
-    logoutMutation.mutate();
-  };
-
-  const [isChangePasswordModalVisible, setIsChangePasswordModalVisible] = React.useState(false);
-
-  const items: MenuProps['items'] = [
-    {
-      key: 'change-password',
-      label: 'Đổi mật khẩu',
-      icon: <LockOutlined />,
-      onClick: () => setIsChangePasswordModalVisible(true),
-    },
-    {
-      type: 'divider',
-    },
-    {
-      key: 'logout',
-      label: 'Đăng xuất',
-      icon: <LogoutOutlined />,
-      danger: true,
-      onClick: handleLogout,
-    },
+  const userMenu: MenuProps['items'] = [
+    { key: 'change-password', label: 'Đổi mật khẩu', icon: <LockOutlined />, onClick: () => setPwdOpen(true) },
+    { type: 'divider' },
+    { key: 'logout', label: 'Đăng xuất', icon: <LogoutOutlined />, danger: true, onClick: () => logoutMutation.mutate() },
   ];
 
   return (
-    <Header style={{ padding: '0 16px', background: '#161616', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 4px rgba(0,0,0,0.4)', zIndex: 1, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+    <Header style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      position: 'sticky',
+      top: 0,
+      zIndex: 1,
+    }}>
+      {/* Menu toggle */}
       <Button
         type="text"
         icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
         onClick={() => setCollapsed(!collapsed)}
-        style={{
-          fontSize: '16px',
-          width: 48,
-          height: 48,
-        }}
+        style={{ fontSize: 18, width: 44, height: 44 }}
       />
-      <Dropdown menu={{ items }} placement="bottomRight">
-        <Space style={{ cursor: 'pointer' }}>
-          <Avatar icon={<UserOutlined />} />
-          <span style={{ fontWeight: 500 }}>{user?.username || 'Admin'}</span>
-        </Space>
-      </Dropdown>
-      
-      <ChangePasswordModal 
-        open={isChangePasswordModalVisible} 
-        onCancel={() => setIsChangePasswordModalVisible(false)} 
-      />
+
+      {/* Right actions */}
+      <Space size={8}>
+        <Tooltip title={mode === 'light' ? 'Dark mode' : 'Light mode'}>
+          <Button
+            type="text"
+            icon={mode === 'light' ? <MoonOutlined /> : <SunOutlined />}
+            onClick={toggle}
+            style={{ fontSize: 17, width: 40, height: 40 }}
+          />
+        </Tooltip>
+
+        <Dropdown menu={{ items: userMenu }} placement="bottomRight">
+          <Space style={{ cursor: 'pointer', padding: '4px 8px' }}>
+            <Avatar icon={<UserOutlined />} size={34} />
+            <span style={{
+              fontWeight: 500,
+              fontSize: 14,
+              color: 'var(--text-primary)',
+            }}>
+              {user?.username ?? 'Admin'}
+            </span>
+          </Space>
+        </Dropdown>
+      </Space>
+
+      <ChangePasswordModal open={pwdOpen} onCancel={() => setPwdOpen(false)} />
     </Header>
   );
 };
