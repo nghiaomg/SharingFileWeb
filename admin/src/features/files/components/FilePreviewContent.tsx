@@ -12,13 +12,13 @@ interface FilePreviewContentProps {
 }
 
 /* ── helpers ── */
-const isImage   = (t: string) => t.startsWith('image/');
-const isPdf      = (t: string) => t.includes('pdf');
-const isVideo    = (t: string) => t.startsWith('video/') || t.includes('mp4') || t.includes('mov') || t.includes('webm');
-const isAudio    = (t: string) => t.startsWith('audio/') || t.includes('mp3') || t.includes('wav') || t.includes('ogg');
-const isText     = (t: string) => t.startsWith('text/') || t.includes('json') || t.includes('xml') || t.includes('csv') || t.includes('javascript');
-const isOffice   = (t: string) => t.includes('word') || t.includes('document') || t.includes('excel') || t.includes('spreadsheet') || t.includes('powerpoint');
-const isZip      = (t: string) => t.includes('zip') || t.includes('rar') || t.includes('tar') || t.includes('gz') || t.includes('7z');
+const isImage = (t: string) => t.startsWith('image/');
+const isPdf = (t: string) => t.includes('pdf');
+const isVideo = (t: string) => t.startsWith('video/') || t.includes('mp4') || t.includes('mov') || t.includes('webm');
+const isAudio = (t: string) => t.startsWith('audio/') || t.includes('mp3') || t.includes('wav') || t.includes('ogg');
+const isText = (t: string) => t.startsWith('text/') || t.includes('json') || t.includes('xml') || t.includes('csv') || t.includes('javascript');
+const isOffice = (t: string) => t.includes('word') || t.includes('document') || t.includes('excel') || t.includes('spreadsheet') || t.includes('powerpoint');
+const isZip = (t: string) => t.includes('zip') || t.includes('rar') || t.includes('tar') || t.includes('gz') || t.includes('7z');
 
 /* ── Preview components ── */
 const ImagePreview: React.FC<{ fileId: string; fileName: string }> = ({ fileId, fileName }) => (
@@ -94,7 +94,7 @@ const TextPreview: React.FC<{ fileId: string }> = ({ fileId }) => {
   );
 };
 
-const OfficePreview: React.FC<{ fileId: string; fileType: string }> = ({ fileType }) => {
+const OfficePreview: React.FC<{ fileType: string }> = ({ fileType }) => {
   const isWord = fileType.includes('word') || fileType.includes('document');
   const isExcel = fileType.includes('excel') || fileType.includes('spreadsheet');
   const Icon = isWord ? FileTextOutlined : isExcel ? FileExcelOutlined : FileUnknownOutlined;
@@ -138,12 +138,12 @@ const UnsupportedPreview: React.FC<{ fileType: string }> = ({ fileType }) => (
 
 /* ── Main component ── */
 export const FilePreviewContent: React.FC<FilePreviewContentProps> = ({ fileId, fileName, fileType }) => {
-  if (isImage(fileType))  return <ImagePreview fileId={fileId} fileName={fileName} />;
-  if (isPdf(fileType))    return <PdfPreview fileId={fileId} fileName={fileName} />;
-  if (isVideo(fileType))  return <VideoPreview fileId={fileId} fileName={fileName} />;
-  if (isAudio(fileType))  return <AudioPreview fileId={fileId} />;
-  if (isText(fileType))   return <TextPreview fileId={fileId} />;
+  if (isImage(fileType)) return <ImagePreview fileId={fileId} fileName={fileName} />;
+  if (isPdf(fileType)) return <PdfPreview fileId={fileId} fileName={fileName} />;
+  if (isVideo(fileType)) return <VideoPreview fileId={fileId} fileName={fileName} />;
+  if (isAudio(fileType)) return <AudioPreview fileId={fileId} />;
+  if (isText(fileType)) return <TextPreview fileId={fileId} />;
   if (isOffice(fileType)) return <OfficePreview fileType={fileType} />;
-  if (isZip(fileType))    return <ZipPreview />;
+  if (isZip(fileType)) return <ZipPreview />;
   return <UnsupportedPreview fileType={fileType} />;
 };

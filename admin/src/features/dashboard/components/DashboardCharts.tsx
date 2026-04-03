@@ -58,14 +58,14 @@ export const DashboardCharts: React.FC = () => {
                                 <CartesianGrid strokeDasharray="3 3" stroke="var(--progress-track)" vertical={false} />
                                 <XAxis dataKey="date" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
                                 <YAxis yAxisId="left" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
-                                <YAxis yAxisId="right" orientation="right" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val: number) => formatBytes(val)} />
+                                <YAxis yAxisId="right" orientation="right" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val: string | number | readonly (string | number)[] | undefined) => formatBytes(Number(val || 0))} />
                                 <Tooltip
                                     cursor={{ fill: 'var(--progress-track)', opacity: 0.4 }}
                                     contentStyle={{ background: 'var(--bg-surface)', border: '1px solid var(--progress-track)', borderRadius: 8, color: 'var(--text-primary)' }}
                                     itemStyle={{ color: 'var(--text-primary)' }}
-                                    formatter={(value: number, name: string) => {
-                                        if (name === 'Dung lượng tải lên') return formatBytes(value);
-                                        return value;
+                                    formatter={(value: string | number | readonly (string | number)[] | undefined, name: string | number | undefined) => {
+                                        if (name === 'Dung lượng tải lên') return formatBytes(Number(value || 0));
+                                        return value ?? 0;
                                     }}
                                 />
                                 <Legend />

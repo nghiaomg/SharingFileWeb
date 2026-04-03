@@ -36,10 +36,21 @@ export const antdTokens = (mode: ThemeMode) => ({
       paddingBlock: 8,
       paddingInline: 12,
       fontSize: 14,
+      colorBgContainer: mode === 'dark' ? 'rgba(255,255,255,0.04)' : '#ffffff',
+      colorBorder: mode === 'dark' ? 'rgba(255,255,255,0.12)' : '#d9d9d9',
+      colorText: mode === 'dark' ? '#ffffff' : '#262626',
+      hoverBorderColor: mode === 'dark' ? 'rgba(255,255,255,0.25)' : '#40a9ff',
+      activeBorderColor: mode === 'dark' ? 'rgba(255,255,255,0.4)' : '#1677ff',
+      activeShadow: mode === 'dark' ? '0 0 0 3px rgba(255,255,255,0.06)' : '0 0 0 3px rgba(22,119,255,0.08)',
     },
     Select: {
       paddingBlock: 7,
       fontSize: 14,
+      colorBgContainer: mode === 'dark' ? 'rgba(255,255,255,0.04)' : '#ffffff',
+      colorBorder: mode === 'dark' ? 'rgba(255,255,255,0.12)' : '#d9d9d9',
+      colorText: mode === 'dark' ? '#ffffff' : '#262626',
+      optionSelectedBg: mode === 'dark' ? 'rgba(192,132,252,0.2)' : 'rgba(22,119,255,0.08)',
+      hoverBorderColor: mode === 'dark' ? 'rgba(255,255,255,0.25)' : '#40a9ff',
     },
     Table: {
       headerBg: mode === 'dark' ? '#161616' : '#fafafa',
@@ -89,23 +100,6 @@ export const antdTokens = (mode: ThemeMode) => ({
       itemFontSize: 14,
       iconSize: 16,
     },
-    Input: {
-      colorBgContainer: mode === 'dark' ? 'rgba(255,255,255,0.04)' : '#ffffff',
-      colorBorder: mode === 'dark' ? 'rgba(255,255,255,0.12)' : '#d9d9d9',
-      colorText: mode === 'dark' ? '#ffffff' : '#262626',
-      colorTextPlaceholder: mode === 'dark' ? 'rgba(255,255,255,0.3)' : '#bfbfbf',
-      hoverBorderColor: mode === 'dark' ? 'rgba(255,255,255,0.25)' : '#40a9ff',
-      activeBorderColor: mode === 'dark' ? 'rgba(255,255,255,0.4)' : '#1677ff',
-      activeShadow: mode === 'dark' ? '0 0 0 3px rgba(255,255,255,0.06)' : '0 0 0 3px rgba(22,119,255,0.08)',
-    },
-    Select: {
-      colorBgContainer: mode === 'dark' ? 'rgba(255,255,255,0.04)' : '#ffffff',
-      colorBorder: mode === 'dark' ? 'rgba(255,255,255,0.12)' : '#d9d9d9',
-      colorText: mode === 'dark' ? '#ffffff' : '#262626',
-      colorTextPlaceholder: mode === 'dark' ? 'rgba(255,255,255,0.3)' : '#bfbfbf',
-      optionSelectedBg: mode === 'dark' ? 'rgba(192,132,252,0.2)' : 'rgba(22,119,255,0.08)',
-      hoverBorderColor: mode === 'dark' ? 'rgba(255,255,255,0.25)' : '#40a9ff',
-    },
     Card: {
       colorBgContainer: mode === 'dark' ? '#0f0f0f' : '#ffffff',
       colorBorderSecondary: mode === 'dark' ? 'rgba(255,255,255,0.07)' : '#f0f0f0',
@@ -138,9 +132,6 @@ export const antdTokens = (mode: ThemeMode) => ({
     },
     Popconfirm: {
       fontSize: 14,
-    },
-    Drawer: {
-      titleFontSize: 16,
     },
   },
 });
