@@ -14,6 +14,7 @@ import {
   Tooltip,
   message,
 } from 'antd';
+import { env } from '@/config/env';
 import {
   FileOutlined,
   FilePdfOutlined,
@@ -78,7 +79,7 @@ export const FilePreviewDrawer: React.FC<FilePreviewDrawerProps> = ({
 
   const isImage = file.type?.startsWith('image/');
 
-  const downloadUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/files/download/${file.id}`;
+  const downloadUrl = `${env.API_URL}/api/files/download/${file.id}`;
 
   const handleCopyLink = (url: string, label: string) => {
     navigator.clipboard.writeText(url);
@@ -130,10 +131,10 @@ export const FilePreviewDrawer: React.FC<FilePreviewDrawerProps> = ({
       >
         {isImage ? (
           <Image
-            src={`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/files/${file.id}/preview`}
+            src={`${env.API_URL}/api/files/${file.id}/preview`}
             alt={file.name}
             style={{ maxWidth: '100%', borderRadius: 8 }}
-            fallback={`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/files/${file.id}/thumbnail`}
+            fallback={`${env.API_URL}/api/files/${file.id}/thumbnail`}
           />
         ) : (
           <div style={{ padding: 40 }}>
