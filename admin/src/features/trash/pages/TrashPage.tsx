@@ -9,7 +9,6 @@ import {
   Popconfirm,
   Row,
   Col,
-  Statistic,
   Tooltip,
   Empty,
   message,
@@ -38,6 +37,7 @@ import type { StorageFile } from '@/features/files/types/file.types';
 import type { Folder } from '@/features/folders/types/folder.types';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import { StatCard } from '@/shared/components/StatCard';
 
 dayjs.extend(relativeTime);
 
@@ -319,47 +319,18 @@ const TrashPage: React.FC = () => {
       </div>
 
       {/* Statistics Cards */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={12} sm={6}>
-          <Card size="small">
-            <Statistic
-              title="Tổng mục"
-              value={stats.totalItems}
-              prefix={<DeleteOutlined />}
-              styles={{ content: { color: '#1677ff' } }}
-            />
-          </Card>
+      <Row gutter={[24, 24]} style={{ marginBottom: 24 }}>
+        <Col xs={24} sm={12} lg={6}>
+          <StatCard title="Tổng mục" value={stats.totalItems} icon={<DeleteOutlined style={{ color: '#1677ff' }} />} />
         </Col>
-        <Col xs={12} sm={6}>
-          <Card size="small">
-            <Statistic
-              title="Tệp tin"
-              value={stats.totalFiles}
-              prefix={<FileOutlined style={{ color: '#1677ff' }} />}
-              styles={{ content: { color: '#1677ff' } }}
-            />
-          </Card>
+        <Col xs={24} sm={12} lg={6}>
+          <StatCard title="Tệp tin" value={stats.totalFiles} icon={<FileOutlined style={{ color: '#1677ff' }} />} />
         </Col>
-        <Col xs={12} sm={6}>
-          <Card size="small">
-            <Statistic
-              title="Thư mục"
-              value={stats.totalFolders}
-              prefix={<FolderOutlined style={{ color: '#fa8c16' }} />}
-              styles={{ content: { color: '#fa8c16' } }}
-            />
-          </Card>
+        <Col xs={24} sm={12} lg={6}>
+          <StatCard title="Thư mục" value={stats.totalFolders} icon={<FolderOutlined style={{ color: '#fa8c16' }} />} />
         </Col>
-        <Col xs={12} sm={6}>
-          <Card size="small">
-            <Statistic
-              title="Dung lượng"
-              value={stats.totalSize as number}
-              formatter={(val) => formatBytes(val as number)}
-              prefix={<DeleteOutlined style={{ color: '#ff4d4f' }} />}
-              styles={{ content: { color: '#ff4d4f' } }}
-            />
-          </Card>
+        <Col xs={24} sm={12} lg={6}>
+          <StatCard title="Dung lượng" value={formatBytes(stats.totalSize as number)} icon={<DeleteOutlined style={{ color: '#ff4d4f' }} />} />
         </Col>
       </Row>
 

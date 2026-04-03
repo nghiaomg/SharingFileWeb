@@ -12,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import com.sharingfileweb.security.services.UserDetailsImpl;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.security.access.prepost.PreAuthorize;
 
@@ -47,5 +48,17 @@ public class DashboardController {
         boolean isAdmin = userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         List<RecentFileDTO> recentFiles = dashboardService.getDashboardRecentFiles(userDetails.getId(), isAdmin);
         return ResponseEntity.ok(StandardResponse.success("Fetched recent files successfully", recentFiles));
+    }
+
+    @Operation(summary = "Biểu đồ phân tích Dashboard", description = "Dữ liệu phục vụ việc vẽ biểu đồ theo 7/14/30 ngày (lượt truy cập và tải tệp).")
+    @GetMapping("/charts")
+    @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
+    public ResponseEntity<?> getDashboardCharts(@RequestParam(defaultValue = "7") int days) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        boolean isAdmin = userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        
+        List<com.sharingfileweb.payload.response.DashboardChartDTO> chartsData = dashboardService.getDashboardCharts(days, userDetails.getId(), isAdmin);
+        
+        return ResponseEntity.ok(StandardResponse.success("Fetched dashboard charts successfully", chartsData));
     }
 }

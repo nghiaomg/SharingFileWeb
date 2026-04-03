@@ -17,11 +17,11 @@ dayjs.extend(relativeTime);
 type ActivityType = 'upload' | 'share' | 'delete' | 'login' | 'download';
 
 const META: Record<ActivityType, { icon: React.ReactNode; color: string }> = {
-  upload:   { icon: <UploadOutlined />,    color: '#52c41a' },
-  share:    { icon: <ShareAltOutlined />,  color: '#1677ff' },
-  delete:   { icon: <DeleteOutlined />,   color: '#ff4d4f' },
-  login:    { icon: <LoginOutlined />,     color: '#722ed1' },
-  download: { icon: <DownloadOutlined />,  color: '#13c2c2' },
+  upload: { icon: <UploadOutlined />, color: '#52c41a' },
+  share: { icon: <ShareAltOutlined />, color: '#1677ff' },
+  delete: { icon: <DeleteOutlined />, color: '#ff4d4f' },
+  login: { icon: <LoginOutlined />, color: '#722ed1' },
+  download: { icon: <DownloadOutlined />, color: '#13c2c2' },
 };
 
 export const ActivityTimeline: React.FC = () => {
@@ -42,7 +42,7 @@ export const ActivityTimeline: React.FC = () => {
       .slice(0, 6);
   }, [recentFiles, notifications]);
 
-  if (!items.length) return <Empty description="No activity" image={Empty.PRESENTED_IMAGE_SIMPLE} style={{ margin: '32px 0' }} />;
+  if (!items.length) return <Empty description="Không có hoạt động" image={Empty.PRESENTED_IMAGE_SIMPLE} style={{ margin: '32px 0' }} />;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>

@@ -10,7 +10,6 @@ import {
   Popconfirm,
   Row,
   Col,
-  Statistic,
   Tooltip,
   Empty,
   message,
@@ -38,6 +37,7 @@ import { useShareLinksQuery, useDeleteShareLinkMutation } from '../hooks/useShar
 import type { ShareLink } from '../types/shareLink.types';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import { StatCard } from '@/shared/components/StatCard';
 
 dayjs.extend(relativeTime);
 
@@ -261,47 +261,18 @@ const ShareLinksPage: React.FC = () => {
       </div>
 
       {/* Statistics Cards */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={12} sm={6}>
-          <Card size="small">
-            <Statistic
-              title="Tổng liên kết"
-              value={stats.total}
-              prefix={<LinkOutlined />}
-              styles={{ content: { color: '#1677ff' } }}
-            />
-          </Card>
+      <Row gutter={[24, 24]} style={{ marginBottom: 24 }}>
+        <Col xs={24} sm={12} lg={6}>
+          <StatCard title="Tổng liên kết" value={stats.total} icon={<LinkOutlined style={{ color: '#1677ff' }} />} />
         </Col>
-        <Col xs={12} sm={6}>
-          <Card size="small">
-            <Statistic
-              title="Đang hoạt động"
-              value={stats.active}
-              prefix={<CheckCircleOutlined style={{ color: '#52c41a' }} />}
-              styles={{ content: { color: '#52c41a' } }}
-            />
-          </Card>
+        <Col xs={24} sm={12} lg={6}>
+          <StatCard title="Đang hoạt động" value={stats.active} icon={<CheckCircleOutlined style={{ color: '#52c41a' }} />} />
         </Col>
-        <Col xs={12} sm={6}>
-          <Card size="small">
-            <Statistic
-              title="Đã thu hồi"
-              value={stats.revoked}
-              prefix={<CloseCircleOutlined style={{ color: '#ff4d4f' }} />}
-              styles={{ content: { color: '#ff4d4f' } }}
-            />
-          </Card>
+        <Col xs={24} sm={12} lg={6}>
+          <StatCard title="Đã thu hồi" value={stats.revoked} icon={<CloseCircleOutlined style={{ color: '#ff4d4f' }} />} />
         </Col>
-        <Col xs={12} sm={6}>
-          <Card size="small">
-            <Statistic
-              title="Cần bảo mật"
-              value={stats.withPassword}
-              prefix={<LockOutlined style={{ color: '#faad14' }} />}
-              suffix={`/ ${stats.total}`}
-              styles={{ content: { color: '#faad14' } }}
-            />
-          </Card>
+        <Col xs={24} sm={12} lg={6}>
+          <StatCard title="Cần bảo mật" value={stats.withPassword} trend={`/ ${stats.total}`} icon={<LockOutlined style={{ color: '#faad14' }} />} />
         </Col>
       </Row>
 

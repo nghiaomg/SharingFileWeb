@@ -10,14 +10,26 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
+import com.sharingfileweb.models.DailyMetric;
+import com.sharingfileweb.payload.response.DashboardChartDTO;
+import com.sharingfileweb.repository.DailyMetricRepository;
 
 @Service
 public class DashboardService {
     @Autowired
     private FileRepository fileRepository;
+
+    @Autowired
+    private DailyMetricRepository dailyMetricRepository;
 
     public List<StorageCategoryDTO> getDashboardCategories(String ownerId, boolean isAdmin) {
         // 1. Fetch all files to aggregate categories
@@ -73,5 +85,42 @@ public class DashboardService {
             .collect(Collectors.toList());
 
         return recentFiles;
+    }
+
+    public List<DashboardChartDTO> getDashboardCharts(int days, String ownerId, boolean isAdmin) {
+        LocalDate endDate = LocalDate.now();
+        LocalDate startDate = endDate.minusDays(days - 1); // e.g., if days=7, we want 7 days including today
+
+        // Fetch metrics for the date range
+        List<DailyMetric> metrics = dailyMetricRepository.findByDateBetweenOrderByDateAsc(startDate, endDate.plusDays(1));
+        Map<LocalDate, Long> visitMap = metrics.stream()
+                .collect(Collectors.toMap(DailyMetric::getDate, DailyMetric::getVisitCount));
+
+        // Fetch files uploaded since startDate
+        Instant startInstant = startDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
+        List<StorageFile> recentFiles = isAdmin
+                ? fileRepository.findByIsDeletedFalse()
+                : fileRepository.findByOwnerIdAndIsDeletedFalse(ownerId);
+        
+        // Filter and group files by date
+        Map<LocalDate, List<StorageFile>> filesByDate = recentFiles.stream()
+                .filter(f -> f.getCreatedAt() != null && !f.getCreatedAt().isBefore(startInstant))
+                .collect(Collectors.groupingBy(f -> LocalDate.ofInstant(f.getCreatedAt(), ZoneId.systemDefault())));
+
+        List<DashboardChartDTO> results = new ArrayList<>();
+        
+        for (int i = 0; i < days; i++) {
+            LocalDate iterDate = startDate.plusDays(i);
+            long visits = visitMap.getOrDefault(iterDate, 0L);
+            
+            List<StorageFile> filesOnDay = filesByDate.getOrDefault(iterDate, new ArrayList<>());
+            long uploadedFiles = filesOnDay.size();
+            long uploadedSize = filesOnDay.stream().mapToLong(StorageFile::getSize).sum();
+            
+            // Format to simple string
+            results.add(new DashboardChartDTO(iterDate.toString(), visits, uploadedFiles, uploadedSize));
+        }
+
+        return results;
     }
 }

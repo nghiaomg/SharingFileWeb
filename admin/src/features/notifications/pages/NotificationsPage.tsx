@@ -8,7 +8,6 @@ import {
   Tag,
   Row,
   Col,
-  Statistic,
   Tooltip,
   Empty,
   message,
@@ -41,6 +40,7 @@ import { useNotificationsQuery, useUnreadCountQuery, useMarkNotificationReadMuta
 import type { Notification } from '../types/notification.types';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import { StatCard } from '@/shared/components/StatCard';
 
 dayjs.extend(relativeTime);
 
@@ -294,46 +294,18 @@ const NotificationsPage: React.FC = () => {
       </div>
 
       {/* Statistics Cards */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={12} sm={6}>
-          <Card size="small">
-            <Statistic
-              title="Tổng thông báo"
-              value={stats.total}
-              prefix={<BellOutlined />}
-              styles={{ content: { color: '#1677ff' } }}
-            />
-          </Card>
+      <Row gutter={[24, 24]} style={{ marginBottom: 24 }}>
+        <Col xs={24} sm={12} lg={6}>
+          <StatCard title="Tổng thông báo" value={stats.total} icon={<BellOutlined style={{ color: '#1677ff' }} />} />
         </Col>
-        <Col xs={12} sm={6}>
-          <Card size="small">
-            <Statistic
-              title="Chưa đọc"
-              value={stats.unread}
-              prefix={<NotificationOutlined style={{ color: '#ff4d4f' }} />}
-              styles={{ content: { color: '#ff4d4f' } }}
-            />
-          </Card>
+        <Col xs={24} sm={12} lg={6}>
+          <StatCard title="Chưa đọc" value={stats.unread} icon={<NotificationOutlined style={{ color: '#ff4d4f' }} />} />
         </Col>
-        <Col xs={12} sm={6}>
-          <Card size="small">
-            <Statistic
-              title="Đã đọc"
-              value={stats.read}
-              prefix={<CheckCircleOutlined style={{ color: '#52c41a' }} />}
-              styles={{ content: { color: '#52c41a' } }}
-            />
-          </Card>
+        <Col xs={24} sm={12} lg={6}>
+          <StatCard title="Đã đọc" value={stats.read} icon={<CheckCircleOutlined style={{ color: '#52c41a' }} />} />
         </Col>
-        <Col xs={12} sm={6}>
-          <Card size="small">
-            <Statistic
-              title="Chia sẻ"
-              value={stats.shareNotifications}
-              prefix={<ShareAltOutlined style={{ color: '#722ed1' }} />}
-              styles={{ content: { color: '#722ed1' } }}
-            />
-          </Card>
+        <Col xs={24} sm={12} lg={6}>
+          <StatCard title="Chia sẻ" value={stats.shareNotifications} icon={<ShareAltOutlined style={{ color: '#722ed1' }} />} />
         </Col>
       </Row>
 

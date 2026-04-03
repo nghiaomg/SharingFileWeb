@@ -28,8 +28,8 @@ export const AdminSidebar: React.FC<{ collapsed: boolean; setCollapsed: (v: bool
       key: 'overview',
       type: 'group',
       children: [
-        { key: '/dashboard',    icon: <DashboardOutlined />, label: 'Dashboard' },
-        { key: '/notifications', icon: <BellOutlined />,     label: 'Thông báo' },
+        { key: '/dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
+        { key: '/notifications', icon: <BellOutlined />, label: 'Thông báo' },
       ],
     },
     {
@@ -37,9 +37,9 @@ export const AdminSidebar: React.FC<{ collapsed: boolean; setCollapsed: (v: bool
       key: 'data',
       type: 'group',
       children: [
-        { key: '/files',       icon: <FileOutlined />,       label: 'Tệp tin' },
-        { key: '/folders',      icon: <FolderOpenOutlined />, label: 'Thư mục' },
-        { key: '/share-links',  icon: <LinkOutlined />,       label: 'Liên kết chia sẻ' },
+        { key: '/files', icon: <FileOutlined />, label: 'Tệp tin' },
+        { key: '/folders', icon: <FolderOpenOutlined />, label: 'Thư mục' },
+        { key: '/share-links', icon: <LinkOutlined />, label: 'Liên kết chia sẻ' },
       ],
     },
     {
@@ -47,8 +47,8 @@ export const AdminSidebar: React.FC<{ collapsed: boolean; setCollapsed: (v: bool
       key: 'system',
       type: 'group',
       children: [
-        { key: '/users', icon: <UserOutlined />,     label: 'Người dùng' },
-        { key: '/trash', icon: <DeleteOutlined />,   label: 'Thùng rác' },
+        { key: '/users', icon: <UserOutlined />, label: 'Người dùng' },
+        { key: '/trash', icon: <DeleteOutlined />, label: 'Thùng rác' },
       ],
     },
   ];

@@ -11,7 +11,6 @@ import {
   Segmented,
   Row,
   Col,
-  Statistic,
   Tooltip,
   Empty,
   Avatar,
@@ -43,6 +42,7 @@ import { useFoldersQuery, useDeleteFolderMutation } from '../hooks/useFoldersHoo
 import type { Folder, FolderFile } from '../types/folder.types';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import { StatCard } from '@/shared/components/StatCard';
 
 dayjs.extend(relativeTime);
 
@@ -257,36 +257,15 @@ const FoldersPage: React.FC = () => {
       </div>
 
       {/* Statistics Cards */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={12} sm={8}>
-          <Card size="small">
-            <Statistic
-              title="Tổng thư mục"
-              value={folderStats.total}
-              prefix={<FolderOutlined />}
-              styles={{ content: { color: '#1677ff' } }}
-            />
-          </Card>
+      <Row gutter={[24, 24]} style={{ marginBottom: 24 }}>
+        <Col xs={24} sm={8}>
+          <StatCard title="Tổng thư mục" value={folderStats.total} icon={<FolderOutlined style={{ color: '#1677ff' }} />} />
         </Col>
-        <Col xs={12} sm={8}>
-          <Card size="small">
-            <Statistic
-              title="Đang hoạt động"
-              value={folderStats.active}
-              prefix={<FolderOutlined style={{ color: '#52c41a' }} />}
-              styles={{ content: { color: '#52c41a' } }}
-            />
-          </Card>
+        <Col xs={24} sm={8}>
+          <StatCard title="Đang hoạt động" value={folderStats.active} icon={<FolderOutlined style={{ color: '#52c41a' }} />} />
         </Col>
-        <Col xs={12} sm={8}>
-          <Card size="small">
-            <Statistic
-              title="Trong thùng rác"
-              value={folderStats.deleted}
-              prefix={<DeleteOutlined style={{ color: '#ff4d4f' }} />}
-              styles={{ content: { color: '#ff4d4f' } }}
-            />
-          </Card>
+        <Col xs={24} sm={8}>
+          <StatCard title="Trong thùng rác" value={folderStats.deleted} icon={<DeleteOutlined style={{ color: '#ff4d4f' }} />} />
         </Col>
       </Row>
 

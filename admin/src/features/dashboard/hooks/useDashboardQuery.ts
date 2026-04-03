@@ -16,6 +16,7 @@ export const dashboardKeys = {
   categories: () => [...dashboardKeys.all, 'categories'] as const,
   recentFiles: () => [...dashboardKeys.all, 'recentFiles'] as const,
   storageUsage: () => [...dashboardKeys.all, 'storageUsage'] as const,
+  charts: (days: number) => [...dashboardKeys.all, 'charts', days] as const,
 };
 
 export const useDashboardCategoriesQuery = () => {
@@ -37,6 +38,18 @@ export const useStorageUsageQuery = () => {
     queryKey: dashboardKeys.storageUsage(),
     queryFn: async () => {
       const response = await axiosInstance.get<StandardResponse<StorageUsage>>('/api/user/storage');
+      return response.data.data;
+    },
+  });
+};
+
+export const useDashboardChartsQuery = (days: number) => {
+  return useQuery({
+    queryKey: dashboardKeys.charts(days),
+    queryFn: async () => {
+      const response = await axiosInstance.get<StandardResponse<Record<string, unknown>[]>>('/api/dashboard/charts', {
+        params: { days }
+      });
       return response.data.data;
     },
   });

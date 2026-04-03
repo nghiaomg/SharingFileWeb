@@ -13,7 +13,6 @@ import {
   Tooltip,
   Row,
   Col,
-  Statistic,
   Segmented,
   Badge,
   message,
@@ -41,6 +40,7 @@ import { useUsersQuery, useDeleteUserMutation, useUpgradeUserPlanMutation } from
 import type { User } from '../types/user.types';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import { StatCard } from '@/shared/components/StatCard';
 
 dayjs.extend(relativeTime);
 
@@ -317,45 +317,17 @@ const UsersPage: React.FC = () => {
 
       {/* Statistics Cards */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={12} sm={6}>
-          <Card size="small">
-            <Statistic
-              title="Tổng người dùng"
-              value={stats.total}
-              prefix={<TeamOutlined />}
-              styles={{ content: { color: '#1677ff' } }}
-            />
-          </Card>
+        <Col xs={24} sm={12} lg={6}>
+          <StatCard title="Tổng người dùng" value={stats.total} icon={<TeamOutlined style={{ color: '#1677ff' }} />} />
         </Col>
-        <Col xs={12} sm={6}>
-          <Card size="small">
-            <Statistic
-              title="Người dùng PRO"
-              value={stats.proCount}
-              prefix={<CrownOutlined />}
-              styles={{ content: { color: '#faad14' } }}
-            />
-          </Card>
+        <Col xs={24} sm={12} lg={6}>
+          <StatCard title="Người dùng PRO" value={stats.proCount} icon={<CrownOutlined style={{ color: '#faad14' }} />} />
         </Col>
-        <Col xs={12} sm={6}>
-          <Card size="small">
-            <Statistic
-              title="Người dùng FREE"
-              value={stats.freeCount}
-              prefix={<UserOutlined />}
-              styles={{ content: { color: '#8c8c8c' } }}
-            />
-          </Card>
+        <Col xs={24} sm={12} lg={6}>
+          <StatCard title="Người dùng FREE" value={stats.freeCount} icon={<UserOutlined style={{ color: '#8c8c8c' }} />} />
         </Col>
-        <Col xs={12} sm={6}>
-          <Card size="small">
-            <Statistic
-              title="Quản trị viên"
-              value={stats.adminCount}
-              prefix={<SafetyOutlined />}
-              styles={{ content: { color: '#ff4d4f' } }}
-            />
-          </Card>
+        <Col xs={24} sm={12} lg={6}>
+          <StatCard title="Quản trị viên" value={stats.adminCount} icon={<SafetyOutlined style={{ color: '#ff4d4f' }} />} />
         </Col>
       </Row>
 
