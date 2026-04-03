@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -35,7 +36,7 @@ export default function CheckoutPage() {
     if (paymentStatus.status === "CONFIRMED") {
       toast.success("Thanh toán thành công!");
       queryClient.invalidateQueries({ queryKey: authKeys.all() });
-      router.push(`/dashboard/payment/success?orderCode=${orderCode}`);
+      router.push(`/dashboard/upgrade?payment=success&orderCode=${orderCode}`);
       return;
     }
 
@@ -79,7 +80,7 @@ export default function CheckoutPage() {
         <Text>Không tìm thấy đơn hàng hoặc đơn hàng đã cũ.</Text>
         <Button
           variant="soft"
-          onClick={() => router.push("/dashboard/payment")}
+          onClick={() => router.push("/dashboard/upgrade")}
         >
           Quay lại
         </Button>
@@ -94,7 +95,7 @@ export default function CheckoutPage() {
           variant="ghost"
           color="gray"
           className="mb-4 hover:bg-muted cursor-pointer"
-          onClick={() => router.push("/dashboard/payment")}
+          onClick={() => router.push("/dashboard/upgrade")}
         >
           <ChevronLeft className="w-4 h-4 mr-2" /> Quay lại
         </Button>
@@ -119,10 +120,13 @@ export default function CheckoutPage() {
             <div className="flex flex-col items-center max-w-sm w-full">
               <div className="w-full bg-white p-2 rounded-3xl">
                 {paymentStatus.qrUrl ? (
-                  <img
+                  <Image
                     src={paymentStatus.qrUrl}
                     alt="QR Code"
+                    width={300}
+                    height={300}
                     className="w-full h-auto object-contain rounded-2xl mix-blend-multiply"
+                    unoptimized
                   />
                 ) : (
                   <div className="w-full aspect-square bg-gray-50 flex items-center justify-center rounded-2xl">

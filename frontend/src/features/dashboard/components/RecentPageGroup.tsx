@@ -1,6 +1,6 @@
 "use client";
 
-import { Flex, Box, Text, Grid } from "@radix-ui/themes";
+import { Box, Text, Grid } from "@radix-ui/themes";
 import { FileCard } from "@/features/files/components/FileCard";
 import { RecentPageListView } from "./RecentPageListView";
 import type { FileItem } from "@/features/files/schemas";

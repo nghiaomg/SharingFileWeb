@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { useOrdersStore } from "../stores/orders.store";
 import { useOrdersQuery } from "../hooks/useOrdersQuery";
 import { useUpdateOrderMutation } from "../hooks/useUpdateOrderMutation";
-import { X, AlertCircle } from "lucide-react";
+import { X } from "lucide-react";
 import { toast } from "sonner";
 
 export const OrderDetailsModal = () => {

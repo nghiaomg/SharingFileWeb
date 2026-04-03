@@ -36,14 +36,16 @@ export function UploadDropdown({ isUploading, onUpload }: UploadDropdownProps) {
         className="hidden"
         multiple
       />
-      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+      { }
       <input
         type="file"
         ref={folderInputRef}
         onChange={handleFileUpload}
         className="hidden"
         multiple
-        {...({ webkitdirectory: "true", directory: "true" } as any)}
+        // @ts-expect-error - webkitdirectory is a valid HTML attribute for folder selection
+        webkitdirectory="true"
+        directory="true"
       />
 
       <button

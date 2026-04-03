@@ -32,7 +32,7 @@ const navItems = [
   { href: "/dashboard/recent", icon: Clock, label: "Gần đây" },
   { href: "/dashboard/shared", icon: Share2, label: "Được chia sẻ" },
   { href: "/dashboard/trash", icon: Trash2, label: "Thùng rác" },
-  { href: "/dashboard/payment", icon: QrCode, label: "Nạp tiền" },
+  { href: "/dashboard/upgrade", icon: QrCode, label: "Nâng cấp" },
 ];
 
 const bottomItems = [

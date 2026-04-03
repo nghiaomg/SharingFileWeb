@@ -21,11 +21,10 @@ function TabButton({
   onClick: () => void;
 }) {
   return (
-    <Box
-      as="button"
+    <button
+      type="button"
       onClick={onClick}
-      px="3"
-      py="1"
+      className="px-3 py-1"
       style={{
         cursor: "pointer",
         borderRadius: "var(--radius-2)",
@@ -53,7 +52,7 @@ function TabButton({
       }}
     >
       {label}
-    </Box>
+    </button>
   );
 }
 
