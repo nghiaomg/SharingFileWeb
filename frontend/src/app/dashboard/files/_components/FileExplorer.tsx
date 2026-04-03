@@ -511,7 +511,6 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
               backgroundColor: "var(--gray-a3)",
               backdropFilter: "blur(2px)",
               zIndex: 50,
-              border: "2px dashed var(--gray-12)",
               borderRadius: "var(--radius-5)",
               margin: "1rem",
             }}
@@ -556,9 +555,6 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
             p="6"
             style={{
               minHeight: "400px",
-              border: `2px dashed var(--gray-a6)`,
-              backgroundColor: "transparent",
-              borderRadius: "var(--radius-5)",
               textAlign: "center",
             }}
           >
@@ -852,8 +848,8 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
                 ) : (
                   <Card
                     size="1"
-                    variant="surface"
-                    style={{ padding: 0, overflow: "hidden" }}
+                    variant="ghost"
+                    style={{ padding: 0, overflow: "hidden", border: "none" }}
                   >
                     <Flex
                       px="4"
