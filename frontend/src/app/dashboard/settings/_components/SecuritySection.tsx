@@ -33,7 +33,7 @@ export function SecuritySection({
           <Heading size="5" style={{ color: "var(--card-heading)" }}>
             Bảo mật
           </Heading>
-          <Box as="p" size="2" style={{ color: "var(--muted-foreground)" }}>
+          <Box as="div" style={{ color: "var(--muted-foreground)", fontSize: "14px" }}>
             Quản lý bảo vệ tài khoản
           </Box>
         </Box>
@@ -53,10 +53,9 @@ export function SecuritySection({
               Đổi mật khẩu
             </Heading>
             <Box
-              as="p"
-              size="2"
+              as="div"
               mt="1"
-              style={{ color: "var(--muted-foreground)" }}
+              style={{ color: "var(--muted-foreground)", fontSize: "14px" }}
             >
               Cập nhật mật khẩu mới 6 tháng một lần
             </Box>
@@ -92,11 +91,11 @@ export function SecuritySection({
               Xác thực 2 bước (2FA)
             </Heading>
             <Box
-              as="p"
-              size="2"
+              as="div"
               mt="1"
               style={{
                 color: is2FAEnabled ? "var(--jade-11)" : "var(--muted-foreground)",
+                fontSize: "14px"
               }}
             >
               {is2FAEnabled ? "Đang kích hoạt - Bảo mật cao" : "Chưa kích hoạt"}
