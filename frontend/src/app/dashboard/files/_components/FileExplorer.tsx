@@ -5,8 +5,6 @@ import { useRouter } from "next/navigation";
 import {
   FolderOpen,
   Plus,
-  LayoutGrid,
-  List as ListIcon,
   MoreVertical,
   Pencil,
   Trash2,
@@ -61,6 +59,7 @@ import {
 import { FileCard } from "@/features/files/components/FileCard";
 import { useQueryClient } from "@tanstack/react-query";
 import { authKeys } from "@/features/auth/queries";
+import { ViewModeToggle } from "@/features/dashboard/components/ViewModeToggle";
 
 interface FileExplorerProps {
   folderId?: string | null;
@@ -484,35 +483,7 @@ export function FileExplorer({ folderId }: FileExplorerProps) {
             <Plus className="w-4 h-4" /> Thư mục mới
           </Button>
 
-          <Flex
-            align="center"
-            gap="1"
-            p="1"
-            style={{
-              backgroundColor: "var(--color-card)",
-              borderRadius: "var(--radius-3)",
-              border: "1px solid var(--gray-a5)",
-            }}
-          >
-            <IconButton
-              size="2"
-              variant={viewMode === "grid" ? "solid" : "ghost"}
-              color={viewMode === "grid" ? "violet" : "gray"}
-              onClick={() => setViewMode("grid")}
-              style={{ cursor: "pointer" }}
-            >
-              <LayoutGrid className="w-4 h-4" />
-            </IconButton>
-            <IconButton
-              size="2"
-              variant={viewMode === "list" ? "solid" : "ghost"}
-              color={viewMode === "list" ? "violet" : "gray"}
-              onClick={() => setViewMode("list")}
-              style={{ cursor: "pointer" }}
-            >
-              <ListIcon className="w-4 h-4" />
-            </IconButton>
-          </Flex>
+          <ViewModeToggle value={viewMode} onChange={setViewMode} />
         </Flex>
       </Flex>
 

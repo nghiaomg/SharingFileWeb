@@ -6,8 +6,6 @@ import {
   Trash2,
   RotateCcw,
   MoreVertical,
-  LayoutGrid,
-  List as ListIcon,
   Loader2,
   Sparkles,
   FolderOpen,
@@ -35,6 +33,7 @@ import {
   Card,
   Button,
 } from "@radix-ui/themes";
+import { ViewModeToggle } from "@/features/dashboard/components/ViewModeToggle";
 
 export default function TrashPage() {
   const { data: trashData, isLoading } = useTrashItems();
@@ -160,35 +159,7 @@ export default function TrashPage() {
               <Trash2 className="w-4 h-4 mr-2" /> Dọn sạch thùng rác
             </Button>
           )}
-          <Flex
-            align="center"
-            gap="1"
-            p="1"
-            style={{
-              backgroundColor: "var(--color-card)",
-              borderRadius: "var(--radius-3)",
-              border: "1px solid var(--gray-a5)",
-            }}
-          >
-            <IconButton
-              size="2"
-              variant={viewMode === "grid" ? "solid" : "ghost"}
-              color={viewMode === "grid" ? "violet" : "gray"}
-              onClick={() => setViewMode("grid")}
-              style={{ cursor: "pointer" }}
-            >
-              <LayoutGrid className="w-4 h-4" />
-            </IconButton>
-            <IconButton
-              size="2"
-              variant={viewMode === "list" ? "solid" : "ghost"}
-              color={viewMode === "list" ? "violet" : "gray"}
-              onClick={() => setViewMode("list")}
-              style={{ cursor: "pointer" }}
-            >
-              <ListIcon className="w-4 h-4" />
-            </IconButton>
-          </Flex>
+          <ViewModeToggle value={viewMode} onChange={setViewMode} />
         </Flex>
       </Flex>
 
@@ -205,7 +176,6 @@ export default function TrashPage() {
             p="6"
             style={{
               minHeight: "400px",
-              border: "2px dashed var(--gray-a6)",
               borderRadius: "var(--radius-5)",
               textAlign: "center",
             }}
@@ -219,7 +189,7 @@ export default function TrashPage() {
               }}
             >
               <Sparkles
-                style={{ width: 64, height: 64, color: "var(--gray-a6)" }}
+                style={{ width: 64, height: 64, color: "var(--gray-a5)" }}
               />
             </Box>
             <Heading
@@ -264,9 +234,9 @@ export default function TrashPage() {
                       <Card
                         key={folder.id}
                         size="2"
-                        variant="surface"
+                        variant="ghost"
                         className="group"
-                        style={{ position: "relative" }}
+                        style={{ position: "relative", border: "none" }}
                       >
                         <Flex align="center" gap="3" mb="1">
                           <Flex
@@ -281,7 +251,7 @@ export default function TrashPage() {
                             }}
                           >
                             <FolderOpen
-                              className="w-5 h-5 text-amber-500"
+                              className="w-5 h-5"
                               style={{ color: "var(--amber-11)" }}
                             />
                           </Flex>
@@ -338,7 +308,8 @@ export default function TrashPage() {
                                   e.stopPropagation();
                                   handleRestore("folder", folder.id);
                                 }}
-                                className="cursor-pointer text-emerald-500"
+                                className="cursor-pointer"
+                                  style={{ color: "var(--gray-11)" }}
                               >
                                 <RotateCcw className="w-4 h-4 mr-2" /> Khôi phục
                               </DropdownMenu.Item>
@@ -365,8 +336,8 @@ export default function TrashPage() {
                 ) : (
                   <Card
                     size="1"
-                    variant="surface"
-                    style={{ padding: 0, overflow: "hidden" }}
+                    variant="ghost"
+                    style={{ padding: 0, overflow: "hidden", border: "none" }}
                   >
                     <Flex
                       px="4"
@@ -437,7 +408,7 @@ export default function TrashPage() {
                               }}
                             >
                               <FolderOpen
-                                className="w-5 h-5 text-amber-500"
+                                className="w-5 h-5"
                                 style={{ color: "var(--amber-11)" }}
                               />
                             </Flex>
@@ -479,7 +450,8 @@ export default function TrashPage() {
                                     e.stopPropagation();
                                     handleRestore("folder", folder.id);
                                   }}
-                                  className="cursor-pointer text-emerald-500"
+                                  className="cursor-pointer"
+                                  style={{ color: "var(--gray-11)" }}
                                 >
                                   <RotateCcw className="w-4 h-4 mr-2" /> Khôi
                                   phục
@@ -620,7 +592,8 @@ export default function TrashPage() {
                                     e.stopPropagation();
                                     handleRestore("file", file.id);
                                   }}
-                                  className="cursor-pointer text-emerald-500"
+                                  className="cursor-pointer"
+                                  style={{ color: "var(--gray-11)" }}
                                 >
                                   <RotateCcw className="w-4 h-4 mr-2" /> Khôi
                                   phục
@@ -649,8 +622,8 @@ export default function TrashPage() {
                 ) : (
                   <Card
                     size="1"
-                    variant="surface"
-                    style={{ padding: 0, overflow: "hidden" }}
+                    variant="ghost"
+                    style={{ padding: 0, overflow: "hidden", border: "none" }}
                   >
                     <Flex
                       px="4"
@@ -788,7 +761,8 @@ export default function TrashPage() {
                                       e.stopPropagation();
                                       handleRestore("file", file.id);
                                     }}
-                                    className="cursor-pointer text-emerald-500"
+                                    className="cursor-pointer"
+                                  style={{ color: "var(--gray-11)" }}
                                   >
                                     <RotateCcw className="w-4 h-4 mr-2" /> Khôi
                                     phục

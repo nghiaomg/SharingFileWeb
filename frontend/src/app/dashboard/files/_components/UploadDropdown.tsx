@@ -52,7 +52,13 @@ export function UploadDropdown({ isUploading, onUpload }: UploadDropdownProps) {
           setTimeout(() => setIsOpen((prev) => !prev), 0);
         }}
         disabled={isUploading}
-        className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-colors text-sm disabled:opacity-60 border border-primary/40 hover:border-primary cursor-pointer"
+        className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold transition-all duration-200 text-sm disabled:opacity-60 cursor-pointer"
+        style={{
+          background: "var(--color-foreground)",
+          color: "var(--color-background)",
+          border: "1px solid var(--gray-a4)",
+          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
+        }}
       >
         {isUploading ? (
           <Loader2 className="w-4 h-4 animate-spin" />
@@ -64,7 +70,12 @@ export function UploadDropdown({ isUploading, onUpload }: UploadDropdownProps) {
 
       {isOpen && !isUploading && (
         <div
-          className="absolute top-12 right-0 w-48 bg-card border border-border rounded-xl z-20 py-1 shadow-sm mt-2"
+          className="absolute top-12 right-0 w-48 rounded-xl z-20 py-1 mt-2"
+          style={{
+            background: "var(--color-popover)",
+            border: "1px solid var(--gray-a4)",
+            boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
+          }}
           onClick={(e) => e.stopPropagation()}
         >
           <button
@@ -72,18 +83,24 @@ export function UploadDropdown({ isUploading, onUpload }: UploadDropdownProps) {
               setIsOpen(false);
               fileInputRef.current?.click();
             }}
-            className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-secondary transition-colors cursor-pointer"
+            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors cursor-pointer"
+            style={{ color: "var(--color-foreground)" }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--gray-a3)")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
           >
-            <FileText className="w-4 h-4" /> Tải tệp lên
+            <FileText className="w-4 h-4" style={{ color: "var(--icon-blue)" }} /> Tải tệp lên
           </button>
           <button
             onClick={() => {
               setIsOpen(false);
               folderInputRef.current?.click();
             }}
-            className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-secondary transition-colors cursor-pointer"
+            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors cursor-pointer"
+            style={{ color: "var(--color-foreground)" }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--gray-a3)")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
           >
-            <FolderUp className="w-4 h-4" /> Tải thư mục lên
+            <FolderUp className="w-4 h-4" style={{ color: "var(--amber-11)" }} /> Tải thư mục lên
           </button>
         </div>
       )}

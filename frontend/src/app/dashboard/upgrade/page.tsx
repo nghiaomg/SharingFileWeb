@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  CheckCircle2,
   Zap,
   Shield,
   HardDrive,
@@ -41,52 +40,102 @@ export default function UpgradePage() {
   };
 
   return (
-    <div className="p-4 md:p-8 pb-32 h-full flex flex-col w-full">
-      <div className="flex flex-col items-center justify-center text-center max-w-2xl mx-auto mb-12">
-        <div className="bg-primary/10 text-primary p-3 rounded-2xl mb-6 inline-block">
-          <Crown className="w-10 h-10" />
+    <div className="px-4 md:px-6 lg:px-8 py-5 pb-32 h-full flex flex-col w-full">
+      {/* Header */}
+      <div className="flex flex-col items-center justify-center text-center max-w-2xl mx-auto mb-10">
+        <div
+          className="mb-5 inline-flex items-center justify-center p-3 rounded-2xl"
+          style={{ background: "var(--gray-a3)" }}
+        >
+          <Crown
+            className="w-10 h-10"
+            style={{ color: "var(--color-foreground)" }}
+          />
         </div>
-        <h1 className="text-3xl md:text-4xl font-black mb-4 bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent">
+        <h1
+          className="text-3xl md:text-4xl font-black mb-3"
+          style={{ color: "var(--color-foreground)" }}
+        >
           Nâng cấp không gian của bạn
         </h1>
-        <p className="text-muted-foreground text-lg">
+        <p
+          className="text-lg"
+          style={{ color: "var(--muted-foreground)" }}
+        >
           Chọn gói dung lượng phù hợp với nhu cầu lưu trữ để mở khóa đầy đủ sức
-          mạnh của FileFlow. Tốc độ cao, bảo mật tuyệt đối.
+          mạnh của FileFlow.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto w-full">
-        {/* Free Plan */}
-        <div className="bg-card border border-border/50 rounded-3xl p-8 relative flex flex-col shadow-sm">
+      {/* Plans Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-5xl mx-auto w-full">
+
+        {/* ── Free Plan ── */}
+        <div
+          className="rounded-3xl p-8 flex flex-col"
+          style={{
+            background: "var(--gray-a2)",
+          }}
+        >
           <div className="mb-6">
-            <h2 className="text-2xl font-bold mb-2">Gói Cơ Bản</h2>
-            <div className="text-muted-foreground text-sm font-medium">
+            <h2
+              className="text-2xl font-bold mb-1"
+              style={{ color: "var(--color-foreground)" }}
+            >
+              Gói Cơ Bản
+            </h2>
+            <p
+              className="text-sm font-medium"
+              style={{ color: "var(--muted-foreground)" }}
+            >
               Bắt đầu miễn phí mãi mãi
-            </div>
+            </p>
           </div>
 
           <div className="mb-8">
-            <span className="text-5xl font-black">0đ</span>
-            <span className="text-muted-foreground font-medium">/tháng</span>
+            <span
+              className="text-5xl font-black"
+              style={{ color: "var(--color-foreground)" }}
+            >
+              0đ
+            </span>
+            <span
+              className="font-medium ml-1"
+              style={{ color: "var(--muted-foreground)" }}
+            >
+              /tháng
+            </span>
           </div>
 
           <div className="flex-1 space-y-4 mb-8">
-            <div className="flex items-center gap-3">
-              <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-              <span className="font-medium">Dung lượng lưu trữ 5.0 GB</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-              <span className="font-medium">Tải lên tối đa 100MB / tệp</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-              <span className="font-medium">Sử dụng tính năng cơ bản</span>
-            </div>
+            {[
+              { icon: HardDrive, label: "Dung lượng lưu trữ 5.0 GB" },
+              { icon: Zap, label: "Tải lên tối đa 100MB / tệp" },
+              { icon: Shield, label: "Sử dụng tính năng cơ bản" },
+            ].map(({ icon: Icon, label }) => (
+              <div key={label} className="flex items-center gap-3">
+                <Icon
+                  className="w-4 h-4 shrink-0"
+                  style={{ color: "var(--gray-11)" }}
+                />
+                <span
+                  className="font-medium"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
+                  {label}
+                </span>
+              </div>
+            ))}
           </div>
 
           <button
-            className={`w-full py-4 rounded-xl border-2 font-bold transition-colors cursor-pointer ${!isPro ? "bg-secondary text-muted-foreground border-border" : "border-primary text-primary hover:bg-primary/5"}`}
+            className="w-full py-4 rounded-xl font-bold transition-all cursor-pointer"
+            style={{
+              background: isPro ? "var(--gray-a3)" : "var(--gray-a4)",
+              color: isPro ? "var(--muted-foreground)" : "var(--color-foreground)",
+              border: "1px solid var(--gray-a4)",
+              cursor: isPro ? "default" : "pointer",
+            }}
             disabled={!isPro}
             onClick={() => router.push("/dashboard")}
           >
@@ -94,54 +143,97 @@ export default function UpgradePage() {
           </button>
         </div>
 
-        {/* Pro Plan */}
-        <div className="bg-background border-2 border-primary rounded-3xl p-8 relative flex flex-col shadow-xl shadow-primary/10 transform scale-100 lg:scale-[1.02] z-10">
-          <div className="absolute top-0 right-8 -translate-y-1/2 bg-gradient-to-r from-primary to-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
+        {/* ── Pro Plan ── */}
+        <div
+          className="rounded-3xl p-8 flex flex-col relative lg:scale-[1.02]"
+          style={{
+            background: "var(--color-foreground)",
+            color: "var(--color-background)",
+          }}
+        >
+          {/* Badge */}
+          <div
+            className="absolute top-0 right-8 -translate-y-1/2 text-xs font-bold px-3 py-1.5 rounded-full"
+            style={{
+              background: "linear-gradient(135deg, #f59e0b, #d97706)",
+              color: "#ffffff",
+            }}
+          >
             PHỔ BIẾN NHẤT
           </div>
 
           <div className="mb-6">
-            <div className="flex items-center gap-2 mb-2">
-              <h2 className="text-2xl font-bold text-primary">FileFlow Pro</h2>
-              <Zap className="w-5 h-5 text-orange-500 fill-orange-500" />
+            <div className="flex items-center gap-2 mb-1">
+              <Crown
+                className="w-5 h-5"
+                style={{ color: "#f59e0b" }}
+              />
+              <h2
+                className="text-2xl font-bold"
+                style={{ color: "var(--color-background)" }}
+              >
+                FileFlow Pro
+              </h2>
             </div>
-            <div className="text-muted-foreground text-sm font-medium">
+            <p
+              className="text-sm font-medium"
+              style={{ color: "var(--gray-a6)" }}
+            >
               Lưu trữ không giới hạn cho mọi nhu cầu
-            </div>
+            </p>
           </div>
 
           <div className="mb-8">
-            <span className="text-5xl font-black text-foreground">99.000đ</span>
-            <span className="text-muted-foreground font-medium">/tháng</span>
+            <span
+              className="text-5xl font-black"
+              style={{ color: "var(--color-background)" }}
+            >
+              99.000đ
+            </span>
+            <span
+              className="font-medium ml-1"
+              style={{ color: "var(--gray-a6)" }}
+            >
+              /tháng
+            </span>
           </div>
 
-          <div className="flex-1 space-y-4 mb-8 bg-card/50 p-6 rounded-2xl border border-border/50">
-            <div className="flex items-center gap-3">
-              <HardDrive className="w-5 h-5 text-primary shrink-0" />
-              <span className="font-bold">Lưu trữ 2.0 TB (2,000 GB)</span>
-            </div>
-            <div className="flex items-center gap-3 text-muted-foreground">
-              <Infinity className="w-5 h-5 text-primary shrink-0" />
-              <span className="font-medium text-foreground">
-                Không giới hạn kích thước tệp tải lên
-              </span>
-            </div>
-            <div className="flex items-center gap-3">
-              <Zap className="w-5 h-5 text-primary shrink-0" />
-              <span className="font-medium text-foreground">
-                Băng thông tải không giới hạn
-              </span>
-            </div>
-            <div className="flex items-center gap-3">
-              <Shield className="w-5 h-5 text-primary shrink-0" />
-              <span className="font-medium text-foreground">
-                Mã hóa bảo vệ tệp cao cấp (AES-256)
-              </span>
-            </div>
+          {/* Feature list — no nested border, uses divider lines */}
+          <div className="flex-1 space-y-4 mb-8">
+            {[
+              { icon: HardDrive, label: "Lưu trữ 2.0 TB (2,000 GB)" },
+              { icon: Infinity, label: "Không giới hạn kích thước tệp tải lên" },
+              { icon: Zap, label: "Băng thông tải không giới hạn" },
+              { icon: Shield, label: "Mã hóa bảo vệ tệp cao cấp (AES-256)" },
+            ].map(({ icon: Icon, label }) => (
+              <div
+                key={label}
+                className="flex items-center gap-3"
+              >
+                <Icon
+                  className="w-4 h-4 shrink-0"
+                  style={{ color: "#f59e0b" }}
+                />
+                <span className="font-medium">{label}</span>
+              </div>
+            ))}
           </div>
 
           <button
-            className={`w-full py-4 rounded-xl font-bold shadow-md transition-all ${isPro ? "bg-card text-muted-foreground cursor-not-allowed border border-border" : "bg-primary text-white hover:bg-primary/90 hover:shadow-lg cursor-pointer"}`}
+            className="w-full py-4 rounded-xl font-bold transition-all"
+            style={{
+              background: isPro
+                ? "var(--gray-a4)"
+                : "linear-gradient(135deg, #f59e0b, #d97706)",
+              color: isPro ? "var(--gray-a6)" : "#ffffff",
+              cursor:
+                isPro || createPaymentMutation.isPending
+                  ? "default"
+                  : "pointer",
+              boxShadow: isPro
+                ? "none"
+                : "0 2px 8px rgba(245, 158, 11, 0.3)",
+            }}
             disabled={isPro || createPaymentMutation.isPending}
             onClick={handleUpgradeClick}
           >
@@ -154,7 +246,10 @@ export default function UpgradePage() {
                   : "Nâng cấp ngay"}
           </button>
 
-          <p className="text-center text-xs text-muted-foreground mt-4 font-medium">
+          <p
+            className="text-center text-xs mt-4 font-medium"
+            style={{ color: "var(--gray-a6)" }}
+          >
             Hủy bỏ bất cứ lúc nào. Không ràng buộc.
           </p>
         </div>
