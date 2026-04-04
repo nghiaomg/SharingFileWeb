@@ -30,13 +30,41 @@ public class StorageFile {
 
   private Instant createdAt;
 
-  private boolean isPublic; // Legacy, keep for backward compatibility or migrate
+  /**
+   * @deprecated Bỏ khỏi logic phân quyền — luôn dùng ShareLink và SharedAccess.
+   *             Giữ lại cho backward compatibility.
+   */
+  @Deprecated
+  private boolean isPublic;
 
+  /**
+   * @deprecated Bỏ khỏi logic phân quyền — tất cả file mới luôn là PRIVATE.
+   *             Giữ lại cho backward compatibility.
+   */
+  @Deprecated
   private String accessMode; // "PRIVATE", "PUBLIC", "RESTRICTED"
 
+  /**
+   * @deprecated Bỏ khỏi logic phân quyền — dùng SharedAccess thay thế.
+   */
+  @Deprecated
   private List<String> sharedEmails;
 
+  /**
+   * @deprecated Bỏ khỏi logic phân quyền.
+   */
+  @Deprecated
   private Instant shareExpiresAt;
+
+  // ─── NEW FIELDS ────────────────────────────────────────────────────────────
+
+  /** Phiên bản file — tăng mỗi lần update (dùng cho cache busting). */
+  private Long version = 1L;
+
+  /** SHA-256 hex hash của nội dung file — set lúc upload. */
+  private String contentHash;
+
+  // ─── END NEW FIELDS ────────────────────────────────────────────────────────
 
   private boolean isDeleted;
 
@@ -59,6 +87,8 @@ public class StorageFile {
     this.sharedEmails = new ArrayList<>();
     this.shareExpiresAt = null;
     this.isDeleted = false;
+    this.version = 1L;
+    this.contentHash = null;
   }
 
   // Constructor mới cho B2 storage
@@ -76,6 +106,8 @@ public class StorageFile {
     this.sharedEmails = new ArrayList<>();
     this.shareExpiresAt = null;
     this.isDeleted = false;
+    this.version = 1L;
+    this.contentHash = null;
   }
 
   public String getId() {
@@ -204,5 +236,23 @@ public class StorageFile {
 
   public void setB2FileName(String b2FileName) {
     this.b2FileName = b2FileName;
+  }
+
+  // ─── NEW GETTERS/SETTERS ──────────────────────────────────────────────────
+
+  public Long getVersion() {
+    return version;
+  }
+
+  public void setVersion(Long version) {
+    this.version = version;
+  }
+
+  public String getContentHash() {
+    return contentHash;
+  }
+
+  public void setContentHash(String contentHash) {
+    this.contentHash = contentHash;
   }
 }

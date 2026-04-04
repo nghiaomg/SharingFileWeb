@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.sharingfileweb.dto.ShareLinkDetailResponse;
 import com.sharingfileweb.payload.request.InternalShareRequest;
 import com.sharingfileweb.payload.request.CreateShareLinkRequest;
 import com.sharingfileweb.payload.request.UpdateShareLinkRequest;
@@ -36,48 +37,53 @@ public class ShareController {
 
     // ─── Internal Share ────────────────────────────────────────────────────────
 
-    @Operation(summary = "Chia sẻ nội bộ cho nhiều người", description = "Chia sẻ quyền truy cập tệp/thư mục cho các email người dùng khác trong hệ thống.")
+    @Operation(summary = "Chia sẻ nội bộ cho nhiều người",
+               description = "Chia sẻ quyền truy cập tệp/thư mục cho các email người dùng khác trong hệ thống.")
     @PostMapping("/internal")
-    public ResponseEntity<?> shareWithUsers(@RequestBody InternalShareRequest request) {
+    public ResponseEntity<?> shareWithUsers(@RequestBody @Valid InternalShareRequest request) {
         try {
             List<SharedAccessResponse> results = sharedAccessService.shareWithUsers(
-                    request.getFileId(), request.getEmails(), request.getPermission());
+                    request.getFileId(),
+                    request.getEmails(),
+                    request.getPermission(),
+                    request.getExpiresInDays());
             return ResponseEntity.ok(StandardResponse.success("Đã chia sẻ thành công", results));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
         }
     }
 
-    @Operation(summary = "Được chia sẻ với tôi", description = "Danh sách các tệp/thư mục người khác chia sẻ cho tôi.")
+    @Operation(summary = "Được chia sẻ với tôi")
     @GetMapping("/with-me")
     public ResponseEntity<?> getSharedWithMe() {
-        List<SharedAccessResponse> results = sharedAccessService.getSharedWithMe();
-        return ResponseEntity.ok(StandardResponse.success("Fetched shared-with-me files", results));
+        return ResponseEntity.ok(StandardResponse.success(
+                "Fetched shared-with-me files", sharedAccessService.getSharedWithMe()));
     }
 
-    @Operation(summary = "Tôi đã chia sẻ", description = "Danh sách các tệp/thư mục mà tôi đã chia sẻ cho người khác.")
+    @Operation(summary = "Tôi đã chia sẻ")
     @GetMapping("/by-me")
     public ResponseEntity<?> getSharedByMe() {
-        List<SharedAccessResponse> results = sharedAccessService.getSharedByMe();
-        return ResponseEntity.ok(StandardResponse.success("Fetched shared-by-me files", results));
+        return ResponseEntity.ok(StandardResponse.success(
+                "Fetched shared-by-me files", sharedAccessService.getSharedByMe()));
     }
 
-    @Operation(summary = "Danh sách người được chia sẻ của 1 tệp", description = "Danh sách chi tiết các người dùng đang có quyền truy cập tệp/thư mục này.")
+    @Operation(summary = "Danh sách người được chia sẻ của 1 tệp")
     @GetMapping("/access/file/{fileId}")
     public ResponseEntity<?> getAccessesForFile(@PathVariable String fileId) {
         try {
-            List<SharedAccessResponse> results = sharedAccessService.getAccessesForFile(fileId);
-            return ResponseEntity.ok(StandardResponse.success("Fetched accesses for file", results));
+            return ResponseEntity.ok(StandardResponse.success(
+                    "Fetched accesses for file", sharedAccessService.getAccessesForFile(fileId)));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
         }
     }
 
     @PutMapping("/access/{id}")
-    public ResponseEntity<?> updatePermission(@PathVariable String id, @RequestBody UpdatePermissionRequest request) {
+    public ResponseEntity<?> updatePermission(@PathVariable String id,
+                                              @RequestBody UpdatePermissionRequest request) {
         try {
-            SharedAccessResponse result = sharedAccessService.updatePermission(id, request.getPermission());
-            return ResponseEntity.ok(StandardResponse.success("Permission updated", result));
+            return ResponseEntity.ok(StandardResponse.success(
+                    "Permission updated", sharedAccessService.updatePermission(id, request.getPermission())));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
         }
@@ -106,8 +112,8 @@ public class ShareController {
     @GetMapping("/access/folder/{id}")
     public ResponseEntity<?> getSharedFolderContent(@PathVariable String id) {
         try {
-            List<com.sharingfileweb.payload.response.FileResponse> results = sharedAccessService.getSharedFolderContent(id);
-            return ResponseEntity.ok(StandardResponse.success("Fetched folder content", results));
+            return ResponseEntity.ok(StandardResponse.success(
+                    "Fetched folder content", sharedAccessService.getSharedFolderContent(id)));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
         }
@@ -115,30 +121,39 @@ public class ShareController {
 
     // ─── Share Link ────────────────────────────────────────────────────────────
 
-    @Operation(summary = "Tạo link chia sẻ công khai", description = "Tạo một link để chia sẻ tệp/thư mục ra ngoài (có thể cài mật khẩu, ngày hết hạn).")
+    @Operation(summary = "Tạo link chia sẻ công khai",
+               description = "Tạo link để chia sẻ file/thư mục ra ngoài (mật khẩu, ngày hết hạn, số lượt truy cập tối đa).")
     @PostMapping("/link")
-    public ResponseEntity<?> createLink(@RequestBody CreateShareLinkRequest request) {
+    public ResponseEntity<?> createLink(@RequestBody @Valid CreateShareLinkRequest request) {
         try {
             ShareLinkResponse result = shareLinkService.createLink(
-                    request.getFileId(), request.getPermission(), request.getPassword(), request.getExpiresInDays());
+                    request.getFileId(),
+                    request.getPermission(),
+                    request.getPassword(),
+                    request.getExpiresInDays(),
+                    request.getMaxViews());
             return ResponseEntity.ok(StandardResponse.success("Đã tạo link chia sẻ", result));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
         }
     }
 
+    @Operation(summary = "Danh sách link của một file (chi tiết — có viewCount)",
+               description = "Trả về chi tiết bao gồm số lượt truy cập đã dùng và còn lại.")
     @GetMapping("/link/file/{fileId}")
     public ResponseEntity<?> getLinksForFile(@PathVariable String fileId) {
-        List<ShareLinkResponse> results = shareLinkService.getLinksForFile(fileId);
+        List<ShareLinkDetailResponse> results = shareLinkService.getLinkDetailsForFile(fileId);
         return ResponseEntity.ok(StandardResponse.success("Fetched links for file", results));
     }
 
     @PutMapping("/link/{id}")
-    public ResponseEntity<?> updateLink(@PathVariable String id, @RequestBody UpdateShareLinkRequest request) {
+    public ResponseEntity<?> updateLink(@PathVariable String id,
+                                        @RequestBody UpdateShareLinkRequest request) {
         try {
-            ShareLinkResponse result = shareLinkService.updateLink(
-                    id, request.getPermission(), request.getPassword(), request.getExpiresInDays());
-            return ResponseEntity.ok(StandardResponse.success("Đã cập nhật link chia sẻ", result));
+            return ResponseEntity.ok(StandardResponse.success(
+                    "Đã cập nhật link chia sẻ",
+                    shareLinkService.updateLink(id, request.getPermission(),
+                            request.getPassword(), request.getExpiresInDays())));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
         }
@@ -154,19 +169,18 @@ public class ShareController {
         }
     }
 
-    @Autowired
-    private com.sharingfileweb.repository.ShareLinkRepository shareLinkRepository;
+    // ─── Admin ────────────────────────────────────────────────────────────────
 
-    // GET /api/share/links → Admin: lấy toàn bộ share links
     @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/links")
     public ResponseEntity<?> getAllShareLinksForAdmin() {
-        List<com.sharingfileweb.models.ShareLink> shareLinks = shareLinkRepository.findAll();
+        List<com.sharingfileweb.models.ShareLink> shareLinks =
+                shareLinkRepository.findAll();
         shareLinks.forEach(link -> link.setPassword(null));
         return ResponseEntity.ok(StandardResponse.success("Fetched all share links", shareLinks));
     }
 
-    @Operation(summary = "Thu hồi link chia sẻ (Quyền Admin)", description = "Admin xóa các link chia sẻ rác.")
+    @Operation(summary = "Thu hồi link chia sẻ (Quyền Admin)")
     @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/links/{id}")
     public ResponseEntity<?> revokeShareLinkByAdmin(@PathVariable String id) {
@@ -176,4 +190,7 @@ public class ShareController {
         shareLinkRepository.deleteById(id);
         return ResponseEntity.ok(StandardResponse.success("Share link revoked permanently", null));
     }
+
+    @Autowired
+    private com.sharingfileweb.repository.ShareLinkRepository shareLinkRepository;
 }

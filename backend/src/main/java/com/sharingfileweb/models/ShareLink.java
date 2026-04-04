@@ -28,6 +28,16 @@ public class ShareLink {
 
     private Instant createdAt;
 
+    // ─── NEW FIELDS ──────────────────────────────────────────────────────────
+
+    /** Số lượt truy cập đã dùng — tăng mỗi lần validate. */
+    private Long viewCount = 0L;
+
+    /** Số lượt tối đa — null = không giới hạn. */
+    private Long maxViews; // nullable
+
+    // ─── END NEW FIELDS ──────────────────────────────────────────────────────
+
     public ShareLink() {}
 
     public ShareLink(String fileId, String token, String ownerId, String permission, String password, Instant expiresAt) {
@@ -39,6 +49,8 @@ public class ShareLink {
         this.expiresAt = expiresAt;
         this.isRevoked = false;
         this.createdAt = Instant.now();
+        this.viewCount = 0L;
+        this.maxViews = null;
     }
 
     public String getId() { return id; }
@@ -67,4 +79,19 @@ public class ShareLink {
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+
+    // ─── NEW GETTERS/SETTERS ──────────────────────────────────────────────
+
+    public Long getViewCount() { return viewCount; }
+    public void setViewCount(Long viewCount) { this.viewCount = viewCount; }
+
+    public Long getMaxViews() { return maxViews; }
+    public void setMaxViews(Long maxViews) { this.maxViews = maxViews; }
+
+    /** Tính số lượt còn lại. Null nếu unlimited. */
+    public Long getRemainingViews() {
+        if (maxViews == null) return null;
+        long remaining = maxViews - viewCount;
+        return remaining < 0 ? 0L : remaining;
+    }
 }

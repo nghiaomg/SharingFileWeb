@@ -5,6 +5,8 @@ public class CreateShareLinkRequest {
     private String permission; // "VIEW", "DOWNLOAD"
     private String password;   // nullable
     private Long expiresInDays; // nullable = never
+    /** Số lượt truy cập tối đa — null = không giới hạn. */
+    private Long maxViews;
 
     public String getFileId() { return fileId; }
     public void setFileId(String fileId) { this.fileId = fileId; }
@@ -17,4 +19,7 @@ public class CreateShareLinkRequest {
 
     public Long getExpiresInDays() { return expiresInDays; }
     public void setExpiresInDays(Long expiresInDays) { this.expiresInDays = expiresInDays; }
+
+    public Long getMaxViews() { return maxViews; }
+    public void setMaxViews(Long maxViews) { this.maxViews = maxViews; }
 }

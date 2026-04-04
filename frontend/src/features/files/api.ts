@@ -5,7 +5,6 @@ import type {
   FolderChildren,
   CreateFolderInput,
   UpdateFolderInput,
-  ShareFileInput,
 } from "./schemas";
 
 export interface ResolvePathInput {
@@ -14,6 +13,7 @@ export interface ResolvePathInput {
 }
 
 // ─── Folder APIs ─────────────────────────────────────────────────────────────
+// Returns virtual "Thư Mục Gốc" — backend maps GET /folders/root → /{id} with id="root"
 export async function getRootFolder(): Promise<FolderItem> {
   const res = await apiClient.get<FolderItem>("/folders/root");
   return res.data;
@@ -96,46 +96,53 @@ export async function deleteFile(fileId: string): Promise<void> {
   await apiClient.delete(`/files/${fileId}`);
 }
 
-export async function shareFile(
-  fileId: string,
-  payload: ShareFileInput,
-): Promise<FileItem> {
-  const res = await apiClient.put<FileItem>(`/files/${fileId}/share`, payload);
-  return res.data;
-}
+// shareFile removed — uses deprecated /files/{id}/share endpoint.
+// Use shareInternal() (email invite) or createShareLink() (public link) instead.
 
 export async function downloadFile(
   fileId: string,
   fileName: string,
 ): Promise<void> {
-  const response = await apiClient.get<{
-    message?: string;
-    data?: { url: string };
-  }>(`/files/download/${fileId}`);
-  if (response.data?.data?.url) {
-    // Navigate or create invisible link
-    const link = document.createElement("a");
-    link.href = response.data.data.url;
-    // Note: 'download' attribute might be ignored if cross-origin, but B2 API sets Content-Disposition
-    link.target = "_blank";
-    link.setAttribute("download", fileName);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-  } else {
+  // Uses new endpoint: GET /files/{fileId}/download
+  // apiClient interceptor unwraps StandardResponse → data = FileDownloadResponse
+  const res = await apiClient.get<{
+    url: string;
+    fileName: string;
+    fileType: string;
+    fileSize: number;
+    expiresAt: string;
+    version: number;
+  }>(`/files/${fileId}/download`);
+
+  if (!res.data?.url) {
     throw new Error("Không lấy được đường dẫn tải xuống");
   }
+
+  const link = document.createElement("a");
+  link.href = res.data.url;
+  // Note: 'download' attribute might be ignored if cross-origin, but B2 API sets Content-Disposition
+  link.target = "_blank";
+  link.setAttribute("download", fileName);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
 }
 
 export async function getFileBlobUrl(fileId: string): Promise<string> {
-  const response = await apiClient.get<{
-    message?: string;
-    data?: { url: string };
-  }>(`/files/download/${fileId}?inline=true`);
-  if (response.data?.data?.url) {
-    return response.data.data.url;
+  // Uses new endpoint: GET /files/{fileId}/preview (short-lived, inline)
+  const res = await apiClient.get<{
+    url: string;
+    fileName: string;
+    fileType: string;
+    fileSize: number;
+    expiresAt: string;
+    version: number;
+  }>(`/files/${fileId}/preview`);
+
+  if (!res.data?.url) {
+    throw new Error("Không lấy được đường dẫn URL");
   }
-  throw new Error("Không lấy được đường dẫn URL");
+  return res.data.url;
 }
 
 // ─── Chunked Upload ──────────────────────────────────────────────────────────

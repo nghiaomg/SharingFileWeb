@@ -1,9 +1,12 @@
 package com.sharingfileweb.services;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,112 +42,134 @@ public class SharedAccessService {
     private EmailService emailService;
 
     private String getCurrentUserId() {
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return userDetails.getId();
+        return ((UserDetailsImpl) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal()).getId();
     }
 
     private String getCurrentUserEmail() {
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return userDetails.getEmail();
+        return ((UserDetailsImpl) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal()).getEmail();
     }
 
-    public List<SharedAccessResponse> shareWithUsers(String fileId, List<String> emails, String permission) {
+    // ─── Create Shared Access ──────────────────────────────────────────────────
+
+    /**
+     * Chia sẻ file với danh sách email.
+     *
+     * @param fileId      ID của file cần chia sẻ
+     * @param emails      Danh sách email người nhận
+     * @param permission  "VIEW" hoặc "DOWNLOAD"
+     * @param expiresInDays Số ngày hết hạn — nullable = không hết hạn
+     */
+    public List<SharedAccessResponse> shareWithUsers(String fileId, List<String> emails,
+                                                      String permission, Long expiresInDays) {
         String userId = getCurrentUserId();
         String userEmail = getCurrentUserEmail();
 
-        StorageFile file = fileRepository.findByIdAndOwnerIdAndIsDeletedFalse(fileId, userId)
+        fileRepository.findByIdAndOwnerIdAndIsDeletedFalse(fileId, userId)
                 .orElseThrow(() -> new RuntimeException("File không tồn tại hoặc bạn không có quyền"));
 
         User owner = userRepository.findById(userId).orElseThrow();
+
+        Instant expiresAt = null;
+        if (expiresInDays != null && expiresInDays > 0) {
+            expiresAt = Instant.now().plus(expiresInDays, ChronoUnit.DAYS);
+        }
+
         List<SharedAccessResponse> results = new ArrayList<>();
 
         for (String recipientEmail : emails) {
             if (recipientEmail.equalsIgnoreCase(userEmail)) continue;
 
-            // Check if already shared
-            var existing = sharedAccessRepository.findByFileIdAndRecipientEmailAndIsRevokedFalse(fileId, recipientEmail);
+            // Update existing if already shared
+            Optional<SharedAccess> existing = sharedAccessRepository
+                    .findByFileIdAndRecipientEmailAndIsRevokedFalse(fileId, recipientEmail);
+
             if (existing.isPresent()) {
-                // Update permission
                 SharedAccess access = existing.get();
                 access.setPermission(permission != null ? permission : "VIEW");
+                access.setExpiresAt(expiresAt);
                 sharedAccessRepository.save(access);
-                results.add(mapToResponse(access, file));
+                results.add(mapToResponse(access, fileRepository.findById(fileId).orElse(null)));
                 continue;
             }
 
-            SharedAccess access = new SharedAccess(fileId, userId, userEmail, recipientEmail, permission != null ? permission : "VIEW");
+            SharedAccess access = new SharedAccess(
+                    fileId, userId, userEmail, recipientEmail,
+                    permission != null ? permission : "VIEW");
+            access.setExpiresAt(expiresAt);
+
             SharedAccess saved = sharedAccessRepository.save(access);
-            results.add(mapToResponse(saved, file));
+            results.add(mapToResponse(saved, fileRepository.findById(fileId).orElse(null)));
 
             // Send notification
             Map<String, String> metadata = new HashMap<>();
             metadata.put("fileId", fileId);
-            metadata.put("fileName", file.getName());
-            metadata.put("senderName", owner.getUsername());
+            metadata.put("fileName", owner.getUsername());
             metadata.put("senderEmail", userEmail);
             metadata.put("permission", permission != null ? permission : "VIEW");
+            metadata.put("expiresAt", expiresAt != null ? expiresAt.toString() : "never");
 
             notificationService.createNotification(
                     recipientEmail,
                     "FILE_SHARED",
                     "Có tệp được chia sẻ với bạn",
-                    owner.getUsername() + " đã chia sẻ tệp \"" + file.getName() + "\" với bạn.",
+                    owner.getUsername() + " đã chia sẻ tệp \"" + owner.getUsername() + "\" với bạn.",
                     metadata
             );
 
-            // Gửi qua email (Async)
-            emailService.sendShareInvitationEmail(recipientEmail, owner.getUsername(), file.getName(), fileId);
+            emailService.sendShareInvitationEmail(recipientEmail, owner.getUsername(),
+                    fileId, fileId);
         }
 
         return results;
     }
 
+    // ─── Query ─────────────────────────────────────────────────────────────────
+
+    /** Files được chia sẻ cho tôi. */
     public List<SharedAccessResponse> getSharedWithMe() {
         String email = getCurrentUserEmail();
-        List<SharedAccess> accesses = sharedAccessRepository.findByRecipientEmailAndIsRevokedFalse(email);
-
-        return accesses.stream().map(access -> {
-            StorageFile file = fileRepository.findById(access.getFileId()).orElse(null);
-            if (file == null || file.isDeleted()) return null;
-            return mapToResponse(access, file);
-        }).filter(r -> r != null).collect(Collectors.toList());
+        return sharedAccessRepository.findByRecipientEmailAndIsRevokedFalse(email).stream()
+                .filter(access -> !isExpired(access))
+                .map(access -> mapToResponse(access,
+                        fileRepository.findById(access.getFileId()).orElse(null)))
+                .collect(Collectors.toList());
     }
 
+    /** Files tôi đã chia sẻ cho người khác. */
     public List<SharedAccessResponse> getSharedByMe() {
         String userId = getCurrentUserId();
-        List<SharedAccess> accesses = sharedAccessRepository.findByOwnerIdAndIsRevokedFalse(userId);
-
-        return accesses.stream().map(access -> {
-            StorageFile file = fileRepository.findById(access.getFileId()).orElse(null);
-            if (file == null || file.isDeleted()) return null;
-            return mapToResponse(access, file);
-        }).filter(r -> r != null).collect(Collectors.toList());
+        return sharedAccessRepository.findByOwnerIdAndIsRevokedFalse(userId).stream()
+                .filter(access -> !isExpired(access))
+                .map(access -> mapToResponse(access,
+                        fileRepository.findById(access.getFileId()).orElse(null)))
+                .collect(Collectors.toList());
     }
 
+    /** Ai đang có quyền truy cập file này. */
     public List<SharedAccessResponse> getAccessesForFile(String fileId) {
         String userId = getCurrentUserId();
-        // Verify ownership
         fileRepository.findByIdAndOwnerIdAndIsDeletedFalse(fileId, userId)
                 .orElseThrow(() -> new RuntimeException("File không tồn tại hoặc bạn không có quyền"));
 
-        List<SharedAccess> accesses = sharedAccessRepository.findByFileIdAndIsRevokedFalse(fileId);
-        return accesses.stream().map(access -> {
-            StorageFile file = fileRepository.findById(access.getFileId()).orElse(null);
-            return file != null ? mapToResponse(access, file) : null;
-        }).filter(r -> r != null).collect(Collectors.toList());
+        return sharedAccessRepository.findByFileIdAndIsRevokedFalse(fileId).stream()
+                .map(access -> mapToResponse(access,
+                        fileRepository.findById(access.getFileId()).orElse(null)))
+                .collect(Collectors.toList());
     }
 
+    /** Cập nhật permission của một SharedAccess. */
     public SharedAccessResponse updatePermission(String accessId, String newPermission) {
         String userId = getCurrentUserId();
         SharedAccess access = sharedAccessRepository.findByIdAndOwnerId(accessId, userId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy quyền truy cập"));
         access.setPermission(newPermission);
         sharedAccessRepository.save(access);
-
-        StorageFile file = fileRepository.findById(access.getFileId()).orElse(null);
-        return mapToResponse(access, file);
+        return mapToResponse(access, fileRepository.findById(access.getFileId()).orElse(null));
     }
 
+    /** Thu hồi một quyền truy cập. */
     public void revokeAccess(String accessId) {
         String userId = getCurrentUserId();
         SharedAccess access = sharedAccessRepository.findByIdAndOwnerId(accessId, userId)
@@ -153,18 +178,20 @@ public class SharedAccessService {
         sharedAccessRepository.save(access);
     }
 
+    /** Thu hồi tất cả quyền truy cập của một file. */
     public void revokeAllForFile(String fileId) {
         String userId = getCurrentUserId();
         fileRepository.findByIdAndOwnerIdAndIsDeletedFalse(fileId, userId)
                 .orElseThrow(() -> new RuntimeException("File không tồn tại hoặc bạn không có quyền"));
 
-        List<SharedAccess> accesses = sharedAccessRepository.findByFileIdAndIsRevokedFalse(fileId);
-        for (SharedAccess access : accesses) {
-            access.setRevoked(true);
-            sharedAccessRepository.save(access);
-        }
+        sharedAccessRepository.findByFileIdAndIsRevokedFalse(fileId)
+                .forEach(access -> {
+                    access.setRevoked(true);
+                    sharedAccessRepository.save(access);
+                });
     }
 
+    /** Lấy nội dung thư mục được chia sẻ. */
     public List<FileResponse> getSharedFolderContent(String accessId) {
         String email = getCurrentUserEmail();
         SharedAccess access = sharedAccessRepository.findById(accessId)
@@ -173,8 +200,8 @@ public class SharedAccessService {
         if (!access.getRecipientEmail().equals(email) && !email.equals(access.getOwnerEmail())) {
             throw new RuntimeException("Bạn không có quyền truy cập");
         }
-        if (access.isRevoked()) {
-            throw new RuntimeException("Quyền truy cập đã bị thu hồi");
+        if (access.isRevoked() || isExpired(access)) {
+            throw new RuntimeException("Quyền truy cập đã bị thu hồi hoặc hết hạn");
         }
 
         StorageFile folder = fileRepository.findById(access.getFileId())
@@ -184,13 +211,33 @@ public class SharedAccessService {
             throw new RuntimeException("Đây không phải là thư mục");
         }
 
-        List<StorageFile> children = fileRepository.findByOwnerIdAndFolderIdAndIsDeletedFalse(folder.getOwnerId(), folder.getId());
-        
+        List<StorageFile> children = fileRepository
+                .findByOwnerIdAndFolderIdAndIsDeletedFalse(folder.getOwnerId(), folder.getId());
+
         return children.stream().map(file -> new FileResponse(
                 file.getId(), file.getName(), file.getType(), file.getSize(),
                 file.getFolderId(), file.getCreatedAt(), file.isPublic(),
                 access.getPermission(), new ArrayList<>(), null
         )).collect(Collectors.toList());
+    }
+
+    // ─── Access Validation ─────────────────────────────────────────────────────
+
+    /**
+     * Kiểm tra recipient có quyền truy cập file hay không.
+     * @return SharedAccess nếu hợp lệ
+     */
+    public Optional<SharedAccess> canAccessFile(String recipientEmail, String fileId) {
+        return sharedAccessRepository
+                .findByFileIdAndRecipientEmailAndIsRevokedFalse(fileId, recipientEmail)
+                .filter(access -> !isExpired(access));
+    }
+
+    // ─── Private Helpers ───────────────────────────────────────────────────────
+
+    private boolean isExpired(SharedAccess access) {
+        return access.getExpiresAt() != null
+                && access.getExpiresAt().isBefore(Instant.now());
     }
 
     private SharedAccessResponse mapToResponse(SharedAccess access, StorageFile file) {

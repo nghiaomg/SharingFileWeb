@@ -24,6 +24,24 @@ public class Folder {
 
   private Instant deletedAt;
 
+  // ─── DEPRECATED SHARING FIELDS ──────────────────────────────────────────
+  // Giữ lại cho backward compatibility — KHÔNG dùng trong logic phân quyền mới.
+  // Dùng SharedAccess và ShareLink thay thế.
+
+  /** @deprecated */
+  @Deprecated
+  private String accessMode = "PRIVATE";
+
+  /** @deprecated */
+  @Deprecated
+  private java.util.List<String> sharedEmails = new java.util.ArrayList<>();
+
+  /** @deprecated */
+  @Deprecated
+  private Instant shareExpiresAt;
+
+  // ─── END DEPRECATED FIELDS ─────────────────────────────────────────────
+
   public Folder() {
   }
 
@@ -101,4 +119,24 @@ public class Folder {
   public void setDeletedAt(Instant deletedAt) {
     this.deletedAt = deletedAt;
   }
+
+  // ─── DEPRECATED GETTERS/SETTERS (backward compatibility only) ───────
+  /** @deprecated */
+  @Deprecated
+  public String getAccessMode() { return accessMode; }
+  /** @deprecated */
+  @Deprecated
+  public void setAccessMode(String accessMode) { this.accessMode = accessMode; }
+  /** @deprecated */
+  @Deprecated
+  public java.util.List<String> getSharedEmails() { return sharedEmails; }
+  /** @deprecated */
+  @Deprecated
+  public void setSharedEmails(java.util.List<String> sharedEmails) { this.sharedEmails = sharedEmails; }
+  /** @deprecated */
+  @Deprecated
+  public Instant getShareExpiresAt() { return shareExpiresAt; }
+  /** @deprecated */
+  @Deprecated
+  public void setShareExpiresAt(Instant shareExpiresAt) { this.shareExpiresAt = shareExpiresAt; }
 }

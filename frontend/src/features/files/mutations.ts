@@ -6,7 +6,6 @@ import {
   updateFolder,
   deleteFolder,
   deleteFile,
-  shareFile,
   uploadFileChunked,
   downloadFile,
   renameFile,
@@ -16,7 +15,6 @@ import { authKeys } from "../auth/queries";
 import type {
   CreateFolderInput,
   UpdateFolderInput,
-  ShareFileInput,
 } from "./schemas";
 
 // ─── Create Folder ───────────────────────────────────────────────────────────
@@ -112,25 +110,10 @@ export function useRenameFile() {
   });
 }
 
-// ─── Share File ──────────────────────────────────────────────────────────────
-export function useShareFile() {
-  const qc = useQueryClient();
+// useShareFile removed — it used the deprecated /files/{id}/share endpoint.
+// Use useShareInternal() or useCreateShareLink() instead.
 
-  return useMutation({
-    mutationFn: ({
-      fileId,
-      payload,
-    }: {
-      fileId: string;
-      payload: ShareFileInput;
-    }) => shareFile(fileId, payload),
-    onSettled: () => {
-      qc.invalidateQueries({ queryKey: fileKeys.all() });
-    },
-  });
-}
-
-// ─── Download File ───────────────────────────────────────────────────────────
+// ─── Download File
 export function useDownloadFile() {
   return useMutation({
     mutationFn: ({ fileId, fileName }: { fileId: string; fileName: string }) =>

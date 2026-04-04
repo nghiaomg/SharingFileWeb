@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
+import java.security.MessageDigest;
 import java.nio.file.*;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
@@ -90,17 +91,21 @@ public class FileStorageService {
       private String b2FileName;
       private String realMimeType;
       private long finalSize;
-      
-      public B2MergedResult(String b2FileId, String b2FileName, String realMimeType, long finalSize) {
+      private String contentHash; // SHA-256 hex
+
+      public B2MergedResult(String b2FileId, String b2FileName, String realMimeType,
+                            long finalSize, String contentHash) {
           this.b2FileId = b2FileId;
           this.b2FileName = b2FileName;
           this.realMimeType = realMimeType;
           this.finalSize = finalSize;
+          this.contentHash = contentHash;
       }
       public String getB2FileId() { return b2FileId; }
       public String getB2FileName() { return b2FileName; }
       public String getRealMimeType() { return realMimeType; }
       public long getFinalSize() { return finalSize; }
+      public String getContentHash() { return contentHash; }
   }
 
   /**
@@ -135,7 +140,8 @@ public class FileStorageService {
         B2StorageService.B2UploadResult result = b2StorageService.uploadFile(mergedFilePath, b2FileName, "application/octet-stream");
         // Cleanup local
         deleteDirectoryRecursively(Paths.get(tempMergeDir));
-        return new B2MergedResult(result.getB2FileId(), result.getB2FileName(), "application/octet-stream", 0);
+        return new B2MergedResult(result.getB2FileId(), result.getB2FileName(),
+                "application/octet-stream", 0, null); // empty file has no hash
     }
 
     // Merge chunks vào file tạm
@@ -190,6 +196,9 @@ public class FileStorageService {
 
     long finalSize = Files.size(mergedFilePath);
 
+    // Tính SHA-256 content hash TRƯỚC khi upload (vì file còn local)
+    String contentHash = computeSha256(mergedFilePath);
+
     // Upload lên B2
     String b2FileName = ownerId + "/" + uniqueFileName;
     B2StorageService.B2UploadResult b2Result;
@@ -210,7 +219,36 @@ public class FileStorageService {
         }
     }
 
-    return new B2MergedResult(b2Result.getB2FileId(), b2Result.getB2FileName(), realMimeType, finalSize);
+    return new B2MergedResult(b2Result.getB2FileId(), b2Result.getB2FileName(),
+            realMimeType, finalSize, contentHash);
+  }
+
+  // ─── Utility ──────────────────────────────────────────────────────────────
+
+  // ─── SHA-256 Content Hash ─────────────────────────────────────────────────
+
+  private String computeSha256(Path filePath) {
+      try {
+          MessageDigest digest = MessageDigest.getInstance("SHA-256");
+          try (InputStream is = Files.newInputStream(filePath)) {
+              byte[] buffer = new byte[8192];
+              int bytesRead;
+              while ((bytesRead = is.read(buffer)) != -1) {
+                  digest.update(buffer, 0, bytesRead);
+              }
+          }
+          byte[] hashBytes = digest.digest();
+          StringBuilder hexString = new StringBuilder();
+          for (byte b : hashBytes) {
+              String hex = Integer.toHexString(0xff & b);
+              if (hex.length() == 1) hexString.append('0');
+              hexString.append(hex);
+          }
+          return hexString.toString();
+      } catch (Exception e) {
+          System.err.println("[SHA-256] Failed to compute hash: " + e.getMessage());
+          return null;
+      }
   }
 
   // ─── Utility ──────────────────────────────────────────────────────────────

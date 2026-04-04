@@ -86,14 +86,28 @@ public class B2StorageService {
         }
     }
 
-    public String getPresignedDownloadUrl(String b2FileName, String originalFileName, boolean inline) {
+    /**
+     * Tạo presigned download URL từ B2 Private bucket.
+     *
+     * @param b2FileName    Tên file trên B2 (path in bucket)
+     * @param originalFileName Tên file gốc để set Content-Disposition
+     * @param inline        true = xem trình duyệt (inline), false = tải về (attachment)
+     * @param expiresIn     Thời hạn URL — null = dùng config mặc định
+     * @return Presigned URL có chứa authorization token
+     */
+    public String getPresignedDownloadUrl(String b2FileName, String originalFileName,
+                                          boolean inline, java.time.Duration expiresIn) {
         try {
+            int expirationSeconds = expiresIn != null
+                    ? (int) expiresIn.toSeconds()
+                    : b2Config.getDownloadUrlExpirationSeconds();
+
             // Lấy download authorization token
             String authToken = b2Client.getDownloadAuthorization(
                     B2GetDownloadAuthorizationRequest.builder(
                             b2Config.getBucketId(),
                             b2FileName,
-                            b2Config.getDownloadUrlExpirationSeconds()
+                            expirationSeconds
                     ).build()
             ).getAuthorizationToken();
 
@@ -114,6 +128,15 @@ public class B2StorageService {
             System.err.println("[B2] Failed to generate download URL for: " + b2FileName + " — " + e.getMessage());
             throw new RuntimeException("Không thể tạo liên kết tải xuống. Vui lòng thử lại.", e);
         }
+    }
+
+    /**
+     * Backward-compatible overload — dùng config mặc định.
+     * @deprecated Dùng overload có Duration param thay thế.
+     */
+    @Deprecated
+    public String getPresignedDownloadUrl(String b2FileName, String originalFileName, boolean inline) {
+        return getPresignedDownloadUrl(b2FileName, originalFileName, inline, null);
     }
 
     /**

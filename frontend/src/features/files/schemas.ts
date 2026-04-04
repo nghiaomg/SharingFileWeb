@@ -62,6 +62,8 @@ export const ShareFileSchema = z.object({
 export type ShareFileInput = z.infer<typeof ShareFileSchema>;
 
 // ─── Share Link ──────────────────────────────────────────────────────────────
+// Backend returns ShareLinkDetailResponse which extends ShareLinkResponse
+// with additional fields: viewCount, remainingViews, expiresInSeconds
 export const ShareLinkSchema = z.object({
   id: z.string(),
   token: z.string(),
@@ -71,6 +73,10 @@ export const ShareLinkSchema = z.object({
   expiresAt: z.string().nullable().optional(),
   isRevoked: z.boolean(),
   createdAt: z.string(),
+  // Extra fields from ShareLinkDetailResponse
+  viewCount: z.number().optional(),
+  remainingViews: z.number().optional(),
+  expiresInSeconds: z.number().optional(),
 });
 
 export type ShareLinkItem = z.infer<typeof ShareLinkSchema>;

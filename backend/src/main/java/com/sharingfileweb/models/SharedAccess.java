@@ -24,6 +24,13 @@ public class SharedAccess {
 
     private Instant createdAt;
 
+    // ─── NEW FIELD ────────────────────────────────────────────────────────
+
+    /** Thời điểm hết hạn quyền truy cập — null = không hết hạn. */
+    private Instant expiresAt; // nullable
+
+    // ─── END NEW FIELD ────────────────────────────────────────────────────
+
     public SharedAccess() {}
 
     public SharedAccess(String fileId, String ownerId, String ownerEmail, String recipientEmail, String permission) {
@@ -34,6 +41,7 @@ public class SharedAccess {
         this.permission = permission;
         this.isRevoked = false;
         this.createdAt = Instant.now();
+        this.expiresAt = null;
     }
 
     public String getId() { return id; }
@@ -59,4 +67,8 @@ public class SharedAccess {
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+
+    // ─── NEW GETTER/SETTER ──────────────────────────────────────────────
+    public Instant getExpiresAt() { return expiresAt; }
+    public void setExpiresAt(Instant expiresAt) { this.expiresAt = expiresAt; }
 }
