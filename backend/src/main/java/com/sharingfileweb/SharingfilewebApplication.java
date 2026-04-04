@@ -17,15 +17,23 @@ public class SharingfilewebApplication {
 	public static void main(String[] args) {
 		Dotenv dotenv = Dotenv.configure().directory("./").ignoreIfMissing().load();
 		Properties properties = new Properties();
-		
+
 		dotenv.entries().forEach(entry -> {
-			System.setProperty(entry.getKey(), entry.getValue());
-			properties.put(entry.getKey(), entry.getValue());
-			if (entry.getKey().equals("MONGO_URI")) {
-				properties.put("spring.data.mongodb.uri", entry.getValue());
+			String key = entry.getKey();
+			String value = entry.getValue();
+			System.setProperty(key, value);
+			properties.put(key, value);
+
+			// Forward MongoDB config to Spring Boot Data MongoDB auto-configuration
+			// Set as SYSTEM property (not just default property) so it is read during
+			// auto-config phase, which happens before default properties are applied.
+			if ("MONGO_URI".equals(key)) {
+				System.setProperty("spring.data.mongodb.uri", value);
+				properties.put("spring.data.mongodb.uri", value);
 			}
-			if (entry.getKey().equals("MONGO_DATABASE")) {
-				properties.put("spring.data.mongodb.database", entry.getValue());
+			if ("MONGO_DATABASE".equals(key)) {
+				System.setProperty("spring.data.mongodb.database", value);
+				properties.put("spring.data.mongodb.database", value);
 			}
 		});
 

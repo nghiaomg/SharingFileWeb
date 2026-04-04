@@ -32,6 +32,8 @@ services:
   admin:
     build:
       context: ./admin
+      args:
+        VITE_API_URL: https://sharingfile-be.nghiaomg.xyz
     container_name: sharingfile-admin
     restart: unless-stopped
     networks:
