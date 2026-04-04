@@ -4,7 +4,7 @@ import Link from "next/link";
 import { CreditCard } from "lucide-react";
 import { Box, Flex, Heading, Text, Button, Badge } from "@radix-ui/themes";
 import { useCurrentUser } from "@/features/auth/queries";
-import { getCurrentPlan, PLANS } from "@/features/plans/plans.config";
+import { getCurrentPlan } from "@/features/plans/plans.config";
 
 export function SubscriptionSection() {
   const { data: user } = useCurrentUser();

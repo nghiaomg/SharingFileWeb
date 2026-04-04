@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { User } from "lucide-react";
-import { toast } from "sonner";
 import {
   Box,
   Flex,

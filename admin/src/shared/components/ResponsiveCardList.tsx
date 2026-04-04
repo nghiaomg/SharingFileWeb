@@ -33,7 +33,7 @@ interface ResponsiveCardListProps<T extends { id: string }> {
   /** Custom footer card (mobile) */
   cardFooter?: (item: T) => React.ReactNode;
   /** Empty text */
-  emptyText?: string;
+  emptyText?: React.ReactNode;
 }
 
 function ResponsiveCardList<T extends { id: string }>({

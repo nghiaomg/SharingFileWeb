@@ -27,6 +27,7 @@ import {
   DeleteRowOutlined,
   InfoCircleOutlined,
   UndoOutlined,
+  ExclamationCircleOutlined,
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { useTrashQuery, useRestoreTrashMutation, usePermanentDeleteMutation, useEmptyTrashMutation } from '../hooks/useTrashHooks';
