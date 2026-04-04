@@ -43,6 +43,8 @@ import type { Folder, FolderFile } from '../types/folder.types';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { StatCard } from '@/shared/components/StatCard';
+import ResponsiveCardList from '@/shared/components/ResponsiveCardList';
+import { useIsMobile } from '@/shared/hooks/useIsMobile';
 
 dayjs.extend(relativeTime);
 
@@ -51,12 +53,8 @@ const { Title, Text } = Typography;
 type ViewMode = 'table' | 'grid';
 
 const getFolderIcon = (isDeleted: boolean, isSelected: boolean = false) => {
-  if (isDeleted) {
-    return <FolderOutlined style={{ color: '#ff4d4f' }} />;
-  }
-  if (isSelected) {
-    return <FolderOpenOutlined style={{ color: '#1677ff' }} />;
-  }
+  if (isDeleted) return <FolderOutlined style={{ color: '#ff4d4f' }} />;
+  if (isSelected) return <FolderOpenOutlined style={{ color: '#1677ff' }} />;
   return <FolderOutlined style={{ color: '#fa8c16' }} />;
 };
 
@@ -72,22 +70,19 @@ const FoldersPage: React.FC = () => {
 
   const { data: folders, isLoading, refetch } = useFoldersQuery();
   const deleteMutation = useDeleteFolderMutation();
+  const isMobile = useIsMobile();
 
-  // Filter folders based on search
   const filteredFolders = useMemo(() => {
     if (!folders) return [];
-
     return folders.filter((folder) => {
       const matchesSearch =
         searchText === '' ||
         folder.name.toLowerCase().includes(searchText.toLowerCase()) ||
         (folder.ownerId && folder.ownerId.toLowerCase().includes(searchText.toLowerCase()));
-
       return matchesSearch;
     });
   }, [folders, searchText]);
 
-  // Statistics
   const folderStats = useMemo(() => {
     const total = folders?.length || 0;
     const active = folders?.filter((f) => !f.isDeleted).length || 0;
@@ -105,23 +100,19 @@ const FoldersPage: React.FC = () => {
     setDetailDrawerVisible(true);
   };
 
-  const handleDeleteFolder = (folderId: string) => {
-    deleteMutation.mutate(folderId);
-  };
+  const handleDeleteFolder = (folderId: string) => deleteMutation.mutate(folderId);
 
+  /* ── Table columns ── */
   const columns: ColumnsType<Folder> = [
     {
       title: 'Tên thư mục',
       key: 'name',
-      fixed: 'left',
       width: 300,
       render: (_, record) => (
         <Space>
           {getFolderIcon(record.isDeleted)}
           <Text strong style={{ wordBreak: 'break-word' }}>{record.name}</Text>
-          {record.isDeleted && (
-            <Tag color="red" style={{ marginLeft: 8 }}>Đã xóa</Tag>
-          )}
+          {record.isDeleted && <Tag color="red" style={{ marginLeft: 8 }}>Đã xóa</Tag>}
         </Space>
       ),
     },
@@ -143,11 +134,9 @@ const FoldersPage: React.FC = () => {
       key: 'parentId',
       width: 150,
       render: (parentId: string | null) => (
-        parentId ? (
-          <Tag icon={<FolderOutlined />}>{parentId.substring(0, 8)}...</Tag>
-        ) : (
-          <Tag icon={<HomeOutlined />} color="blue">Root</Tag>
-        )
+        parentId
+          ? <Tag icon={<FolderOutlined />}>{parentId.substring(0, 8)}...</Tag>
+          : <Tag icon={<HomeOutlined />} color="blue">Root</Tag>
       ),
     },
     {
@@ -171,18 +160,16 @@ const FoldersPage: React.FC = () => {
       dataIndex: 'updatedAt',
       key: 'updatedAt',
       width: 150,
-      render: (date: string | null) => (
-        date ? (
+      render: (date: string | null) => date
+        ? (
           <Tooltip title={dayjs(date).format('DD/MM/YYYY HH:mm:ss')}>
             <Space>
               <ClockCircleOutlined style={{ color: '#8c8c8c' }} />
               <Text type="secondary">{dayjs(date).fromNow()}</Text>
             </Space>
           </Tooltip>
-        ) : (
-          <Text type="secondary">-</Text>
         )
-      ),
+        : <Text type="secondary">-</Text>,
     },
     {
       title: 'Trạng thái',
@@ -201,157 +188,141 @@ const FoldersPage: React.FC = () => {
       width: 180,
       render: (_, record) => (
         <Space size="small">
-          <Tooltip title="Xem chi tiết">
-            <Button
-              type="text"
-              icon={<EyeOutlined />}
-              onClick={() => handleViewDetail(record)}
-            />
-          </Tooltip>
-          <Tooltip title="Xem files">
-            <Button
-              type="text"
-              icon={<FileOutlined />}
-              onClick={() => handleFolderClick(record)}
-            />
-          </Tooltip>
-          {!record.isDeleted && (
-            <Tooltip title="Chỉnh sửa">
-              <Button
-                type="text"
-                icon={<EditOutlined />}
-                onClick={() => handleViewDetail(record)}
-              />
-            </Tooltip>
-          )}
-          <Popconfirm
-            title="Xóa thư mục này?"
-            description="Hành động này sẽ chuyển thư mục vào thùng rác."
-            icon={<ExclamationCircleOutlined style={{ color: '#ff4d4f' }} />}
-            onConfirm={() => handleDeleteFolder(record.id)}
-            okText="Xóa"
-            cancelText="Hủy"
-            okButtonProps={{ danger: true }}
-          >
-            <Tooltip title="Xóa">
-              <Button type="text" danger icon={<DeleteOutlined />} />
-            </Tooltip>
+          <Tooltip title="Xem chi tiết"><Button type="text" icon={<EyeOutlined />} onClick={() => handleViewDetail(record)} /></Tooltip>
+          <Tooltip title="Xem files"><Button type="text" icon={<FileOutlined />} onClick={() => handleFolderClick(record)} /></Tooltip>
+          {!record.isDeleted && <Tooltip title="Chỉnh sửa"><Button type="text" icon={<EditOutlined />} onClick={() => handleViewDetail(record)} /></Tooltip>}
+          <Popconfirm title="Xóa thư mục này?" description="Hành động này sẽ chuyển thư mục vào thùng rác." icon={<ExclamationCircleOutlined style={{ color: '#ff4d4f' }} />} onConfirm={() => handleDeleteFolder(record.id)} okText="Xóa" cancelText="Hủy" okButtonProps={{ danger: true }}>
+            <Tooltip title="Xóa"><Button type="text" danger icon={<DeleteOutlined />} /></Tooltip>
           </Popconfirm>
         </Space>
       ),
     },
   ];
 
+  /* ── Card renderer for mobile ── */
+  const renderFolderCard = (folder: Folder) => (
+    <Space direction="vertical" style={{ width: '100%' }} size={8}>
+      {/* Header */}
+      <Space align="start" style={{ width: '100%' }}>
+        {getFolderIcon(folder.isDeleted)}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Text strong style={{ display: 'block', wordBreak: 'break-word' }}>{folder.name}</Text>
+          <Tag color={folder.isDeleted ? 'red' : 'green'} style={{ marginTop: 4 }}>{folder.isDeleted ? 'Đã xóa' : 'Hoạt động'}</Tag>
+        </div>
+      </Space>
+
+      {/* Info grid */}
+      <Row gutter={[8, 4]}>
+        <Col span={12}>
+          <Text type="secondary" style={{ fontSize: 11 }}>Chủ sở hữu</Text>
+          <br />
+          <Text style={{ fontSize: 12 }}>{folder.ownerId ? `${folder.ownerId.substring(0, 8)}...` : 'N/A'}</Text>
+        </Col>
+        <Col span={12}>
+          <Text type="secondary" style={{ fontSize: 11 }}>Thư mục cha</Text>
+          <br />
+          {folder.parentId
+            ? <Text style={{ fontSize: 12 }}>{folder.parentId.substring(0, 8)}...</Text>
+            : <Tag icon={<HomeOutlined />} color="blue" style={{ margin: 0 }}>Root</Tag>
+          }
+        </Col>
+        <Col span={12}>
+          <Text type="secondary" style={{ fontSize: 11 }}>Ngày tạo</Text>
+          <br />
+          <Text style={{ fontSize: 12 }}>{dayjs(folder.createdAt).format('DD/MM/YYYY')}</Text>
+        </Col>
+        <Col span={12}>
+          <Text type="secondary" style={{ fontSize: 11 }}>Cập nhật</Text>
+          <br />
+          <Text style={{ fontSize: 12 }}>{folder.updatedAt ? dayjs(folder.updatedAt).fromNow() : '-'}</Text>
+        </Col>
+      </Row>
+
+      {/* Actions */}
+      <Space style={{ marginTop: 4 }}>
+        <Button size="small" icon={<EyeOutlined />} onClick={() => handleViewDetail(folder)}>Chi tiết</Button>
+        <Button size="small" icon={<FileOutlined />} onClick={() => handleFolderClick(folder)}>Files</Button>
+        {!folder.isDeleted && <Button size="small" icon={<EditOutlined />} onClick={() => handleViewDetail(folder)}>Sửa</Button>}
+        <Popconfirm title="Xóa thư mục này?" icon={<ExclamationCircleOutlined style={{ color: '#ff4d4f' }} />} onConfirm={() => handleDeleteFolder(folder.id)} okText="Xóa" cancelText="Hủy" okButtonProps={{ danger: true }}>
+          <Button size="small" danger icon={<DeleteOutlined />}>Xóa</Button>
+        </Popconfirm>
+      </Space>
+    </Space>
+  );
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <Title level={2} style={{ margin: 0 }}>Quản lý thư mục</Title>
         <Space>
-          <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
-            Làm mới
-          </Button>
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateModalVisible(true)}>
-            Tạo thư mục
-          </Button>
+          <Button icon={<ReloadOutlined />} onClick={() => refetch()}>Làm mới</Button>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateModalVisible(true)}>Tạo thư mục</Button>
         </Space>
       </div>
 
-      {/* Statistics Cards */}
+      {/* Statistics */}
       <Row gutter={[24, 24]} style={{ marginBottom: 24 }}>
-        <Col xs={24} sm={8}>
-          <StatCard title="Tổng thư mục" value={folderStats.total} icon={<FolderOutlined style={{ color: '#1677ff' }} />} />
-        </Col>
-        <Col xs={24} sm={8}>
-          <StatCard title="Đang hoạt động" value={folderStats.active} icon={<FolderOutlined style={{ color: '#52c41a' }} />} />
-        </Col>
-        <Col xs={24} sm={8}>
-          <StatCard title="Trong thùng rác" value={folderStats.deleted} icon={<DeleteOutlined style={{ color: '#ff4d4f' }} />} />
-        </Col>
+        <Col xs={24} sm={8}><StatCard title="Tổng thư mục" value={folderStats.total} icon={<FolderOutlined style={{ color: '#1677ff' }} />} /></Col>
+        <Col xs={24} sm={8}><StatCard title="Đang hoạt động" value={folderStats.active} icon={<FolderOutlined style={{ color: '#52c41a' }} />} /></Col>
+        <Col xs={24} sm={8}><StatCard title="Trong thùng rác" value={folderStats.deleted} icon={<DeleteOutlined style={{ color: '#ff4d4f' }} />} /></Col>
       </Row>
 
       {/* Search and View Mode */}
       <Card size="small" style={{ marginBottom: 16 }}>
         <Row gutter={16} align="middle">
           <Col flex="auto">
-            <Input
-              placeholder="Tìm kiếm thư mục..."
-              prefix={<SearchOutlined />}
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              allowClear
-              style={{ maxWidth: 300 }}
-            />
+            <Input placeholder="Tìm kiếm thư mục..." prefix={<SearchOutlined />} value={searchText} onChange={(e) => setSearchText(e.target.value)} allowClear style={{ maxWidth: 300 }} />
           </Col>
-          <Col>
-            <Segmented
-              options={[
-                { label: <span><AppstoreOutlined /> Lưới</span>, value: 'grid' },
-                { label: <span><UnorderedListOutlined /> Bảng</span>, value: 'table' },
-              ]}
-              value={viewMode}
-              onChange={(value) => setViewMode(value as ViewMode)}
-            />
-          </Col>
+          {!isMobile && (
+            <Col>
+              <Segmented
+                options={[
+                  { label: <span><AppstoreOutlined /> Lưới</span>, value: 'grid' },
+                  { label: <span><UnorderedListOutlined /> Bảng</span>, value: 'table' },
+                ]}
+                value={viewMode}
+                onChange={(value) => setViewMode(value as ViewMode)}
+              />
+            </Col>
+          )}
         </Row>
       </Card>
 
       {/* Folders List */}
       <Card>
         {filteredFolders.length > 0 ? (
-          viewMode === 'table' ? (
+          isMobile ? (
+            <ResponsiveCardList
+              data={filteredFolders}
+              columns={columns}
+              renderCard={renderFolderCard}
+              loading={isLoading}
+              onReload={refetch}
+              emptyText="Chưa có thư mục nào"
+            />
+          ) : viewMode === 'table' ? (
             <Table
               scroll={{ x: 'max-content' }}
               dataSource={filteredFolders}
               columns={columns}
               rowKey="id"
               loading={isLoading}
-              pagination={{
-                pageSize: 10,
-                showSizeChanger: true,
-                showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} thư mục`,
-              }}
+              pagination={{ pageSize: 10, showSizeChanger: true, showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} thư mục` }}
               rowClassName={(record) => record.isDeleted ? 'ant-table-row-deleted' : ''}
             />
           ) : (
             <FolderGrid onFolderClick={handleFolderClick} searchText={searchText} />
           )
         ) : (
-          <Empty
-            description={searchText ? 'Không tìm thấy thư mục nào phù hợp' : 'Chưa có thư mục nào'}
-          />
+          <Empty description={searchText ? 'Không tìm thấy thư mục nào phù hợp' : 'Chưa có thư mục nào'} />
         )}
       </Card>
 
-      {/* Folder Files Modal */}
-      <FolderFilesModal
-        folderId={selectedFolderId}
-        folderName={selectedFolderName}
-        onClose={() => setSelectedFolderId(null)}
-        onFileClick={(file) => setSelectedFile(file)}
-      />
-
-      {/* File Preview Modal */}
-      <FilePreviewModal
-        file={selectedFile}
-        onClose={() => setSelectedFile(null)}
-      />
-
-      {/* Folder Detail Drawer */}
-      <FolderDetailDrawer
-        folder={selectedFolder}
-        visible={detailDrawerVisible}
-        onClose={() => {
-          setDetailDrawerVisible(false);
-          setSelectedFolder(null);
-        }}
-      />
-
-      {/* Create Folder Modal */}
-      <CreateFolderModal
-        visible={createModalVisible}
-        onClose={() => setCreateModalVisible(false)}
-        parentFolders={folders || []}
-      />
+      {/* Modals */}
+      <FolderFilesModal folderId={selectedFolderId} folderName={selectedFolderName} onClose={() => setSelectedFolderId(null)} onFileClick={(file) => setSelectedFile(file)} />
+      <FilePreviewModal file={selectedFile} onClose={() => setSelectedFile(null)} />
+      <FolderDetailDrawer folder={selectedFolder} visible={detailDrawerVisible} onClose={() => { setDetailDrawerVisible(false); setSelectedFolder(null); }} />
+      <CreateFolderModal visible={createModalVisible} onClose={() => setCreateModalVisible(false)} parentFolders={folders || []} />
     </div>
   );
 };
