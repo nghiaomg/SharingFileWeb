@@ -15,6 +15,7 @@ import {
   Zap,
   FileUp,
   QrCode,
+  ShieldAlert,
 } from "lucide-react";
 import { useStorageUsage } from "@/features/auth/queries";
 import { getCurrentUser } from "@/features/auth/api";
@@ -139,11 +140,11 @@ export function DashboardSidebar({ isOpen, onClose }: DashboardSidebarProps) {
                   style={
                     isActive
                       ? {
-                          background: "var(--gray-a3)",
-                          color: "var(--color-foreground)",
-                          boxShadow:
-                            "inset 3px 0 0 0 var(--gray-11), 0 2px 8px rgba(0,0,0,0.06)",
-                        }
+                        background: "var(--gray-a3)",
+                        color: "var(--color-foreground)",
+                        boxShadow:
+                          "inset 3px 0 0 0 var(--gray-11), 0 2px 8px rgba(0,0,0,0.06)",
+                      }
                       : {}
                   }
                 >
@@ -167,6 +168,17 @@ export function DashboardSidebar({ isOpen, onClose }: DashboardSidebarProps) {
                 </Link>
               );
             })}
+
+            {user?.roles?.includes("ROLE_ADMIN") && (
+              <Link
+                href="/admin"
+                onClick={onClose}
+                className="relative flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group text-muted-foreground hover:bg-secondary hover:text-foreground mt-2"
+              >
+                <ShieldAlert className="w-5 h-5 transition-transform duration-200 group-hover:scale-110 text-red-500" />
+                Quản trị (Admin)
+              </Link>
+            )}
           </Flex>
         </Box>
 
@@ -280,11 +292,11 @@ export function DashboardSidebar({ isOpen, onClose }: DashboardSidebarProps) {
                   style={
                     isActive
                       ? {
-                          background: "var(--gray-a3)",
-                          color: "var(--color-foreground)",
-                          boxShadow:
-                            "inset 3px 0 0 0 var(--gray-11), 0 2px 8px rgba(0,0,0,0.06)",
-                        }
+                        background: "var(--gray-a3)",
+                        color: "var(--color-foreground)",
+                        boxShadow:
+                          "inset 3px 0 0 0 var(--gray-11), 0 2px 8px rgba(0,0,0,0.06)",
+                      }
                       : {}
                   }
                 >
