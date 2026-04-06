@@ -28,4 +28,5 @@ public interface FolderRepository extends MongoRepository<Folder, String> {
   // Cho admin dashboard duyệt thư mục
   org.springframework.data.domain.Page<Folder> findByParentIdIsNullAndIsDeletedFalse(org.springframework.data.domain.Pageable pageable);
   org.springframework.data.domain.Page<Folder> findByParentIdAndIsDeletedFalse(String parentId, org.springframework.data.domain.Pageable pageable);
+  org.springframework.data.domain.Page<Folder> findByIsDeletedFalseOrderByCreatedAtDesc(org.springframework.data.domain.Pageable pageable);
 }

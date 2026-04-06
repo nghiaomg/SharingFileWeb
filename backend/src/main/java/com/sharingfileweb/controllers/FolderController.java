@@ -44,7 +44,7 @@ public class FolderController {
   @GetMapping("/{id}")
   public ResponseEntity<?> getFolderById(@Parameter(description = "ID thư mục") @PathVariable String id) {
     if ("root".equals(id)) {
-        FolderResponse root = new FolderResponse("root", "Thư Mục Gốc", null, null, null);
+        FolderResponse root = new FolderResponse("root", "Thư Mục Gốc", null, null, null, false);
         return ResponseEntity.ok(StandardResponse.success("Fetched folder successfully", root));
     }
     try {

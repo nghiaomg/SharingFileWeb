@@ -246,7 +246,7 @@ public class ShareLinkService {
         return children.stream().map(file -> new FileResponse(
                 file.getId(), file.getName(), file.getType(), file.getSize(),
                 file.getFolderId(), file.getCreatedAt(), true,
-                link.getPermission(), new java.util.ArrayList<>(), null
+                link.getPermission(), new java.util.ArrayList<>(), null, false
         )).collect(Collectors.toList());
     }
 

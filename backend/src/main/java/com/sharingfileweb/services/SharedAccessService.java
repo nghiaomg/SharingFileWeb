@@ -217,7 +217,7 @@ public class SharedAccessService {
         return children.stream().map(file -> new FileResponse(
                 file.getId(), file.getName(), file.getType(), file.getSize(),
                 file.getFolderId(), file.getCreatedAt(), file.isPublic(),
-                access.getPermission(), new ArrayList<>(), null
+                access.getPermission(), new ArrayList<>(), null, false
         )).collect(Collectors.toList());
     }
 
