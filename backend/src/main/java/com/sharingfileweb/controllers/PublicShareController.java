@@ -1,6 +1,10 @@
 package com.sharingfileweb.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,6 +16,7 @@ import com.sharingfileweb.models.StorageFile;
 import com.sharingfileweb.payload.response.StandardResponse;
 import com.sharingfileweb.repository.FileRepository;
 import com.sharingfileweb.services.AccessLogService;
+import com.sharingfileweb.services.B2StorageService;
 import com.sharingfileweb.services.ShareLinkService;
 
 import java.util.List;
@@ -34,6 +39,9 @@ public class PublicShareController {
 
     @Autowired
     private AccessLogService accessLogService;
+
+    @Autowired
+    private B2StorageService b2StorageService;
 
     /**
      * Lấy metadata file qua share token.
@@ -79,10 +87,10 @@ public class PublicShareController {
 
     /**
      * Preview file — cho phép cả VIEW và DOWNLOAD links.
-     * Trả presigned URL với inline disposition (xem trực tiếp trên trình duyệt).
+     * Trả nội dung file trực tiếp để xem trên trình duyệt.
      */
     @Operation(summary = "Xem file trước qua Link",
-               description = "Trả presigned URL để xem file trực tiếp (inline). Áp dụng cho cả VIEW và DOWNLOAD links.")
+               description = "Trả nội dung file để xem trực tiếp (inline). Áp dụng cho cả VIEW và DOWNLOAD links.")
     @GetMapping("/{token}/preview")
     public ResponseEntity<?> previewFileByToken(
             @Parameter(description = "Mã token của link chia sẻ") @PathVariable String token,
@@ -96,21 +104,20 @@ public class PublicShareController {
                 return ResponseEntity.notFound().build();
             }
 
-            // Tạo presigned URL với inline=true
-            String presignedUrl = shareLinkService.getPresignedUrlForShareLink(link, true);
-
             // Access log
             accessLogService.logFileAccess(
                     file.getId(), file.getName(), "anonymous",
                     AccessLog.AccessType.PREVIEW, token,
                     (String) null, (String) null);
 
-            return ResponseEntity.ok(StandardResponse.success("Preview URL", java.util.Map.of(
-                    "url", presignedUrl,
-                    "fileName", file.getName(),
-                    "fileType", file.getType(),
-                    "fileSize", file.getSize()
-            )));
+            // Download file từ B2 và trả về trực tiếp
+            Resource resource = b2StorageService.downloadFile(file.getB2FileName(), file.getName());
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + file.getName() + "\"")
+                    .contentType(MediaType.parseMediaType(file.getType()))
+                    .contentLength(file.getSize())
+                    .body(resource);
 
         } catch (Exception e) {
             if ("REQUIRES_PASSWORD".equals(e.getMessage())) {
@@ -124,14 +131,14 @@ public class PublicShareController {
     /**
      * Download file — chỉ cho DOWNLOAD links.
      * VIEW links sẽ nhận 403 VIEW_ONLY_LINK.
+     * Proxy file thay vì trả URL (bảo mật hơn).
      */
     @Operation(summary = "Tải xuống file qua Link",
-               description = "Trả presigned URL để tải file. Chỉ áp dụng cho links có permission=DOWNLOAD.")
+               description = "Trả nội dung file để tải về. Chỉ áp dụng cho links có permission=DOWNLOAD.")
     @GetMapping("/{token}/download")
     public ResponseEntity<?> downloadFileByToken(
             @Parameter(description = "Mã token của link chia sẻ") @PathVariable String token,
-            @Parameter(description = "Mật khẩu (nếu có yêu cầu)") @RequestParam(required = false) String password,
-            @Parameter(description = "Yêu cầu inline (xem trực tiếp)") @RequestParam(required = false, defaultValue = "false") boolean inline) {
+            @Parameter(description = "Mật khẩu (nếu có yêu cầu)") @RequestParam(required = false) String password) {
 
         try {
             ShareLink link = shareLinkService.validateLink(token, password);
@@ -147,20 +154,20 @@ public class PublicShareController {
                 return ResponseEntity.notFound().build();
             }
 
-            String presignedUrl = shareLinkService.getPresignedUrlForShareLink(link, inline);
-
             // Access log
             accessLogService.logFileAccess(
                     file.getId(), file.getName(), "anonymous",
                     AccessLog.AccessType.DOWNLOAD, token,
                     (String) null, (String) null);
 
-            return ResponseEntity.ok(StandardResponse.success("Download URL", java.util.Map.of(
-                    "url", presignedUrl,
-                    "fileName", file.getName(),
-                    "fileType", file.getType(),
-                    "fileSize", file.getSize()
-            )));
+            // Proxy file từ B2 và trả về trực tiếp
+            Resource resource = b2StorageService.downloadFile(file.getB2FileName(), file.getName());
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
+                    .contentType(MediaType.parseMediaType(file.getType()))
+                    .contentLength(file.getSize())
+                    .body(resource);
 
         } catch (ShareLinkViewOnlyException e) {
             return ResponseEntity.status(403)

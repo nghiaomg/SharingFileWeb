@@ -23,12 +23,11 @@ const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
 
 interface PublicFileResponse {
-  id: string;
-  name: string;
-  type: string;
-  size: number;
+  fileName: string;
+  fileType: string;
+  fileSize: number;
   createdAt: string;
-  accessMode: string; // permission: VIEW, DOWNLOAD
+  permission: string; // permission: VIEW, DOWNLOAD
 }
 
 const getFormatSize = (bytes: number) => {
@@ -101,7 +100,7 @@ export default function SharedTokenPage() {
   const [showFeatureDevDialog, setShowFeatureDevDialog] = useState(false);
 
   const closePreview = () => {
-    if (previewUrl && fileData?.type !== "folder") {
+    if (previewUrl && fileData?.fileType !== "folder") {
       window.URL.revokeObjectURL(previewUrl);
     }
     setIsPreviewOpen(false);
@@ -115,14 +114,15 @@ export default function SharedTokenPage() {
 
     const query = password ? `?password=${encodeURIComponent(password)}` : "";
     let type: "pdf" | "xlsx" | "folder" | "unknown" = "unknown";
-    if (fileData.type === "folder") type = "folder";
-    else if (fileData.type === "application/pdf") type = "pdf";
-    else if (fileData.type?.includes("spreadsheetml")) type = "xlsx";
+    if (fileData.fileType === "folder") type = "folder";
+    else if (fileData.fileType === "application/pdf") type = "pdf";
+    else if (fileData.fileType?.includes("spreadsheetml")) type = "xlsx";
 
     try {
       if (type === "folder") {
         const res = await fetch(
           `${API_BASE_URL}/public/share/${token}/folder${query}`,
+          { cache: "no-store" }
         );
         const data = await res.json();
         if (res.ok) {
@@ -132,7 +132,7 @@ export default function SharedTokenPage() {
         const urlParams = new URLSearchParams(query);
         urlParams.set("inline", "true");
         const downloadUrl = `${API_BASE_URL}/public/share/${token}/download?${urlParams.toString()}`;
-        const res = await fetch(downloadUrl);
+        const res = await fetch(downloadUrl, { cache: "no-store" });
         if (res.ok) {
           const data = await res.json();
           if (data?.data?.url) {
@@ -153,7 +153,7 @@ export default function SharedTokenPage() {
       setError(null);
 
       const query = pwd ? `?password=${encodeURIComponent(pwd)}` : "";
-      const res = await fetch(`${API_BASE_URL}/public/share/${token}${query}`);
+      const res = await fetch(`${API_BASE_URL}/public/share/${token}${query}`, { cache: "no-store" });
       const data = await res.json();
 
       if (!res.ok) {
@@ -198,6 +198,7 @@ export default function SharedTokenPage() {
       const query = password ? `?password=${encodeURIComponent(password)}` : "";
       const res = await fetch(
         `${API_BASE_URL}/public/share/${token}/download${query}`,
+        { cache: "no-store" }
       );
 
       if (!res.ok) {
@@ -208,13 +209,21 @@ export default function SharedTokenPage() {
 
       const resJSON = await res.json();
       if (resJSON?.data?.url) {
+        // Fetch file as Blob to force a reliable local download and evade cross-origin inline viewers
+        const fileRes = await fetch(resJSON.data.url);
+        if (!fileRes.ok) throw new Error("Downloading file failed.");
+        const blob = await fileRes.blob();
+        const objectUrl = window.URL.createObjectURL(blob);
+
         const link = document.createElement("a");
-        link.href = resJSON.data.url;
-        link.target = "_blank"; // Support cross-origin download trigger
-        link.setAttribute("download", fileData.name);
+        link.href = objectUrl;
+        link.setAttribute("download", fileData.fileName || "unknown_file");
         document.body.appendChild(link);
         link.click();
         link.remove();
+
+        // Free up memory immediately after download starts
+        setTimeout(() => window.URL.revokeObjectURL(objectUrl), 1000);
       } else {
         alert("Không lấy được đường dẫn URL");
       }
@@ -296,8 +305,8 @@ export default function SharedTokenPage() {
   }
 
   // ─── File View ────────────────────────────────────────────
-  const fileMeta = determineFileType(fileData.type);
-  const canDownload = fileData.accessMode === "DOWNLOAD";
+  const fileMeta = determineFileType(fileData.fileType);
+  const canDownload = fileData.permission === "DOWNLOAD";
   const formattedDate = new Date(fileData.createdAt).toLocaleDateString(
     "vi-VN",
     {
@@ -310,9 +319,9 @@ export default function SharedTokenPage() {
   );
 
   const canPreview =
-    fileData.type === "folder" ||
-    fileData.type === "application/pdf" ||
-    fileData.type?.includes("spreadsheetml");
+    fileData.fileType === "folder" ||
+    fileData.fileType === "application/pdf" ||
+    fileData.fileType?.includes("spreadsheetml");
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
@@ -326,15 +335,15 @@ export default function SharedTokenPage() {
 
           <h2
             className="text-xl font-bold text-foreground mb-2 truncate w-full"
-            title={fileData.name}
+            title={fileData.fileName}
           >
-            {fileData.name}
+            {fileData.fileName}
           </h2>
 
           <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-muted-foreground font-medium mb-8">
             <span>{fileMeta.type}</span>
             <span className="w-1 h-1 rounded-full bg-gray-300" />
-            <span>{getFormatSize(fileData.size)}</span>
+            <span>{getFormatSize(fileData.fileSize)}</span>
           </div>
 
           <div className="w-full bg-muted/30 rounded-2xl p-5 mb-8 text-left border border-border/50 space-y-3">
@@ -372,7 +381,7 @@ export default function SharedTokenPage() {
                 Theo dõi Xem trước
               </button>
             )}
-            {canDownload && fileData.type !== "folder" ? (
+            {canDownload && fileData.fileType !== "folder" ? (
               <button
                 onClick={handleDownload}
                 className="w-full group flex items-center justify-center gap-2 px-6 py-3.5 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all"
@@ -404,13 +413,13 @@ export default function SharedTokenPage() {
         <PreviewModal
           isOpen={isPreviewOpen}
           onClose={closePreview}
-          itemName={fileData.name}
+          itemName={fileData.fileName}
           itemType={
-            fileData.type === "folder"
+            fileData.fileType === "folder"
               ? "folder"
-              : fileData.type === "application/pdf"
+              : fileData.fileType === "application/pdf"
                 ? "pdf"
-                : fileData.type?.includes("spreadsheetml")
+                : fileData.fileType?.includes("spreadsheetml")
                   ? "xlsx"
                   : "unknown"
           }

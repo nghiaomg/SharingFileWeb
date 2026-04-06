@@ -1,14 +1,19 @@
 "use client";
 
-import { Github, Dribbble } from "lucide-react";
+import { useState } from "react";
+import { Github, Dribbble, Eye, EyeOff, Loader2 } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import type { AxiosError } from "axios";
+import { useLogin } from "../mutations";
 
 export function LoginForm() {
-  const router = useRouter();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const { mutate: login, isPending } = useLogin();
 
-  const handleGithubLogin = () => {
+  const handleGithubLogin = (): void => {
     const githubClientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
     if (!githubClientId) {
       toast.error("Tính năng này đang bảo trì do thiếu cấu hình.");
@@ -22,7 +27,7 @@ export function LoginForm() {
     window.location.href = `https://github.com/login/oauth/authorize?client_id=${githubClientId}&redirect_uri=${redirectUri}&scope=user:email`;
   };
 
-  const handleDribbbleLogin = () => {
+  const handleDribbbleLogin = (): void => {
     const dribbbleClientId = process.env.NEXT_PUBLIC_DRIBBBLE_CLIENT_ID;
     if (!dribbbleClientId) {
       toast.error("Tính năng này đang bảo trì do thiếu cấu hình.");
@@ -36,7 +41,7 @@ export function LoginForm() {
     window.location.href = `https://dribbble.com/oauth/authorize?client_id=${dribbbleClientId}&redirect_uri=${redirectUri}&scope=public`;
   };
 
-  const handleZaloLogin = () => {
+  const handleZaloLogin = (): void => {
     const zaloAppId = process.env.NEXT_PUBLIC_ZALO_APP_ID;
     if (!zaloAppId) {
       toast.error("Tính năng này đang bảo trì do thiếu cấu hình.");
@@ -54,7 +59,7 @@ export function LoginForm() {
     window.location.href = `https://oauth.zaloapp.com/v4/permission?app_id=${zaloAppId}&redirect_uri=${redirectUri}&state=${state}`;
   };
 
-  const handleGoogleLogin = () => {
+  const handleGoogleLogin = (): void => {
     const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
     if (!googleClientId) {
       toast.error("Tính năng này đang bảo trì do thiếu cấu hình.");
@@ -68,11 +73,78 @@ export function LoginForm() {
     window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent("email profile")}`;
   };
 
+  const handleCredentialsLogin = (e: React.FormEvent): void => {
+    e.preventDefault();
+    if (!username || !password) {
+      toast.error("Vui lòng nhập đầy đủ tài khoản và mật khẩu");
+      return;
+    }
+    login(
+      { username, password },
+      {
+        onError: (error: unknown) => {
+          const err = error as AxiosError<{ message?: string }>;
+          toast.error(err.response?.data?.message || "Đăng nhập thất bại");
+        },
+      }
+    );
+  };
+
   return (
     <div className="space-y-6">
-      <p className="text-center text-sm text-muted-foreground">
-        Đăng nhập bằng tài khoản mạng xã hội
-      </p>
+      <form onSubmit={handleCredentialsLogin} className="space-y-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground">Tài khoản</label>
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-foreground"
+            placeholder="Nhập tên đăng nhập"
+            disabled={isPending}
+          />
+        </div>
+        <div className="space-y-2 relative">
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium text-foreground">Mật khẩu</label>
+            <a href="#" className="text-sm text-primary hover:underline font-medium">Quên mật khẩu?</a>
+          </div>
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all pr-12 text-foreground"
+              placeholder="Nhập mật khẩu"
+              disabled={isPending}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              disabled={isPending}
+            >
+              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            </button>
+          </div>
+        </div>
+        <button
+          type="submit"
+          className="w-full py-3.5 bg-primary text-primary-foreground font-bold rounded-xl transition-colors hover:bg-primary/90 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+          disabled={isPending}
+        >
+          {isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : "Đăng nhập"}
+        </button>
+      </form>
+
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t border-border" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background px-2 text-muted-foreground font-medium">Hoặc đăng nhập bằng</span>
+        </div>
+      </div>
 
       <div className="flex flex-col gap-3 pb-8">
         <Dialog.Root>
@@ -81,7 +153,7 @@ export function LoginForm() {
               type="button"
               className="w-full py-3.5 bg-secondary text-foreground font-bold rounded-xl transition-colors hover:bg-secondary/80 cursor-pointer flex items-center justify-center gap-2 border border-border hover:border-border/80"
             >
-              Đăng nhập bằng Social
+              Tài khoản mạng xã hội (Social)
             </button>
           </Dialog.Trigger>
           <Dialog.Portal>

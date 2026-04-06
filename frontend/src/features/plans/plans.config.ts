@@ -31,8 +31,8 @@ export const PLANS: Plan[] = [
   {
     id: "MONTHLY",
     name: "FileFlow Pro",
-    price: 99000,
-    priceDisplay: "99.000đ",
+    price: 9000,
+    priceDisplay: "9.000đ",
     storage: "2.0 TB",
     storageBytes: 2 * 1024 * 1024 * 1024 * 1024,
     recommended: true,

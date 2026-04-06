@@ -107,6 +107,7 @@ export default function SharedFilePage() {
       const query = pwd ? `?password=${encodeURIComponent(pwd)}` : "";
       const res = await fetch(
         `${API_BASE_URL}/public/share/${token}${query}`,
+        { cache: "no-store" }
       );
       const data = await res.json();
 
@@ -155,6 +156,7 @@ export default function SharedFilePage() {
         : "";
       const res = await fetch(
         `${API_BASE_URL}/public/share/${token}/download${query}`,
+        { cache: "no-store" }
       );
 
       if (!res.ok) {
@@ -168,13 +170,21 @@ export default function SharedFilePage() {
       const payload: DownloadPayload | undefined = resJSON?.data;
 
       if (payload?.url) {
+        // Fetch file as Blob to force a reliable local download and evade cross-origin inline viewers
+        const fileRes = await fetch(payload.url);
+        if (!fileRes.ok) throw new Error("Downloading file failed.");
+        const blob = await fileRes.blob();
+        const objectUrl = window.URL.createObjectURL(blob);
+
         const link = document.createElement("a");
-        link.href = payload.url;
-        link.target = "_blank";
-        link.setAttribute("download", payload.fileName || "file");
+        link.href = objectUrl;
+        link.setAttribute("download", payload.fileName || "unknown_file");
         document.body.appendChild(link);
         link.click();
         link.remove();
+
+        // Free up memory
+        setTimeout(() => window.URL.revokeObjectURL(objectUrl), 1000);
       } else {
         alert("Không lấy được đường dẫn URL");
       }
@@ -191,6 +201,7 @@ export default function SharedFilePage() {
         : "";
       const res = await fetch(
         `${API_BASE_URL}/public/share/${token}/preview${query}`,
+        { cache: "no-store" }
       );
       if (res.ok) {
         const data = await res.json();

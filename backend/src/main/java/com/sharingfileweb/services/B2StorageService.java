@@ -102,27 +102,28 @@ public class B2StorageService {
                     ? (int) expiresIn.toSeconds()
                     : b2Config.getDownloadUrlExpirationSeconds();
 
-            // Lấy download authorization token
-            String authToken = b2Client.getDownloadAuthorization(
-                    B2GetDownloadAuthorizationRequest.builder(
-                            b2Config.getBucketId(),
-                            b2FileName,
-                            expirationSeconds
-                    ).build()
-            ).getAuthorizationToken();
+            // Lấy base URL
+            String baseUrl = b2Client.getDownloadByNameUrl(b2Config.getBucketName(), b2FileName);
 
-            // Xây dựng URL download
-            String encodedToken = java.net.URLEncoder.encode(authToken, java.nio.charset.StandardCharsets.UTF_8);
-            String downloadUrl = b2Client.getDownloadByNameUrl(b2Config.getBucketName(), b2FileName);
+            // Lấy auth token
+            B2GetDownloadAuthorizationRequest authRequest = B2GetDownloadAuthorizationRequest.builder(
+                    b2Config.getBucketId(),
+                    b2FileName,
+                    expirationSeconds
+            ).build();
+            String authToken = b2Client.getDownloadAuthorization(authRequest).getAuthorizationToken();
 
+            // Build URL với auth
+            StringBuilder url = new StringBuilder(baseUrl);
+            url.append("?Authorization=").append(java.net.URLEncoder.encode(authToken, java.nio.charset.StandardCharsets.UTF_8));
+
+            // Thêm Content-Disposition nếu là attachment
             if (!inline && originalFileName != null && !originalFileName.isEmpty()) {
-                String encodedFileName = java.net.URLEncoder.encode(originalFileName, java.nio.charset.StandardCharsets.UTF_8).replace("+", "%20");
-                String contentDisposition = "attachment; filename=\"" + encodedFileName + "\"";
-                String encodedDisposition = java.net.URLEncoder.encode(contentDisposition, java.nio.charset.StandardCharsets.UTF_8);
-                return downloadUrl + "?Authorization=" + encodedToken + "&b2ContentDisposition=" + encodedDisposition;
+                String disposition = "attachment; filename=\"" + originalFileName + "\"";
+                url.append("&b2ContentDisposition=").append(java.net.URLEncoder.encode(disposition, java.nio.charset.StandardCharsets.UTF_8));
             }
 
-            return downloadUrl + "?Authorization=" + encodedToken;
+            return url.toString();
 
         } catch (B2Exception e) {
             System.err.println("[B2] Failed to generate download URL for: " + b2FileName + " — " + e.getMessage());
@@ -177,6 +178,47 @@ public class B2StorageService {
             return true;
         } catch (B2Exception e) {
             return false;
+        }
+    }
+
+    /**
+     * Download file content từ B2.
+     *
+     * @param b2FileName Tên file trên B2 (path in bucket)
+     * @param originalFileName Tên file gốc (chỉ để log/trace)
+     * @return Resource chứa nội dung file
+     */
+    public org.springframework.core.io.Resource downloadFile(String b2FileName, String originalFileName) {
+        try {
+            // Tạo presigned URL ngắn hạn (60 giây) để download
+            String presignedUrl = b2Client.getDownloadByNameUrl(b2Config.getBucketName(), b2FileName);
+
+            // Thêm auth token nếu bucket là private
+            B2GetDownloadAuthorizationRequest authRequest = B2GetDownloadAuthorizationRequest.builder(
+                    b2Config.getBucketId(),
+                    b2FileName,
+                    60
+            ).build();
+            String authToken = b2Client.getDownloadAuthorization(authRequest).getAuthorizationToken();
+
+            // Build URL với auth
+            String downloadUrl = presignedUrl + "?Authorization=" + java.net.URLEncoder.encode(authToken, java.nio.charset.StandardCharsets.UTF_8);
+
+            // Download nội dung
+            java.net.URL url = new java.net.URL(downloadUrl);
+            byte[] content = new byte[0];
+            try (java.io.InputStream in = url.openStream()) {
+                content = in.readAllBytes();
+            }
+
+            return new org.springframework.core.io.ByteArrayResource(content);
+
+        } catch (B2Exception e) {
+            System.err.println("[B2] Download failed for: " + b2FileName + " — " + e.getMessage());
+            throw new RuntimeException("Không thể tải file. Vui lòng thử lại.", e);
+        } catch (java.io.IOException e) {
+            System.err.println("[B2] Network error downloading: " + b2FileName + " — " + e.getMessage());
+            throw new RuntimeException("Lỗi mạng khi tải file. Vui lòng thử lại.", e);
         }
     }
 

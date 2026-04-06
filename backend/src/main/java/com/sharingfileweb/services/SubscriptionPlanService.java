@@ -139,7 +139,7 @@ public class SubscriptionPlanService {
 
             createDefaultPlan("PRO", "Gói PRO",
                     "Nâng cao - 2TB dung lượng, upload file lớn",
-                    2L * 1024 * 1024 * 1024 * 1024, Long.MAX_VALUE, 99000, 30, 1);
+                    2L * 1024 * 1024 * 1024 * 1024, Long.MAX_VALUE, 9000, 30, 1);
 
             createDefaultPlan("PREMIUM", "Gói PREMIUM",
                     "Không giới hạn dung lượng và kích thước file",

@@ -13,6 +13,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.core.Ordered;
+import jakarta.servlet.Filter;
 
 import com.sharingfileweb.security.jwt.AuthEntryPointJwt;
 import com.sharingfileweb.security.jwt.AuthTokenFilter;
@@ -51,8 +54,41 @@ public class WebSecurityConfig {
   }
 
   @Bean
+  public FilterRegistrationBean<Filter> customCorsFilter() {
+      Filter filter = new Filter() {
+          @Override
+          public void doFilter(jakarta.servlet.ServletRequest req, jakarta.servlet.ServletResponse res, jakarta.servlet.FilterChain chain) throws java.io.IOException, jakarta.servlet.ServletException {
+              jakarta.servlet.http.HttpServletRequest request = (jakarta.servlet.http.HttpServletRequest) req;
+              jakarta.servlet.http.HttpServletResponse response = (jakarta.servlet.http.HttpServletResponse) res;
+              
+              String origin = request.getHeader("Origin");
+              if (origin != null) {
+                  response.setHeader("Access-Control-Allow-Origin", origin);
+              } else {
+                  response.setHeader("Access-Control-Allow-Origin", "*");
+              }
+              response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+              response.setHeader("Access-Control-Allow-Headers", "*");
+              response.setHeader("Access-Control-Allow-Credentials", "true");
+              response.setHeader("Access-Control-Max-Age", "3600");
+              response.setHeader("Access-Control-Allow-Private-Network", "true");
+              
+              if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+                  response.setStatus(jakarta.servlet.http.HttpServletResponse.SC_OK);
+              } else {
+                  chain.doFilter(req, res);
+              }
+          }
+      };
+      FilterRegistrationBean<Filter> bean = new FilterRegistrationBean<>(filter);
+      bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+      return bean;
+  }
+
+  @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    http.csrf(csrf -> csrf.disable())
+    http.cors(cors -> cors.disable())
+        .csrf(csrf -> csrf.disable())
         .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> 

@@ -31,7 +31,7 @@ public class PaymentService {
 
     // Mock pricing cho gói dịch vụ
     private long getAmountByPlan(String planName) {
-        if ("PRO".equalsIgnoreCase(planName)) return 99000;
+        if ("PRO".equalsIgnoreCase(planName)) return 9000;
         return 0; // Gói không hợp lệ
     }
 

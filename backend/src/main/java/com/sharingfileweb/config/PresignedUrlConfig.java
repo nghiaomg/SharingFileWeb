@@ -17,14 +17,14 @@ import java.time.Duration;
 @ConfigurationProperties(prefix = "storage.presigned")
 public class PresignedUrlConfig {
 
-    /** Inline/preview URLs — 1 minute expiration for security. */
-    private Duration preview = Duration.ofMinutes(1);
+    /** Inline/preview URLs — 12 hours expiration for security. */
+    private Duration preview = Duration.ofHours(12);
 
-    /** Direct download URLs — 1 minute expiration for security. */
-    private Duration download = Duration.ofMinutes(1);
+    /** Direct download URLs — 12 hours expiration for security. */
+    private Duration download = Duration.ofHours(12);
 
     /** Default expiry for share links when no explicit expiry is set. */
-    private Duration shareLinkDefault = Duration.ofMinutes(1);
+    private Duration shareLinkDefault = Duration.ofHours(12);
 
     public Duration getPreview() { return preview; }
     public void setPreview(Duration preview) { this.preview = preview; }

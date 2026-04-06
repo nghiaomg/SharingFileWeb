@@ -20,15 +20,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Value("${cors.allowed-origins:}")
     private String corsAllowedOrigins;
 
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**")
-                .allowedOriginPatterns("*")
-                .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-                .allowedHeaders("*")
-                .allowCredentials(true)
-                .maxAge(3600);
-    }
+    // CORS configuration is now handled exclusively by Spring Security (WebSecurityConfig.java)
+    // to avoid duplicate Headers and properly secure all routes including public.
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
