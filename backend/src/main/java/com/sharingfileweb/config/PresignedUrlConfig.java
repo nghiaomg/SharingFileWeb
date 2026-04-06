@@ -7,23 +7,24 @@ import java.time.Duration;
 
 /**
  * Centralized configuration for presigned URL expiration durations.
+ * All presigned URLs now expire after 1 minute for security.
  * Values are configurable via application.properties:
- *   storage.presigned.preview=5m
- *   storage.presigned.download=15m
- *   storage.presigned.share-link-default=1h
+ *   storage.presigned.preview=1m
+ *   storage.presigned.download=1m
+ *   storage.presigned.share-link-default=1m
  */
 @Configuration
 @ConfigurationProperties(prefix = "storage.presigned")
 public class PresignedUrlConfig {
 
-    /** Inline/preview URLs — shorter window is acceptable for embedded content. */
-    private Duration preview = Duration.ofMinutes(5);
+    /** Inline/preview URLs — 1 minute expiration for security. */
+    private Duration preview = Duration.ofMinutes(1);
 
-    /** Direct download URLs — client should start download promptly. */
-    private Duration download = Duration.ofMinutes(15);
+    /** Direct download URLs — 1 minute expiration for security. */
+    private Duration download = Duration.ofMinutes(1);
 
     /** Default expiry for share links when no explicit expiry is set. */
-    private Duration shareLinkDefault = Duration.ofHours(1);
+    private Duration shareLinkDefault = Duration.ofMinutes(1);
 
     public Duration getPreview() { return preview; }
     public void setPreview(Duration preview) { this.preview = preview; }

@@ -15,10 +15,10 @@ export function LoginForm() {
       return;
     }
     const redirectUri =
-      typeof window !== "undefined"
+      (process.env.NEXT_PUBLIC_GITHUB_CALLBACK_URL || "").trim() ||
+      (typeof window !== "undefined"
         ? window.location.origin + "/auth/github/callback"
-        : process.env.NEXT_PUBLIC_GITHUB_CALLBACK_URL ||
-          "https://sharingfile.nghiaomg.xyz/auth/github/callback";
+        : "https://sharingfile.nghiaomg.xyz/auth/github/callback");
     window.location.href = `https://github.com/login/oauth/authorize?client_id=${githubClientId}&redirect_uri=${redirectUri}&scope=user:email`;
   };
 
@@ -29,10 +29,10 @@ export function LoginForm() {
       return;
     }
     const redirectUri =
-      typeof window !== "undefined"
+      (process.env.NEXT_PUBLIC_DRIBBBLE_CALLBACK_URL || "").trim() ||
+      (typeof window !== "undefined"
         ? window.location.origin + "/auth/dribbble/callback"
-        : process.env.NEXT_PUBLIC_DRIBBBLE_CALLBACK_URL ||
-          "https://sharingfile.nghiaomg.xyz/auth/dribbble/callback";
+        : "https://sharingfile.nghiaomg.xyz/auth/dribbble/callback");
     window.location.href = `https://dribbble.com/oauth/authorize?client_id=${dribbbleClientId}&redirect_uri=${redirectUri}&scope=public`;
   };
 
@@ -43,10 +43,10 @@ export function LoginForm() {
       return;
     }
     const redirectUri =
-      typeof window !== "undefined"
+      (process.env.NEXT_PUBLIC_ZALO_CALLBACK_URL || "").trim() ||
+      (typeof window !== "undefined"
         ? window.location.origin + "/auth/zalo/callback"
-        : process.env.NEXT_PUBLIC_ZALO_CALLBACK_URL ||
-          "https://sharingfile.nghiaomg.xyz/auth/zalo/callback";
+        : "https://sharingfile.nghiaomg.xyz/auth/zalo/callback");
     const state =
       typeof crypto !== "undefined" && crypto.randomUUID
         ? crypto.randomUUID()
@@ -61,11 +61,11 @@ export function LoginForm() {
       return;
     }
     const redirectUri =
-      typeof window !== "undefined"
+      (process.env.NEXT_PUBLIC_GOOGLE_CALLBACK_URL || "").trim() ||
+      (typeof window !== "undefined"
         ? window.location.origin + "/auth/google/callback"
-        : process.env.NEXT_PUBLIC_GOOGLE_CALLBACK_URL ||
-          "https://sharingfile.nghiaomg.xyz/auth/google/callback";
-    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${redirectUri}&response_type=code&scope=email profile`;
+        : "https://sharingfile.nghiaomg.xyz/auth/google/callback");
+    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent("email profile")}`;
   };
 
   return (

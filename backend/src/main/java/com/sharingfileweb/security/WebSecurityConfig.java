@@ -71,8 +71,7 @@ public class WebSecurityConfig {
 
     http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     
-    // Enable CORS cho Frontend
-    http.cors(org.springframework.security.config.Customizer.withDefaults());
+    // CORS handled by WebMvcConfig - no need for Spring Security default
 
     return http.build();
   }

@@ -16,9 +16,11 @@ function GoogleCallbackComponent() {
     useEffect(() => {
         if (code && !processedCodes.has(code)) {
             processedCodes.add(code);
-            const redirectUri = typeof window !== "undefined"
-                ? window.location.origin + window.location.pathname
-                : process.env.NEXT_PUBLIC_GOOGLE_CALLBACK_URL || "https://sharingfile.nghiaomg.xyz/auth/google/callback";
+            const redirectUri =
+                (process.env.NEXT_PUBLIC_GOOGLE_CALLBACK_URL || "").trim() ||
+                (typeof window !== "undefined"
+                    ? window.location.origin + window.location.pathname
+                    : "https://sharingfile.nghiaomg.xyz/auth/google/callback");
             loginWithGoogle(code, redirectUri)
                 .then(() => {
                     toast.success("Đăng nhập Google thành công!");

@@ -1,8 +1,9 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+const API_BASE_URL = typeof window !== "undefined"
+  ? "/api"
+  : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api");
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -11,7 +12,6 @@ const apiClient = axios.create({
   },
 });
 
-// Interceptor for requests: attach token from cookies
 apiClient.interceptors.request.use(
   (config) => {
     const token = Cookies.get("access_token");
@@ -25,11 +25,8 @@ apiClient.interceptors.request.use(
   },
 );
 
-// Interceptor for responses: handle global errors like 401 Unauthorized
 apiClient.interceptors.response.use(
   (response) => {
-    // Nếu API trả về cấu trúc StandardResponse (có thuộc tính success và msg),
-    // trích xuất phần 'data' để tương thích ngược với format cũ.
     if (
       response.data &&
       typeof response.data === "object" &&
