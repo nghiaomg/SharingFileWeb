@@ -6,8 +6,7 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get("access_token")?.value;
 
   const isAuthPage =
-    request.nextUrl.pathname.startsWith("/login") ||
-    request.nextUrl.pathname.startsWith("/signup");
+    request.nextUrl.pathname.startsWith("/login");
   const isDashboardPage = request.nextUrl.pathname.startsWith("/dashboard");
 
   // Nếu người dùng chưa đăng nhập, muốn vào dashboard -> Redirect sang login
@@ -29,5 +28,5 @@ export function middleware(request: NextRequest) {
 
 // Cấu hình matcher cho Middleware
 export const config = {
-  matcher: ["/dashboard/:path*", "/login", "/signup"],
+  matcher: ["/dashboard/:path*", "/login"],
 };

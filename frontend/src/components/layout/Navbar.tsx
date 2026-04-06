@@ -142,7 +142,7 @@ export function Navbar() {
             Đăng nhập
           </Link>
           <Link
-            href="/signup"
+            href="/login"
             className="whitespace-nowrap bg-primary text-primary-foreground text-sm font-medium px-6 py-2 rounded-full border border-primary/40 hover:bg-primary/90 hover:border-primary transition-all"
           >
             Bắt đầu ngay
@@ -192,7 +192,7 @@ export function Navbar() {
               Đăng nhập
             </Link>
             <Link
-              href="/signup"
+              href="/login"
               className="w-full text-center py-2 rounded-lg bg-primary text-primary-foreground"
             >
               Đăng ký

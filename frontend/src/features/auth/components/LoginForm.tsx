@@ -1,6 +1,6 @@
 "use client";
 
-import { Github, Loader } from "lucide-react";
+import { Github, Dribbble } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
