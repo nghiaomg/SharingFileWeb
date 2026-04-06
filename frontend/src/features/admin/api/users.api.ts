@@ -1,5 +1,9 @@
 import apiClient from "@/lib/api-client";
-import { AdminUser, UpdateAdminUser, AdminPaginatedUsersResponse } from "../types/users.types";
+import {
+  AdminUser,
+  UpdateAdminUser,
+  AdminPaginatedUsersResponse,
+} from "../types/users.types";
 
 export const adminUsersKeys = {
   all: ["admin-users"] as const,

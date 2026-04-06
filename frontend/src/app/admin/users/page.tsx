@@ -2,7 +2,6 @@
 
 import { UsersList } from "@/features/admin/components/users/UsersList";
 
-
 export default function AdminUsersPage() {
   return (
     <div className="flex flex-col gap-6">
@@ -15,7 +14,6 @@ export default function AdminUsersPage() {
             Danh sách tất cả tài khoản hoạt động trên hệ thống
           </p>
         </div>
-
       </div>
 
       <UsersList />

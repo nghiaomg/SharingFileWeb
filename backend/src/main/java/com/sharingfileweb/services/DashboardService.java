@@ -1,10 +1,16 @@
 package com.sharingfileweb.services;
 
 import com.sharingfileweb.models.StorageFile;
+import com.sharingfileweb.models.Folder;
+import com.sharingfileweb.models.User;
 import com.sharingfileweb.payload.response.DashboardOverviewDTO;
 import com.sharingfileweb.payload.response.RecentFileDTO;
 import com.sharingfileweb.payload.response.StorageCategoryDTO;
+import com.sharingfileweb.payload.response.PieChartDataDTO;
+import com.sharingfileweb.payload.response.ActionLogDTO;
 import com.sharingfileweb.repository.FileRepository;
+import com.sharingfileweb.repository.FolderRepository;
+import com.sharingfileweb.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +21,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -30,6 +37,12 @@ public class DashboardService {
 
     @Autowired
     private DailyMetricRepository dailyMetricRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private FolderRepository folderRepository;
 
     public List<StorageCategoryDTO> getDashboardCategories(String ownerId, boolean isAdmin) {
         // 1. Fetch all files to aggregate categories
@@ -107,6 +120,14 @@ public class DashboardService {
                 .filter(f -> f.getCreatedAt() != null && !f.getCreatedAt().isBefore(startInstant))
                 .collect(Collectors.groupingBy(f -> LocalDate.ofInstant(f.getCreatedAt(), ZoneId.systemDefault())));
 
+        // Fetch users registered since startDate (only for admin)
+        List<User> recentUsers = isAdmin ? userRepository.findAll().stream()
+                .filter(u -> u.getCreatedAt() != null && !u.getCreatedAt().isBefore(startInstant))
+                .collect(Collectors.toList()) : new ArrayList<>();
+
+        Map<LocalDate, List<User>> usersByDate = recentUsers.stream()
+                .collect(Collectors.groupingBy(u -> LocalDate.ofInstant(u.getCreatedAt(), ZoneId.systemDefault())));
+
         List<DashboardChartDTO> results = new ArrayList<>();
         
         for (int i = 0; i < days; i++) {
@@ -117,10 +138,61 @@ public class DashboardService {
             long uploadedFiles = filesOnDay.size();
             long uploadedSize = filesOnDay.stream().mapToLong(StorageFile::getSize).sum();
             
+            List<User> usersOnDay = usersByDate.getOrDefault(iterDate, new ArrayList<>());
+            long newUsers = usersOnDay.size();
+
             // Format to simple string
-            results.add(new DashboardChartDTO(iterDate.toString(), visits, uploadedFiles, uploadedSize));
+            results.add(new DashboardChartDTO(iterDate.toString(), visits, uploadedFiles, uploadedSize, newUsers));
         }
 
         return results;
+    }
+
+    public List<PieChartDataDTO> getLoginMethods() {
+        List<User> allUsers = userRepository.findAll();
+        Map<String, Long> counts = allUsers.stream()
+                .collect(Collectors.groupingBy(u -> u.getAuthProvider() != null ? u.getAuthProvider() : "LOCAL", Collectors.counting()));
+
+        List<PieChartDataDTO> data = new ArrayList<>();
+        String[] colors = {"#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#6366f1"}; // blue, red, emerald, amber, indigo
+        int i = 0;
+        for (Map.Entry<String, Long> entry : counts.entrySet()) {
+            data.add(new PieChartDataDTO(entry.getKey(), entry.getValue(), colors[i % colors.length]));
+            i++;
+        }
+        return data;
+    }
+
+    public List<ActionLogDTO> getRecentActions(boolean isAdmin) {
+        if (!isAdmin) return new ArrayList<>();
+
+        List<ActionLogDTO> actions = new ArrayList<>();
+        
+        // Latest files
+        List<StorageFile> files = fileRepository.findByIsDeletedFalseOrderByCreatedAtDesc(PageRequest.of(0, 5)).getContent();
+        for (StorageFile f : files) {
+            Instant time = f.getCreatedAt() != null ? f.getCreatedAt() : Instant.now();
+            actions.add(new ActionLogDTO(f.getId(), "FILE", "Đã tải lên tệp: " + f.getName(), "/admin/storage", time));
+        }
+
+        // Latest folders
+        List<Folder> folders = folderRepository.findByIsDeletedFalseOrderByCreatedAtDesc(PageRequest.of(0, 5)).getContent();
+        for (Folder f : folders) {
+            Instant time = f.getCreatedAt() != null ? f.getCreatedAt() : Instant.now();
+            actions.add(new ActionLogDTO(f.getId(), "FOLDER", "Đã tạo thư mục: " + f.getName(), "/admin/storage", time));
+        }
+
+        // Latest users
+        List<User> users = userRepository.findAll().stream()
+                .sorted(Comparator.comparing((User u) -> u.getCreatedAt() != null ? u.getCreatedAt() : Instant.MIN).reversed())
+                .limit(5)
+                .collect(Collectors.toList());
+        for (User u : users) {
+             Instant time = u.getCreatedAt() != null ? u.getCreatedAt() : Instant.now();
+             actions.add(new ActionLogDTO(u.getId(), "USER", "Đăng ký mới: " + u.getUsername(), "/admin/users", time));
+        }
+
+        actions.sort(Comparator.comparing((ActionLogDTO a) -> a.getCreatedAt()).reversed());
+        return actions.stream().limit(10).collect(Collectors.toList());
     }
 }

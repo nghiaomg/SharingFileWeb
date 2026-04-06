@@ -70,6 +70,9 @@ public class StorageFile {
 
   private java.util.Date deletedAt;
 
+  /** Đánh dấu tệp bị Admin chặn/thu hồi do vi phạm */
+  private boolean isBanned;
+
   public StorageFile() {
   }
 
@@ -89,6 +92,7 @@ public class StorageFile {
     this.isDeleted = false;
     this.version = 1L;
     this.contentHash = null;
+    this.isBanned = false;
   }
 
   // Constructor mới cho B2 storage
@@ -108,6 +112,7 @@ public class StorageFile {
     this.isDeleted = false;
     this.version = 1L;
     this.contentHash = null;
+    this.isBanned = false;
   }
 
   public String getId() {
@@ -254,5 +259,13 @@ public class StorageFile {
 
   public void setContentHash(String contentHash) {
     this.contentHash = contentHash;
+  }
+
+  public boolean isBanned() {
+    return isBanned;
+  }
+
+  public void setBanned(boolean banned) {
+    isBanned = banned;
   }
 }

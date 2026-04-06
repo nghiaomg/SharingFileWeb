@@ -7,6 +7,7 @@ export interface AdminShareLink {
   expiresAt: string | null;
   maxViews: number | null;
   viewCount: number;
+  isRevoked: boolean;
   createdAt: string;
 }
 

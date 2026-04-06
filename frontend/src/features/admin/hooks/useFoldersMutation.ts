@@ -11,3 +11,15 @@ export function useDeleteAdminFolder() {
     },
   });
 }
+
+export function useRevokeAdminFolder() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) =>
+      import("../api/folders.api").then((m) => m.adminRevokeFolder(id)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminFoldersKeys.lists() });
+    },
+  });
+}

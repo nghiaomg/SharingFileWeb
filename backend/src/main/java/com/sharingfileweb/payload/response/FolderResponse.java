@@ -8,13 +8,15 @@ public class FolderResponse {
   private String parentId;
   private Instant createdAt;
   private Instant updatedAt;
+  private boolean isBanned;
 
-  public FolderResponse(String id, String name, String parentId, Instant createdAt, Instant updatedAt) {
+  public FolderResponse(String id, String name, String parentId, Instant createdAt, Instant updatedAt, boolean isBanned) {
     this.id = id;
     this.name = name;
     this.parentId = parentId;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
+    this.isBanned = isBanned;
   }
 
   public String getId() {
@@ -55,5 +57,13 @@ public class FolderResponse {
 
   public void setUpdatedAt(Instant updatedAt) {
     this.updatedAt = updatedAt;
+  }
+
+  public boolean isBanned() {
+    return isBanned;
+  }
+
+  public void setBanned(boolean banned) {
+    isBanned = banned;
   }
 }

@@ -146,6 +146,7 @@ public class AuthService {
                         email,
                         encoder.encode(UUID.randomUUID().toString()) // random password
                 );
+                newUser.setAuthProvider("GOOGLE");
                 newUser.setSubscriptionPlan("BASIC");
                 newUser.setMaxStorage(5L * 1024 * 1024 * 1024);
                 newUser.setMaxFileSize(1024L * 1024 * 1024); // 1GB
@@ -494,6 +495,7 @@ public class AuthService {
                         finalEmail,
                         encoder.encode(UUID.randomUUID().toString()) // random password
                 );
+                newUser.setAuthProvider("ZALO");
                 newUser.setSubscriptionPlan("BASIC");
                 newUser.setMaxStorage(5L * 1024 * 1024 * 1024);
                 newUser.setMaxFileSize(1024L * 1024 * 1024);

@@ -61,4 +61,20 @@ public class DashboardController {
         
         return ResponseEntity.ok(StandardResponse.success("Fetched dashboard charts successfully", chartsData));
     }
+
+    @Operation(summary = "Biểu đồ phương thức đăng nhập", description = "Biểu đồ dạng Pie hiển thị tỷ lệ OAuth.")
+    @GetMapping("/login-methods")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getLoginMethods() {
+        return ResponseEntity.ok(StandardResponse.success("Fetched login methods successfully", dashboardService.getLoginMethods()));
+    }
+
+    @Operation(summary = "Nhật ký hành động gần đây", description = "Lịch sử thao tác tổng hợp in-memory.")
+    @GetMapping("/actions")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getRecentActions() {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        boolean isAdmin = userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        return ResponseEntity.ok(StandardResponse.success("Fetched recent actions successfully", dashboardService.getRecentActions(isAdmin)));
+    }
 }

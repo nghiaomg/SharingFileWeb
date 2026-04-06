@@ -42,7 +42,8 @@ public class FolderService {
                 folder.getName(),
                 folder.getParentId(),
                 folder.getCreatedAt(),
-                folder.getUpdatedAt()
+                folder.getUpdatedAt(),
+                folder.isBanned()
         );
     }
 
@@ -51,6 +52,7 @@ public class FolderService {
         List<Folder> folders = folderRepository.findByOwnerIdAndIsDeletedFalse(userId)
                 .stream()
                 .filter(f -> f.getParentId() == null || f.getParentId().isEmpty())
+                .filter(f -> !f.isBanned())
                 .collect(Collectors.toList());
         return folders.stream().map(this::mapToResponse).collect(Collectors.toList());
     }
@@ -58,8 +60,9 @@ public class FolderService {
     public FolderResponse getFolderById(String id) {
         String userId = getCurrentUserId();
         return folderRepository.findByIdAndOwnerIdAndIsDeletedFalse(id, userId)
+                .filter(f -> !f.isBanned())
                 .map(this::mapToResponse)
-                .orElseThrow(() -> new RuntimeException("Folder not found"));
+                .orElseThrow(() -> new RuntimeException("Folder not found or access denied"));
     }
 
     public List<FolderResponse> getFolderChildren(String id) {
@@ -68,7 +71,10 @@ public class FolderService {
             return getRootFolders();
         }
         List<Folder> folders = folderRepository.findByOwnerIdAndParentIdAndIsDeletedFalse(userId, id);
-        return folders.stream().map(this::mapToResponse).collect(Collectors.toList());
+        return folders.stream()
+                .filter(f -> !f.isBanned())
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
 
     public FolderResponse createFolder(CreateFolderRequest request) {
@@ -161,6 +167,12 @@ public class FolderService {
     public FolderResponse adminUpdateFolder(String id, UpdateFolderRequest request) {
         Folder folder = folderRepository.findById(id).orElseThrow(() -> new RuntimeException("Folder not found"));
         folder.setName(request.getName());
+        return mapToResponse(folderRepository.save(folder));
+    }
+
+    public FolderResponse adminRevokeFolder(String id) {
+        Folder folder = folderRepository.findById(id).orElseThrow(() -> new RuntimeException("Folder not found"));
+        folder.setBanned(!folder.isBanned()); // Toggle: Thu hồi / Bỏ thu hồi
         return mapToResponse(folderRepository.save(folder));
     }
 

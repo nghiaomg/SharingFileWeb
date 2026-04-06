@@ -13,7 +13,9 @@ export async function getAllNotifications(
   page: number = 0,
   size: number = 50,
 ): Promise<AdminPaginatedNotificationsResponse> {
-  const response = await apiClient.get(`/notifications/admin/all?page=${page}&size=${size}`);
+  const response = await apiClient.get(
+    `/notifications/admin/all?page=${page}&size=${size}`,
+  );
   return response.data as AdminPaginatedNotificationsResponse;
 }
 

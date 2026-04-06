@@ -4,6 +4,7 @@ export interface AdminStorageFile {
   size: number;
   type: string;
   isDeleted: boolean;
+  isBanned?: boolean;
   folderId?: string;
   ownerId: string;
   createdAt: string;

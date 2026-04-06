@@ -309,6 +309,18 @@ public class FileController {
         }
     }
 
+    @Operation(summary = "Thu hồi/Bỏ thu hồi tệp (Admin)", description = "Admin cấm hoặc bỏ cấm tệp do vi phạm.")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/admin/{id}/revoke")
+    public ResponseEntity<?> revokeFileByAdmin(@PathVariable String id) {
+        try {
+            FileResponse response = fileService.adminRevokeFile(id);
+            return ResponseEntity.ok(StandardResponse.success("Admin file revoked logic completed", response));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
+        }
+    }
+
     @Autowired
     private com.sharingfileweb.repository.FileRepository fileRepository;
 }

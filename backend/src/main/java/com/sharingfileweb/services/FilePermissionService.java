@@ -102,8 +102,12 @@ public class FilePermissionService {
     public StorageFile getAccessibleFile(String userId, String email,
                                           String fileId, String requiredPermission) {
         checkFileAccess(userId, email, fileId, requiredPermission);
-        return fileRepository.findById(fileId)
+        StorageFile file = fileRepository.findById(fileId)
                 .orElseThrow(() -> new FileAccessDeniedException("File not found"));
+        if (file.isBanned()) {
+            throw new FileAccessDeniedException("File này đang bị tạm khóa hoặc chặn do vi phạm.");
+        }
+        return file;
     }
 
     // ─── ShareLink Access Checks ────────────────────────────────────────────────

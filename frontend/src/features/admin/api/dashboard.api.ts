@@ -3,6 +3,8 @@ import {
   AdminOverview,
   DashboardChartDTO,
   StorageCategoryDTO,
+  PieChartDataDTO,
+  ActionLogDTO,
 } from "../types/dashboard.types";
 
 export const adminDashboardKeys = {
@@ -11,6 +13,8 @@ export const adminDashboardKeys = {
   categories: () => [...adminDashboardKeys.all, "categories"] as const,
   charts: (days: number) =>
     [...adminDashboardKeys.all, "charts", days] as const,
+  loginMethods: () => [...adminDashboardKeys.all, "login-methods"] as const,
+  recentActions: () => [...adminDashboardKeys.all, "recent-actions"] as const,
 };
 
 export async function getAdminOverview(): Promise<AdminOverview> {
@@ -40,4 +44,14 @@ export async function getAdminCharts(
 export async function getAdminCategories(): Promise<StorageCategoryDTO[]> {
   const response = await apiClient.get("/dashboard/categories");
   return response.data as StorageCategoryDTO[];
+}
+
+export async function getAdminLoginMethods(): Promise<PieChartDataDTO[]> {
+  const response = await apiClient.get("/dashboard/login-methods");
+  return response.data;
+}
+
+export async function getAdminRecentActions(): Promise<ActionLogDTO[]> {
+  const response = await apiClient.get("/dashboard/actions");
+  return response.data;
 }

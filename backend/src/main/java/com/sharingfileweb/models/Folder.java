@@ -24,6 +24,9 @@ public class Folder {
 
   private Instant deletedAt;
 
+  /** Đánh dấu thư mục bị Admin chặn/thu hồi do vi phạm */
+  private boolean isBanned;
+
   // ─── DEPRECATED SHARING FIELDS ──────────────────────────────────────────
   // Giữ lại cho backward compatibility — KHÔNG dùng trong logic phân quyền mới.
   // Dùng SharedAccess và ShareLink thay thế.
@@ -52,6 +55,7 @@ public class Folder {
     this.createdAt = Instant.now();
     this.updatedAt = Instant.now();
     this.isDeleted = false;
+    this.isBanned = false;
   }
 
   public String getId() {
@@ -136,7 +140,15 @@ public class Folder {
   /** @deprecated */
   @Deprecated
   public Instant getShareExpiresAt() { return shareExpiresAt; }
-  /** @deprecated */
-  @Deprecated
   public void setShareExpiresAt(Instant shareExpiresAt) { this.shareExpiresAt = shareExpiresAt; }
+
+  // ─── NEW GETTERS/SETTERS ─────────────────────────────────────────────
+  public boolean isBanned() {
+    return isBanned;
+  }
+
+  public void setBanned(boolean banned) {
+    this.isBanned = banned;
+    this.updatedAt = Instant.now();
+  }
 }

@@ -189,13 +189,16 @@ public class ShareController {
 
     @Operation(summary = "Thu hồi link chia sẻ (Quyền Admin)")
     @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/links/{id}")
+    @PutMapping("/links/{id}/revoke")
     public ResponseEntity<?> revokeShareLinkByAdmin(@PathVariable String id) {
-        if (!shareLinkRepository.existsById(id)) {
+        java.util.Optional<com.sharingfileweb.models.ShareLink> opt = shareLinkRepository.findById(id);
+        if (opt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        shareLinkRepository.deleteById(id);
-        return ResponseEntity.ok(StandardResponse.success("Share link revoked permanently", null));
+        com.sharingfileweb.models.ShareLink link = opt.get();
+        link.setRevoked(!link.isRevoked()); // Toggle status
+        shareLinkRepository.save(link);
+        return ResponseEntity.ok(StandardResponse.success("Share link revoked status toggled", link));
     }
 
     @Autowired

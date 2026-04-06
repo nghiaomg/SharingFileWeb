@@ -21,7 +21,11 @@ import { Button } from "@radix-ui/themes";
 
 export function FilesList() {
   const [page, setPage] = useState(0);
-  const { data: pageData, isLoading, isError } = useAdminFiles(undefined, page, 15);
+  const {
+    data: pageData,
+    isLoading,
+    isError,
+  } = useAdminFiles(undefined, page, 15);
   const { mutate: deleteFile, isPending: isDeleting } = useDeleteAdminFile();
 
   if (isLoading) {
@@ -71,7 +75,7 @@ export function FilesList() {
         {files.map((file) => (
           <div
             key={file.id}
-            className="bg-card rounded-xl border border-border p-4 shadow-sm space-y-3"
+            className="bg-card rounded-xl border border-border p-4 space-y-3"
           >
             <div className="flex items-start gap-3">
               <div className="mt-1">{getFileIcon(file.type)}</div>
@@ -120,7 +124,7 @@ export function FilesList() {
                   }
                 }}
                 disabled={isDeleting}
-                className="w-full py-2 flex justify-center items-center gap-1.5 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors font-medium text-xs shadow-sm disabled:opacity-50"
+                className="w-full py-2 flex justify-center items-center gap-1.5 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors font-medium text-xs disabled:opacity-50"
               >
                 <Trash2 className="w-3.5 h-3.5" /> Xóa tệp vĩnh viễn
               </button>
@@ -135,7 +139,7 @@ export function FilesList() {
       </div>
 
       {/* Desktop Table View (hidden on Mobile) */}
-      <div className="hidden md:block bg-card rounded-xl border border-border shadow-sm overflow-hidden animate-in fade-in zoom-in-95 duration-500">
+      <div className="hidden md:block bg-card rounded-xl border border-border overflow-hidden animate-in fade-in zoom-in-95 duration-500">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="text-xs text-muted-foreground uppercase bg-secondary/50">
@@ -198,12 +202,13 @@ export function FilesList() {
                           deleteFile(file.id, {
                             onSuccess: () =>
                               toast.success("Đã tiêu hủy tệp vĩnh viễn"),
-                            onError: () => toast.error("Không thể tiêu hủy tệp"),
+                            onError: () =>
+                              toast.error("Không thể tiêu hủy tệp"),
                           });
                         }
                       }}
                       disabled={isDeleting}
-                      className="px-3 py-1.5 flex items-center gap-1.5 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors shadow-sm text-xs font-semibold disabled:opacity-50"
+                      className="px-3 py-1.5 flex items-center gap-1.5 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors text-xs font-semibold disabled:opacity-50"
                       title="Xóa cứng (Tiêu hủy)"
                     >
                       <Trash2 className="w-3.5 h-3.5" /> <span>Xóa tệp</span>
@@ -228,7 +233,7 @@ export function FilesList() {
 
       {/* Pagination Controls */}
       {pageData && pageData.totalPages > 0 && (
-        <div className="p-4 border border-border rounded-xl flex items-center justify-between bg-card shadow-sm text-sm">
+        <div className="p-4 border border-border rounded-xl flex items-center justify-between bg-card text-sm">
           <span className="text-muted-foreground font-medium flex gap-1">
             Trang <b>{pageData.currentPage + 1}</b> /{" "}
             <b>{pageData.totalPages}</b>

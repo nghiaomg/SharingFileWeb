@@ -14,8 +14,9 @@ public class FileResponse {
   private String accessMode;
   private List<String> sharedEmails;
   private Instant shareExpiresAt;
+  private boolean isBanned;
 
-  public FileResponse(String id, String name, String type, long size, String folderId, Instant createdAt, boolean isPublic, String accessMode, List<String> sharedEmails, Instant shareExpiresAt) {
+  public FileResponse(String id, String name, String type, long size, String folderId, Instant createdAt, boolean isPublic, String accessMode, List<String> sharedEmails, Instant shareExpiresAt, boolean isBanned) {
     this.id = id;
     this.name = name;
     this.type = type;
@@ -26,6 +27,7 @@ public class FileResponse {
     this.accessMode = accessMode;
     this.sharedEmails = sharedEmails;
     this.shareExpiresAt = shareExpiresAt;
+    this.isBanned = isBanned;
   }
 
   public String getId() {
@@ -106,5 +108,13 @@ public class FileResponse {
 
   public void setShareExpiresAt(Instant shareExpiresAt) {
     this.shareExpiresAt = shareExpiresAt;
+  }
+
+  public boolean isBanned() {
+    return isBanned;
+  }
+
+  public void setBanned(boolean banned) {
+    isBanned = banned;
   }
 }

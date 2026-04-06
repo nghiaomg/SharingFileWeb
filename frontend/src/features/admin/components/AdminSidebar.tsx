@@ -7,6 +7,7 @@ import {
   Users,
   FolderOpen,
   File,
+  Database,
   CreditCard,
   Crown,
   Share2,
@@ -25,8 +26,7 @@ interface AdminSidebarProps {
 const navItems = [
   { href: "/admin", icon: LayoutDashboard, label: "Tổng quan" },
   { href: "/admin/users", icon: Users, label: "Người dùng" },
-  { href: "/admin/files", icon: File, label: "Tệp lưu trữ" },
-  { href: "/admin/folders", icon: FolderOpen, label: "Thư mục" },
+  { href: "/admin/storage", icon: Database, label: "Quản lý Storage" },
   { href: "/admin/subscriptions", icon: Crown, label: "Gói đăng ký" },
   { href: "/admin/orders", icon: CreditCard, label: "Thanh toán" },
   { href: "/admin/shares", icon: Share2, label: "Chia sẻ" },
@@ -47,10 +47,10 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
 
       <aside
         className={`
-                fixed lg:static inset-y-0 left-0 z-50 w-72 flex flex-col
-                transform transition-transform duration-300 ease-in-out lg:translate-x-0
-                ${isOpen ? "translate-x-0" : "-translate-x-full"}
-            `}
+ fixed lg:static inset-y-0 left-0 z-50 w-72 flex flex-col
+ transform transition-transform duration-300 ease-in-out lg:translate-x-0
+ ${isOpen ? "translate-x-0" : "-translate-x-full"}
+ `}
         style={{
           background: "var(--color-background)",
           borderRight: "1px solid var(--color-border)",
@@ -114,18 +114,18 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                   href={item.href}
                   onClick={onClose}
                   className={`
-                     relative flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium
-                    transition-all duration-200 group
-                    ${!isActive ? "text-muted-foreground hover:bg-secondary hover:text-foreground" : ""}
-                  `}
+ relative flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium
+ transition-all duration-200 group
+ ${!isActive ? "text-muted-foreground hover:bg-secondary hover:text-foreground" : ""}
+ `}
                   style={
                     isActive
                       ? {
-                        background: "var(--gray-a3)",
-                        color: "var(--color-foreground)",
-                        boxShadow:
-                          "inset 3px 0 0 0 var(--gray-11), 0 2px 8px rgba(0,0,0,0.06)",
-                      }
+                          background: "var(--gray-a3)",
+                          color: "var(--color-foreground)",
+                          boxShadow:
+                            "inset 3px 0 0 0 var(--gray-11), 0 2px 8px rgba(0,0,0,0.06)",
+                        }
                       : {}
                   }
                 >
@@ -153,9 +153,9 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
             <Link
               href="/dashboard"
               className={`
-                relative flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium
-                transition-all duration-200 group text-muted-foreground hover:bg-gray-a2 hover:text-foreground
-              `}
+ relative flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium
+ transition-all duration-200 group text-muted-foreground hover:bg-gray-a2 hover:text-foreground
+ `}
             >
               <ArrowLeft className="w-5 h-5 transition-transform duration-200 group-hover:-translate-x-1" />
               Quay lại ứng dụng

@@ -23,7 +23,7 @@ export function OrderStatsDisplay() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-      <div className="bg-card p-5 rounded-xl border border-border shadow-sm flex flex-col justify-between">
+      <div className="bg-card p-5 rounded-xl border border-border flex flex-col justify-between">
         <div className="flex justify-between items-center mb-2">
           <p className="text-sm text-muted-foreground font-medium">
             Tổng Doanh Thu
@@ -40,7 +40,7 @@ export function OrderStatsDisplay() {
         </h3>
       </div>
 
-      <div className="bg-card p-5 rounded-xl border border-border shadow-sm flex flex-col justify-between">
+      <div className="bg-card p-5 rounded-xl border border-border flex flex-col justify-between">
         <div className="flex justify-between items-center mb-2">
           <p className="text-sm text-muted-foreground font-medium">
             Tổng Đơn Hàng
@@ -54,7 +54,7 @@ export function OrderStatsDisplay() {
         </h3>
       </div>
 
-      <div className="bg-card p-5 rounded-xl border border-border shadow-sm flex flex-col justify-between">
+      <div className="bg-card p-5 rounded-xl border border-border flex flex-col justify-between">
         <div className="flex justify-between items-center mb-2">
           <p className="text-sm text-muted-foreground font-medium">
             Hoàn Thành (COMPLETED)
@@ -68,7 +68,7 @@ export function OrderStatsDisplay() {
         </h3>
       </div>
 
-      <div className="bg-card p-5 rounded-xl border border-border shadow-sm flex flex-col justify-between">
+      <div className="bg-card p-5 rounded-xl border border-border flex flex-col justify-between">
         <div className="flex justify-between items-center mb-2">
           <p className="text-sm text-muted-foreground font-medium">
             Thất Bại (FAILED)

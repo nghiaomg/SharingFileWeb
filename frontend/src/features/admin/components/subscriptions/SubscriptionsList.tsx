@@ -3,13 +3,7 @@
 import { useState } from "react";
 import { useAdminSubscriptions } from "../../hooks/useSubscriptionsQuery";
 import { useDeletePlan } from "../../hooks/useSubscriptionsMutation";
-import {
-  Loader2,
-  Trash2,
-  Edit,
-  CreditCard,
-  Plus,
-} from "lucide-react";
+import { Loader2, Trash2, Edit, CreditCard, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { formatBytes } from "@/lib/format";
 import { SubscriptionEditModal } from "./SubscriptionEditModal";
@@ -45,7 +39,6 @@ export function SubscriptionsList() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-end gap-3 flex-wrap">
-
         <Button
           size="3"
           onClick={() => {
@@ -62,7 +55,7 @@ export function SubscriptionsList() {
         {plans.map((plan) => (
           <div
             key={plan.id}
-            className="bg-card rounded-xl border border-border p-4 shadow-sm space-y-4"
+            className="bg-card rounded-xl border border-border p-4 space-y-4"
           >
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
@@ -94,9 +87,9 @@ export function SubscriptionsList() {
                 {plan.price === 0
                   ? "MIỄN PHÍ"
                   : new Intl.NumberFormat("vi-VN", {
-                    style: "currency",
-                    currency: "VND",
-                  }).format(plan.price)}
+                      style: "currency",
+                      currency: "VND",
+                    }).format(plan.price)}
               </p>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
@@ -139,7 +132,7 @@ export function SubscriptionsList() {
                   setSelectedPlan(plan);
                   setModalOpen(true);
                 }}
-                className="py-2 flex justify-center items-center gap-1.5 bg-blue-500 text-white hover:bg-blue-600 rounded-lg transition-colors shadow-sm text-xs font-semibold"
+                className="py-2 flex justify-center items-center gap-1.5 bg-blue-500 text-white hover:bg-blue-600 rounded-lg transition-colors text-xs font-semibold"
               >
                 <Edit className="w-3.5 h-3.5" /> Sửa gói
               </button>
@@ -157,7 +150,7 @@ export function SubscriptionsList() {
                   }
                 }}
                 disabled={isDeleting}
-                className="py-2 flex justify-center items-center gap-1.5 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors shadow-sm text-xs font-semibold disabled:opacity-50"
+                className="py-2 flex justify-center items-center gap-1.5 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors text-xs font-semibold disabled:opacity-50"
               >
                 <Trash2 className="w-3.5 h-3.5" /> Xóa cứng
               </button>
@@ -167,7 +160,7 @@ export function SubscriptionsList() {
       </div>
 
       {/* Desktop Table View */}
-      <div className="hidden md:block bg-card rounded-xl border border-border shadow-sm overflow-hidden animate-in fade-in zoom-in-95 duration-500">
+      <div className="hidden md:block bg-card rounded-xl border border-border overflow-hidden animate-in fade-in zoom-in-95 duration-500">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="text-xs text-muted-foreground uppercase bg-secondary/50">
@@ -205,9 +198,9 @@ export function SubscriptionsList() {
                     {plan.price === 0
                       ? "MIỄN PHÍ"
                       : new Intl.NumberFormat("vi-VN", {
-                        style: "currency",
-                        currency: "VND",
-                      }).format(plan.price)}
+                          style: "currency",
+                          currency: "VND",
+                        }).format(plan.price)}
                   </td>
                   <td className="px-6 py-4">
                     <p className="text-sm">
@@ -255,7 +248,7 @@ export function SubscriptionsList() {
                         setSelectedPlan(plan);
                         setModalOpen(true);
                       }}
-                      className="px-3 py-1.5 flex items-center gap-1.5 bg-blue-500 text-white hover:bg-blue-600 rounded-lg transition-colors shadow-sm text-xs font-semibold"
+                      className="px-3 py-1.5 flex items-center gap-1.5 bg-blue-500 text-white hover:bg-blue-600 rounded-lg transition-colors text-xs font-semibold"
                       title="Sửa cấu hình"
                     >
                       <Edit className="w-3.5 h-3.5" /> <span>Sửa gói</span>
@@ -274,7 +267,7 @@ export function SubscriptionsList() {
                         }
                       }}
                       disabled={isDeleting}
-                      className="px-3 py-1.5 flex items-center gap-1.5 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors shadow-sm text-xs font-semibold disabled:opacity-50"
+                      className="px-3 py-1.5 flex items-center gap-1.5 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors text-xs font-semibold disabled:opacity-50"
                       title="Xóa vĩnh viễn"
                     >
                       <Trash2 className="w-3.5 h-3.5" /> <span>Xóa cứng</span>

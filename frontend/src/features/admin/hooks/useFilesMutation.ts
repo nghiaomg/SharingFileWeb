@@ -11,3 +11,15 @@ export function useDeleteAdminFile() {
     },
   });
 }
+
+export function useRevokeAdminFile() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) =>
+      import("../api/files.api").then((m) => m.adminRevokeFile(id)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminFilesKeys.lists() });
+    },
+  });
+}

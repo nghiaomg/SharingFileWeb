@@ -4,7 +4,8 @@ import { AdminPaginatedFoldersResponse } from "../types/folders.types";
 export const adminFoldersKeys = {
   all: ["admin-folders"] as const,
   lists: () => [...adminFoldersKeys.all, "list"] as const,
-  list: (folderId?: string | null) => [...adminFoldersKeys.lists(), folderId] as const,
+  list: (folderId?: string | null) =>
+    [...adminFoldersKeys.lists(), folderId] as const,
 };
 
 export async function getAllFolders(
@@ -20,4 +21,8 @@ export async function getAllFolders(
 
 export async function deleteFolderPermanently(id: string): Promise<void> {
   await apiClient.delete(`/folders/${id}/permanent`);
+}
+
+export async function adminRevokeFolder(id: string): Promise<void> {
+  await apiClient.put(`/folders/admin/${id}/revoke`);
 }

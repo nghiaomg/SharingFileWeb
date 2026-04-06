@@ -7,12 +7,14 @@ public class DashboardChartDTO {
     private long visits;
     private long uploadedFiles;
     private long uploadedSize;
+    private long newUsers;
 
-    public DashboardChartDTO(String date, long visits, long uploadedFiles, long uploadedSize) {
+    public DashboardChartDTO(String date, long visits, long uploadedFiles, long uploadedSize, long newUsers) {
         this.date = date;
         this.visits = visits;
         this.uploadedFiles = uploadedFiles;
         this.uploadedSize = uploadedSize;
+        this.newUsers = newUsers;
     }
 
     public String getDate() {
@@ -45,5 +47,13 @@ public class DashboardChartDTO {
 
     public void setUploadedSize(long uploadedSize) {
         this.uploadedSize = uploadedSize;
+    }
+
+    public long getNewUsers() {
+        return newUsers;
+    }
+
+    public void setNewUsers(long newUsers) {
+        this.newUsers = newUsers;
     }
 }

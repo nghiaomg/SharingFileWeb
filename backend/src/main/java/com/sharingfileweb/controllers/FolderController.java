@@ -186,5 +186,17 @@ public class FolderController {
           return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
       }
   }
+
+  @Operation(summary = "Thu hồi/Bỏ thu hồi thư mục (Admin)", description = "Admin cấm hoặc bỏ cấm thư mục do vi phạm.")
+  @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+  @PutMapping("/admin/{id}/revoke")
+  public ResponseEntity<?> revokeFolderByAdmin(@PathVariable String id) {
+      try {
+          FolderResponse response = folderService.adminRevokeFolder(id);
+          return ResponseEntity.ok(StandardResponse.success("Admin folder revoked logic completed", response));
+      } catch (RuntimeException e) {
+          return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
+      }
+  }
 }
 

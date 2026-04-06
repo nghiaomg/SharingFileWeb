@@ -16,4 +16,19 @@ export interface DashboardChartDTO {
   visits: number;
   uploadedFiles: number;
   uploadedSize: number;
+  newUsers: number;
+}
+
+export interface PieChartDataDTO {
+  name: string;
+  value: number;
+  fill: string;
+}
+
+export interface ActionLogDTO {
+  id: string;
+  type: string;
+  description: string;
+  url: string;
+  createdAt: string;
 }

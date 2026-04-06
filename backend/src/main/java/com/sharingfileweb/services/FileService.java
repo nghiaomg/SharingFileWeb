@@ -78,9 +78,11 @@ public class FileService {
         if (folderId == null || folderId.trim().isEmpty() || "root".equals(folderId)) {
             files = fileRepository.findByOwnerIdAndIsDeletedFalse(userId).stream()
                     .filter(f -> f.getFolderId() == null || f.getFolderId().isEmpty())
+                    .filter(f -> !f.isBanned())
                     .collect(Collectors.toList());
         } else {
-            files = fileRepository.findByOwnerIdAndFolderIdAndIsDeletedFalse(userId, folderId);
+            files = fileRepository.findByOwnerIdAndFolderIdAndIsDeletedFalse(userId, folderId)
+                    .stream().filter(f -> !f.isBanned()).collect(Collectors.toList());
         }
         return files.stream().map(this::mapToResponse).collect(Collectors.toList());
     }
@@ -90,12 +92,12 @@ public class FileService {
         return fileRepository
                 .findByOwnerIdAndIsDeletedFalseOrderByCreatedAtDesc(getCurrentUserId(), pageable)
                 .getContent()
-                .stream().map(this::mapToResponse).collect(Collectors.toList());
+                .stream().filter(f -> !f.isBanned()).map(this::mapToResponse).collect(Collectors.toList());
     }
 
     public List<FileResponse> getSharedFiles() {
         return fileRepository.findSharedFiles(getCurrentUserId())
-                .stream().map(this::mapToResponse).collect(Collectors.toList());
+                .stream().filter(f -> !f.isBanned()).map(this::mapToResponse).collect(Collectors.toList());
     }
 
     // ─── Upload ───────────────────────────────────────────────────────────────
@@ -330,6 +332,13 @@ public class FileService {
         return mapToResponse(fileRepository.save(file));
     }
 
+    public FileResponse adminRevokeFile(String id) {
+        StorageFile file = fileRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("File not found"));
+        file.setBanned(!file.isBanned()); // Toggle: Thu hồi / Bỏ thu hồi
+        return mapToResponse(fileRepository.save(file));
+    }
+
     /**
      * @deprecated Dùng ShareLink/SharedAccess thay thế. Giữ lại cho backward compatibility.
      */
@@ -399,7 +408,8 @@ public class FileService {
                 file.isPublic(),
                 file.getAccessMode() != null ? file.getAccessMode() : "PRIVATE",
                 file.getSharedEmails() != null ? file.getSharedEmails() : new java.util.ArrayList<>(),
-                file.getShareExpiresAt()
+                file.getShareExpiresAt(),
+                file.isBanned()
         );
     }
 

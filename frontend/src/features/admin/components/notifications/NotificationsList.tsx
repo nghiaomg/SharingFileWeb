@@ -3,7 +3,14 @@
 import { useState } from "react";
 import { useAdminNotifications } from "../../hooks/useNotificationsQuery";
 import { useDeleteNotification } from "../../hooks/useNotificationsMutation";
-import { Loader2, Trash2, Mail, RadioReceiver, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Loader2,
+  Trash2,
+  Mail,
+  RadioReceiver,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { Button } from "@radix-ui/themes";
@@ -11,7 +18,11 @@ import { BroadcastModal } from "./BroadcastModal";
 
 export function NotificationsList() {
   const [page, setPage] = useState(0);
-  const { data: pageData, isLoading, isError } = useAdminNotifications(page, 50);
+  const {
+    data: pageData,
+    isLoading,
+    isError,
+  } = useAdminNotifications(page, 50);
   const { mutate: deleteData, isPending: isDeleting } = useDeleteNotification();
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -48,7 +59,7 @@ export function NotificationsList() {
         {notifications.map((notif) => (
           <div
             key={notif.id}
-            className="bg-card rounded-xl border border-border p-4 shadow-sm space-y-3"
+            className="bg-card rounded-xl border border-border p-4 space-y-3"
           >
             <div className="flex items-start gap-3">
               <div className="p-2 bg-purple-500/10 rounded-lg shrink-0 mt-1">
@@ -106,7 +117,7 @@ export function NotificationsList() {
                   }
                 }}
                 disabled={isDeleting}
-                className="w-full py-2 flex justify-center items-center gap-1.5 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors font-medium text-xs shadow-sm disabled:opacity-50"
+                className="w-full py-2 flex justify-center items-center gap-1.5 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors font-medium text-xs disabled:opacity-50"
               >
                 <Trash2 className="w-3.5 h-3.5" /> Xóa Log DB
               </button>
@@ -121,7 +132,7 @@ export function NotificationsList() {
       </div>
 
       {/* Desktop Table View */}
-      <div className="hidden md:block bg-card rounded-xl border border-border shadow-sm overflow-hidden animate-in fade-in zoom-in-95 duration-500">
+      <div className="hidden md:block bg-card rounded-xl border border-border overflow-hidden animate-in fade-in zoom-in-95 duration-500">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="text-xs text-muted-foreground uppercase bg-secondary/50">
@@ -151,9 +162,9 @@ export function NotificationsList() {
                         <p className="text-[10px] text-muted-foreground mt-1">
                           {notif.createdAt
                             ? format(
-                              new Date(notif.createdAt),
-                              "dd/MM/yyyy HH:mm",
-                            )
+                                new Date(notif.createdAt),
+                                "dd/MM/yyyy HH:mm",
+                              )
                             : "N/A"}
                         </p>
                       </div>
@@ -205,7 +216,7 @@ export function NotificationsList() {
                         }
                       }}
                       disabled={isDeleting}
-                      className="px-3 py-1.5 flex items-center gap-1.5 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors shadow-sm text-xs font-semibold disabled:opacity-50"
+                      className="px-3 py-1.5 flex items-center gap-1.5 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors text-xs font-semibold disabled:opacity-50"
                       title="Xóa Log DB"
                     >
                       <Trash2 className="w-3.5 h-3.5" /> <span>Xóa Log</span>
@@ -230,7 +241,7 @@ export function NotificationsList() {
 
       {/* Pagination Controls */}
       {pageData && pageData.totalPages > 0 && (
-        <div className="p-4 border border-border rounded-xl flex items-center justify-between bg-card shadow-sm text-sm">
+        <div className="p-4 border border-border rounded-xl flex items-center justify-between bg-card text-sm">
           <span className="text-muted-foreground font-medium flex gap-1">
             Trang <b>{pageData.currentPage + 1}</b> /{" "}
             <b>{pageData.totalPages}</b>

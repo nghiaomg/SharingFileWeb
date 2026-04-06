@@ -1,10 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteShareLink, adminSharesKeys } from "../api/shares.api";
+import { revokeShareLink, adminSharesKeys } from "../api/shares.api";
 
-export function useDeleteShareLink() {
+export function useRevokeShareLink() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: deleteShareLink,
+    mutationFn: revokeShareLink,
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: adminSharesKeys.lists() }),
   });

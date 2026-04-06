@@ -4,6 +4,7 @@ export interface AdminFolder {
   ownerId: string;
   parentId?: string;
   isDeleted: boolean;
+  isBanned?: boolean;
   createdAt: string;
   updatedAt: string;
 }

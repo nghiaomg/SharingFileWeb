@@ -3,6 +3,8 @@ import {
   getAdminOverview,
   getAdminCharts,
   getAdminCategories,
+  getAdminLoginMethods,
+  getAdminRecentActions,
   adminDashboardKeys,
 } from "../api/dashboard.api";
 
@@ -27,5 +29,21 @@ export function useAdminCategories() {
     queryKey: adminDashboardKeys.categories(),
     queryFn: getAdminCategories,
     staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useAdminLoginMethods() {
+  return useQuery({
+    queryKey: adminDashboardKeys.loginMethods(),
+    queryFn: getAdminLoginMethods,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useAdminRecentActions() {
+  return useQuery({
+    queryKey: adminDashboardKeys.recentActions(),
+    queryFn: getAdminRecentActions,
+    staleTime: 1 * 60 * 1000,
   });
 }

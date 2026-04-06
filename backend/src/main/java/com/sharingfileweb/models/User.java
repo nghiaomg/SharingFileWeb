@@ -40,6 +40,7 @@ public class User {
   private Instant createdAt = Instant.now();
   private Instant lastLogin;
   private boolean twoFactorEnabled = false;
+  private String authProvider = "LOCAL";
 
   private Integer failedLoginAttempts = 0;
   private Instant lockoutEnd;
@@ -155,5 +156,13 @@ public class User {
 
   public void setLockoutEnd(Instant lockoutEnd) {
     this.lockoutEnd = lockoutEnd;
+  }
+
+  public String getAuthProvider() {
+    return authProvider;
+  }
+
+  public void setAuthProvider(String authProvider) {
+    this.authProvider = authProvider;
   }
 }

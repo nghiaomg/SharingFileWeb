@@ -1,8 +1,16 @@
 "use client";
 
 import { useAdminShares } from "../../hooks/useSharesQuery";
-import { useDeleteShareLink } from "../../hooks/useSharesMutation";
-import { Loader2, Link as LinkIcon, Eye, Ban, ChevronLeft, ChevronRight } from "lucide-react";
+import { useRevokeShareLink } from "../../hooks/useSharesMutation";
+import {
+  Loader2,
+  Link as LinkIcon,
+  Eye,
+  Ban,
+  ChevronLeft,
+  ChevronRight,
+  RotateCcw,
+} from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { useState } from "react";
@@ -11,7 +19,7 @@ import { Button } from "@radix-ui/themes";
 export function SharesList() {
   const [page, setPage] = useState(0);
   const { data: pageData, isLoading, isError } = useAdminShares(page, 15);
-  const { mutate: deleteShare, isPending: isDeleting } = useDeleteShareLink();
+  const { mutate: revokeShare, isPending: isRevoking } = useRevokeShareLink();
 
   if (isLoading) {
     return (
@@ -63,7 +71,10 @@ export function SharesList() {
                   {share.token.slice(0, 15)}...
                 </p>
                 <div className="flex flex-wrap items-center gap-2 mt-1">
-                  <p className="text-[10px] text-muted-foreground" title="File ID">
+                  <p
+                    className="text-[10px] text-muted-foreground"
+                    title="File ID"
+                  >
                     FID: {share.fileId.slice(0, 10)}...
                   </p>
                   <span
@@ -78,7 +89,10 @@ export function SharesList() {
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="bg-secondary/30 p-2 rounded-md">
                 <p className="text-muted-foreground mb-1">Chủ sở hữu:</p>
-                <p className="font-mono font-bold text-foreground truncate" title={share.ownerId}>
+                <p
+                  className="font-mono font-bold text-foreground truncate"
+                  title={share.ownerId}
+                >
                   UID: {share.ownerId.slice(0, 8)}...
                 </p>
               </div>
@@ -93,7 +107,11 @@ export function SharesList() {
 
             <div className="flex justify-between items-center text-xs">
               <div>
-                {isExpired(share.expiresAt) ? (
+                {share.isRevoked ? (
+                  <span className="text-[10px] text-destructive font-bold uppercase bg-destructive/10 px-2 py-1 rounded">
+                    Đã thu hồi (Banned)
+                  </span>
+                ) : isExpired(share.expiresAt) ? (
                   <span className="text-[10px] text-red-500 font-bold uppercase bg-red-500/10 px-2 py-1 rounded">
                     Đã hết hạn
                   </span>
@@ -117,22 +135,29 @@ export function SharesList() {
             <div className="pt-2 border-t border-border mt-2">
               <button
                 onClick={() => {
-                  if (
-                    confirm(
-                      `Hành động này sẽ Cấm (Revoke) và Tiêu Hủy vĩnh viễn Link chia sẻ này khỏi hệ thống. Những người dùng đang nhấp vào Link sẽ bị thông báo Lỗi 404. Tiếp tục?`,
-                    )
-                  ) {
-                    deleteShare(share.id, {
-                      onSuccess: () =>
-                        toast.success("Đã cấm công khai và xóa link chia sẻ"),
-                      onError: () => toast.error("Không thể xóa link"),
-                    });
-                  }
+                  revokeShare(share.id, {
+                    onSuccess: () =>
+                      toast.success(
+                        share.isRevoked
+                          ? "Đã bỏ thu hồi link chia sẻ"
+                          : "Đã thu hồi link chia sẻ",
+                      ),
+                    onError: () =>
+                      toast.error("Không thể thay đổi trạng thái link"),
+                  });
                 }}
-                disabled={isDeleting}
-                className="w-full py-2 flex justify-center items-center gap-1.5 bg-orange-500 text-white hover:bg-orange-600 rounded-lg transition-colors font-medium text-xs shadow-sm disabled:opacity-50"
+                disabled={isRevoking}
+                className={`w-full py-2 flex justify-center items-center gap-1.5 rounded-lg transition-colors font-medium text-xs disabled:opacity-50 ${share.isRevoked ? "bg-secondary text-foreground hover:bg-secondary/80" : "bg-orange-500 text-white hover:bg-orange-600"}`}
               >
-                <Ban className="w-3.5 h-3.5" /> Chặn/Xóa Link
+                {share.isRevoked ? (
+                  <>
+                    <RotateCcw className="w-3.5 h-3.5" /> Bỏ thu hồi
+                  </>
+                ) : (
+                  <>
+                    <Ban className="w-3.5 h-3.5" /> Chặn/Thu hồi
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -202,11 +227,16 @@ export function SharesList() {
                   <td className="px-6 py-4">
                     <p className="text-sm font-bold text-foreground flex items-center gap-1">
                       <Eye className="w-4 h-4 text-muted-foreground" />{" "}
-                      {share.viewCount} / {share.maxViews ? share.maxViews : "∞"}
+                      {share.viewCount} /{" "}
+                      {share.maxViews ? share.maxViews : "∞"}
                     </p>
                   </td>
                   <td className="px-6 py-4">
-                    {isExpired(share.expiresAt) ? (
+                    {share.isRevoked ? (
+                      <span className="text-[11px] text-destructive font-bold uppercase bg-destructive/10 px-2 py-1 rounded">
+                        Đã thu hồi (Banned)
+                      </span>
+                    ) : isExpired(share.expiresAt) ? (
                       <span className="text-[11px] text-red-500 font-bold uppercase bg-red-500/10 px-2 py-1 rounded">
                         Đã hết hạn
                       </span>
@@ -229,25 +259,35 @@ export function SharesList() {
                   <td className="px-6 py-4 flex justify-end gap-2">
                     <button
                       onClick={() => {
-                        if (
-                          confirm(
-                            `Hành động này sẽ Cấm (Revoke) và Tiêu Hủy vĩnh viễn Link chia sẻ này khỏi hệ thống. Những người dùng đang nhấp vào Link sẽ bị thông báo Lỗi 404. Tiếp tục?`,
-                          )
-                        ) {
-                          deleteShare(share.id, {
-                            onSuccess: () =>
-                              toast.success(
-                                "Đã cấm công khai và xóa link chia sẻ",
-                              ),
-                            onError: () => toast.error("Không thể xóa link"),
-                          });
-                        }
+                        revokeShare(share.id, {
+                          onSuccess: () =>
+                            toast.success(
+                              share.isRevoked
+                                ? "Đã bỏ thu hồi link chia sẻ"
+                                : "Đã thu hồi link chia sẻ",
+                            ),
+                          onError: () =>
+                            toast.error("Lỗi cập nhật trạng thái link"),
+                        });
                       }}
-                      disabled={isDeleting}
-                      className="px-3 py-1.5 flex items-center gap-1.5 bg-orange-500 text-white hover:bg-orange-600 rounded-lg transition-colors shadow-sm text-xs font-semibold disabled:opacity-50"
-                      title="Cấm truy cập / Xóa Link Vĩnh Viễn"
+                      disabled={isRevoking}
+                      className={`px-3 py-1.5 flex items-center gap-1.5 rounded-lg transition-colors text-xs font-semibold disabled:opacity-50 ${share.isRevoked ? "bg-secondary text-foreground hover:bg-secondary/80" : "bg-orange-500 text-white hover:bg-orange-600"}`}
+                      title={
+                        share.isRevoked
+                          ? "Khôi phục trạng thái Link"
+                          : "Cấm truy cập Link"
+                      }
                     >
-                      <Ban className="w-3.5 h-3.5" /> <span>Cấm Link</span>
+                      {share.isRevoked ? (
+                        <>
+                          <RotateCcw className="w-3.5 h-3.5" />{" "}
+                          <span>Bỏ thu hồi</span>
+                        </>
+                      ) : (
+                        <>
+                          <Ban className="w-3.5 h-3.5" /> <span>Thu hồi</span>
+                        </>
+                      )}
                     </button>
                   </td>
                 </tr>

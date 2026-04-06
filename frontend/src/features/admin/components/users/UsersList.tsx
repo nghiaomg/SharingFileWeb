@@ -40,7 +40,7 @@ export function UsersList() {
         {users.map((user) => (
           <div
             key={user.id}
-            className="bg-card rounded-xl border border-border p-4 shadow-sm space-y-3"
+            className="bg-card rounded-xl border border-border p-4 space-y-3"
           >
             <div className="flex justify-between items-start">
               <div>
@@ -68,7 +68,7 @@ export function UsersList() {
             <div className="flex items-center gap-2 pt-3 border-t border-border mt-2">
               <button
                 onClick={() => setEditingUser(user)}
-                className="flex-1 py-2 flex justify-center items-center gap-1.5 bg-blue-500 text-white hover:bg-blue-600 rounded-lg transition-colors font-medium text-xs shadow-sm"
+                className="flex-1 py-2 flex justify-center items-center gap-1.5 bg-blue-500 text-white hover:bg-blue-600 rounded-lg transition-colors font-medium text-xs "
               >
                 <Edit className="w-3.5 h-3.5" /> Sửa
               </button>
@@ -88,7 +88,7 @@ export function UsersList() {
                   }
                 }}
                 disabled={isDeleting}
-                className="flex-1 py-2 flex justify-center items-center gap-1.5 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors font-medium text-xs shadow-sm disabled:opacity-50"
+                className="flex-1 py-2 flex justify-center items-center gap-1.5 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors font-medium text-xs disabled:opacity-50"
               >
                 <Trash2 className="w-3.5 h-3.5" /> Xóa
               </button>
@@ -103,7 +103,7 @@ export function UsersList() {
       </div>
 
       {/* Desktop Table View (hidden on Mobile) */}
-      <div className="hidden md:block bg-card rounded-xl border border-border shadow-sm overflow-hidden animate-in fade-in zoom-in-95 duration-500">
+      <div className="hidden md:block bg-card rounded-xl border border-border overflow-hidden animate-in fade-in zoom-in-95 duration-500">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="text-xs text-muted-foreground uppercase bg-secondary/50">
@@ -146,7 +146,7 @@ export function UsersList() {
                   <td className="px-6 py-4 flex items-center justify-end gap-3">
                     <button
                       onClick={() => setEditingUser(user)}
-                      className="px-3 py-1.5 flex items-center gap-1.5 bg-blue-500 text-white hover:bg-blue-600 rounded-lg transition-colors shadow-sm text-xs font-semibold"
+                      className="px-3 py-1.5 flex items-center gap-1.5 bg-blue-500 text-white hover:bg-blue-600 rounded-lg transition-colors text-xs font-semibold"
                       title="Chỉnh sửa User"
                     >
                       <Edit className="w-3.5 h-3.5" /> <span>Sửa</span>
@@ -170,7 +170,7 @@ export function UsersList() {
                       }}
                       disabled={isDeleting}
                       title="Xóa người dùng"
-                      className="px-3 py-1.5 flex items-center gap-1.5 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors shadow-sm text-xs font-semibold disabled:opacity-50"
+                      className="px-3 py-1.5 flex items-center gap-1.5 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors text-xs font-semibold disabled:opacity-50"
                     >
                       <Trash2 className="w-3.5 h-3.5" /> <span>Xóa</span>
                     </button>
@@ -194,7 +194,7 @@ export function UsersList() {
 
       {/* Pagination Controls */}
       {pageData && pageData.totalPages > 0 && (
-        <div className="p-4 border border-border rounded-xl flex items-center justify-between bg-card shadow-sm text-sm">
+        <div className="p-4 border border-border rounded-xl flex items-center justify-between bg-card text-sm">
           <span className="text-muted-foreground font-medium flex gap-1">
             Trang <b>{pageData.currentPage + 1}</b> /{" "}
             <b>{pageData.totalPages}</b>

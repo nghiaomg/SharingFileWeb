@@ -232,7 +232,8 @@ export function LoginForm() {
                     Zalo
                   </span>
                   Continue with Zalo
-                </button> */}              </div>
+                </button> */}{" "}
+              </div>
             </Dialog.Content>
           </Dialog.Portal>
         </Dialog.Root>

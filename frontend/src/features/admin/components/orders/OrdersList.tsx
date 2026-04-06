@@ -64,10 +64,11 @@ export function OrdersList() {
               setStatusFilter(st);
               setPage(0);
             }}
-            className={`px-5 py-2 rounded-xl text-xs font-bold transition-all ${statusFilter === st
-                ? "bg-primary text-primary-foreground shadow-md"
+            className={`px-5 py-2 rounded-xl text-xs font-bold transition-all ${
+              statusFilter === st
+                ? "bg-primary text-primary-foreground "
                 : "bg-secondary/50 text-secondary-foreground hover:bg-secondary/80 border border-border"
-              }`}
+            }`}
           >
             {st}
           </button>
@@ -79,7 +80,7 @@ export function OrdersList() {
         {orders.map((order) => (
           <div
             key={order.id}
-            className="bg-card rounded-xl border border-border p-4 shadow-sm space-y-4 animate-in fade-in zoom-in-95 duration-500"
+            className="bg-card rounded-xl border border-border p-4 space-y-4 animate-in fade-in zoom-in-95 duration-500"
           >
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
@@ -106,8 +107,9 @@ export function OrdersList() {
                 </div>
               </div>
               <span
-                className={`px-2 py-1 font-bold text-[9px] rounded uppercase flex items-center justify-center shrink-0 ${STATUS_COLORS[order.status] || "bg-gray-500/10 text-gray-500"
-                  }`}
+                className={`px-2 py-1 font-bold text-[9px] rounded uppercase flex items-center justify-center shrink-0 ${
+                  STATUS_COLORS[order.status] || "bg-gray-500/10 text-gray-500"
+                }`}
               >
                 {order.status === "PENDING" && (
                   <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
@@ -128,7 +130,10 @@ export function OrdersList() {
               </div>
               <div className="text-right">
                 <p className="text-muted-foreground">Khách hàng UID:</p>
-                <p className="font-mono font-bold text-foreground" title={order.userId}>
+                <p
+                  className="font-mono font-bold text-foreground"
+                  title={order.userId}
+                >
                   {order.userId.slice(0, 8)}...
                 </p>
               </div>
@@ -145,36 +150,45 @@ export function OrdersList() {
               <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border mt-2">
                 <button
                   onClick={() => {
-                    if (confirm(`Chấp thuận bằng tay đơn hàng ${order.orderId}?`)) {
+                    if (
+                      confirm(`Chấp thuận bằng tay đơn hàng ${order.orderId}?`)
+                    ) {
                       updateStatus(
                         { id: order.id, status: "COMPLETED" },
                         {
                           onSuccess: () =>
-                            toast.success("Đã duyệt đơn hàng bằng tay thành công"),
+                            toast.success(
+                              "Đã duyệt đơn hàng bằng tay thành công",
+                            ),
                           onError: () => toast.error("Không thể duyệt đơn"),
                         },
                       );
                     }
                   }}
                   disabled={isUpdating}
-                  className="py-2 flex items-center justify-center gap-1.5 bg-emerald-500 text-white hover:bg-emerald-600 rounded-lg transition-colors font-semibold text-xs shadow-sm disabled:opacity-50"
+                  className="py-2 flex items-center justify-center gap-1.5 bg-emerald-500 text-white hover:bg-emerald-600 rounded-lg transition-colors font-semibold text-xs disabled:opacity-50"
                 >
                   <CheckCircle2 className="w-3.5 h-3.5" /> Duyệt
                 </button>
                 <button
                   onClick={() => {
-                    if (confirm(`Bạn có chắc chắn muốn HỦY đơn hàng ${order.orderId}?`)) {
+                    if (
+                      confirm(
+                        `Bạn có chắc chắn muốn HỦY đơn hàng ${order.orderId}?`,
+                      )
+                    ) {
                       updateStatus(
                         { id: order.id, status: "CANCELLED" },
                         {
-                          onSuccess: () => toast.success("Đã đánh dấu đơn hàng HỦY"),
+                          onSuccess: () =>
+                            toast.success("Đã đánh dấu đơn hàng HỦY"),
                           onError: () => toast.error("Có lỗi xảy ra khi Hủy"),
                         },
                       );
                     }
                   }}
                   disabled={isUpdating}
-                  className="py-2 flex items-center justify-center gap-1.5 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors font-semibold text-xs shadow-sm disabled:opacity-50"
+                  className="py-2 flex items-center justify-center gap-1.5 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors font-semibold text-xs disabled:opacity-50"
                 >
                   <Ban className="w-3.5 h-3.5" /> Hủy
                 </button>
@@ -184,13 +198,14 @@ export function OrdersList() {
         ))}
         {orders.length === 0 && (
           <div className="text-center p-8 text-muted-foreground text-sm border border-dashed rounded-xl border-border">
-            Bộ lọc trống. Không tìm thấy đơn hàng nào ở trạng thái {statusFilter}.
+            Bộ lọc trống. Không tìm thấy đơn hàng nào ở trạng thái{" "}
+            {statusFilter}.
           </div>
         )}
       </div>
 
       {/* Desktop Table View */}
-      <div className="hidden md:block bg-card rounded-xl border border-border shadow-sm overflow-hidden animate-in fade-in zoom-in-95 duration-500">
+      <div className="hidden md:block bg-card rounded-xl border border-border overflow-hidden animate-in fade-in zoom-in-95 duration-500">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="text-xs text-muted-foreground uppercase bg-secondary/50">
@@ -250,8 +265,10 @@ export function OrdersList() {
                   </td>
                   <td className="px-6 py-4">
                     <span
-                      className={`px-2 py-1 font-bold text-[11px] rounded flex items-center justify-center w-max uppercase ${STATUS_COLORS[order.status] || "bg-gray-500/10 text-gray-500"
-                        }`}
+                      className={`px-2 py-1 font-bold text-[11px] rounded flex items-center justify-center w-max uppercase ${
+                        STATUS_COLORS[order.status] ||
+                        "bg-gray-500/10 text-gray-500"
+                      }`}
                     >
                       {order.status === "PENDING" && (
                         <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
@@ -291,10 +308,11 @@ export function OrdersList() {
                             }
                           }}
                           disabled={isUpdating}
-                          className="px-3 py-1.5 flex items-center gap-1.5 bg-emerald-500 text-white hover:bg-emerald-600 rounded-lg transition-colors shadow-sm text-xs font-semibold disabled:opacity-50"
+                          className="px-3 py-1.5 flex items-center gap-1.5 bg-emerald-500 text-white hover:bg-emerald-600 rounded-lg transition-colors text-xs font-semibold disabled:opacity-50"
                           title="Chấp thuận bằng tay (Duyệt nạp)"
                         >
-                          <CheckCircle2 className="w-3.5 h-3.5" /> <span>Duyệt</span>
+                          <CheckCircle2 className="w-3.5 h-3.5" />{" "}
+                          <span>Duyệt</span>
                         </button>
                         <button
                           onClick={() => {
@@ -315,7 +333,7 @@ export function OrdersList() {
                             }
                           }}
                           disabled={isUpdating}
-                          className="px-3 py-1.5 flex items-center gap-1.5 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors shadow-sm text-xs font-semibold disabled:opacity-50"
+                          className="px-3 py-1.5 flex items-center gap-1.5 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors text-xs font-semibold disabled:opacity-50"
                           title="Từ chối đơn Hàng (Hủy)"
                         >
                           <Ban className="w-3.5 h-3.5" /> <span>Hủy</span>
