@@ -27,16 +27,6 @@ export const LoginInputSchema = z.object({
 
 export type LoginInput = z.infer<typeof LoginInputSchema>;
 
-// ─── Signup ──────────────────────────────────────────────────────────────────
-export const SignupInputSchema = z.object({
-  username: z.string().min(1, "Tên đăng nhập không được để trống"),
-  email: z.string().email("Email không hợp lệ"),
-  password: z.string().min(1, "Mật khẩu không được để trống"),
-  turnstileToken: z.string().min(1, "Vui lòng hoàn tất xác thực Turnstile"),
-});
-
-export type SignupInput = z.infer<typeof SignupInputSchema>;
-
 // ─── Update Profile ──────────────────────────────────────────────────────────
 export const UpdateProfileSchema = z.object({
   email: z.string().email(),

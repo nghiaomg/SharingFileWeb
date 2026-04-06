@@ -2,11 +2,10 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { login, register, logout, updateProfile, changePassword } from "./api";
+import { login, logout, updateProfile, changePassword } from "./api";
 import { authKeys } from "./queries";
 import type {
   LoginInput,
-  SignupInput,
   UpdateProfileInput,
   User,
   ChangePasswordInput,
@@ -22,20 +21,6 @@ export function useLogin() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: authKeys.me() });
       router.push("/dashboard");
-    },
-  });
-}
-
-// ─── Register ────────────────────────────────────────────────────────────────
-export function useRegister() {
-  const router = useRouter();
-
-  return useMutation({
-    mutationFn: (input: SignupInput) => register(input),
-    onSuccess: () => {
-      setTimeout(() => {
-        router.push("/login");
-      }, 2000);
     },
   });
 }

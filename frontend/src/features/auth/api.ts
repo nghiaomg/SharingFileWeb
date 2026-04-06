@@ -3,7 +3,6 @@ import Cookies from "js-cookie";
 import type {
   User,
   LoginInput,
-  SignupInput,
   UpdateProfileInput,
   StorageUsage,
   ChangePasswordInput,
@@ -82,11 +81,6 @@ export async function loginWithZalo(code: string, redirectUri: string): Promise<
   }
 
   return userData;
-}
-
-export async function register(data: SignupInput): Promise<unknown> {
-  const response = await apiClient.post("/auth/signup", data);
-  return response.data;
 }
 
 export async function logout(): Promise<void> {

@@ -601,62 +601,6 @@ public class AuthService {
         return b;
     }
 
-    public void registerUser(SignupRequest signUpRequest) {
-        // Verify Turnstile token
-        if (!turnstileService.verifyToken(signUpRequest.getTurnstileToken())) {
-            throw new RuntimeException("Xác thực Turnstile thất bại. Vui lòng thử lại.");
-        }
-
-        if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-             throw new RuntimeException("Error: Username is already taken!");
-        }
-
-        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-             throw new RuntimeException("Error: Email is already in use!");
-        }
-
-        // Create new user's account
-        User user = new User(signUpRequest.getUsername(),
-                signUpRequest.getEmail(),
-                encoder.encode(signUpRequest.getPassword()));
-
-        // Thiết lập mặc định
-        user.setSubscriptionPlan("BASIC");
-        user.setMaxStorage(5L * 1024 * 1024 * 1024); // 5GB
-        user.setMaxFileSize(1024L * 1024 * 1024); // 1GB
-
-        Set<String> strRoles = signUpRequest.getRole();
-        Set<Role> roles = new HashSet<>();
-
-        if (strRoles == null) {
-            Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-            roles.add(userRole);
-        } else {
-            strRoles.forEach(role -> {
-                switch (role) {
-                    case "admin":
-                        Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
-                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                        roles.add(adminRole);
-                        break;
-                    case "mod":
-                        Role modRole = roleRepository.findByName(ERole.ROLE_MODERATOR)
-                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                        roles.add(modRole);
-                        break;
-                    default:
-                        Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                        roles.add(userRole);
-                }
-            });
-        }
-
-        user.setRoles(roles);
-        userRepository.save(user);
-    }
-
     public TokenRefreshResponse refreshToken(TokenRefreshRequest request) {
         String requestRefreshToken = request.getRefreshToken();
 

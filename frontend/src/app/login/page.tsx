@@ -10,7 +10,7 @@ export default function LoginPage() {
   return (
     <AuthLayout
       title="Đăng nhập"
-      subtitle="Chào mừng trở lại! Vui lòng điền thông tin để tiếp tục."
+      subtitle="Chào mừng bạn! Vui lòng đăng nhập bằng tài khoản mạng xã hội."
     >
       <LoginForm />
     </AuthLayout>

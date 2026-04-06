@@ -1,42 +1,22 @@
 package com.sharingfileweb.controllers;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sharingfileweb.models.ERole;
-import com.sharingfileweb.models.Role;
-import com.sharingfileweb.models.User;
 import com.sharingfileweb.payload.request.GoogleLoginRequest;
 import com.sharingfileweb.payload.request.LoginRequest;
-import com.sharingfileweb.payload.request.SignupRequest;
 import com.sharingfileweb.payload.request.TokenRefreshRequest;
 import com.sharingfileweb.payload.response.JwtResponse;
-import com.sharingfileweb.payload.response.MessageResponse;
 import com.sharingfileweb.payload.response.StandardResponse;
 import com.sharingfileweb.payload.response.TokenRefreshResponse;
-import com.sharingfileweb.repository.RoleRepository;
-import com.sharingfileweb.repository.UserRepository;
-import com.sharingfileweb.security.jwt.JwtUtils;
 import com.sharingfileweb.security.services.RefreshTokenService;
-import com.sharingfileweb.security.services.UserDetailsImpl;
-import com.sharingfileweb.models.RefreshToken;
 import com.sharingfileweb.exception.TokenRefreshException;
 
 import com.sharingfileweb.services.AuthService;
@@ -47,7 +27,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/auth")
-@Tag(name = "Authentication", description = "Các API xác thực, đăng nhập và đăng ký người dùng")
+@Tag(name = "Authentication", description = "Các API xác thực và đăng nhập người dùng")
 public class AuthController {
 
   @Autowired
@@ -103,17 +83,6 @@ public class AuthController {
     try {
         JwtResponse response = authService.loginWithZalo(request.getCode(), request.getRedirectUri());
         return ResponseEntity.ok(StandardResponse.success("Zalo login successful", response));
-    } catch (RuntimeException e) {
-        return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
-    }
-  }
-
-  @Operation(summary = "Đăng ký tải khoản", description = "Tạo tài khoản mới trong hệ thống.")
-  @PostMapping("/signup")
-  public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
-    try {
-        authService.registerUser(signUpRequest);
-        return ResponseEntity.ok(StandardResponse.success("User registered successfully!", null));
     } catch (RuntimeException e) {
         return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
     }

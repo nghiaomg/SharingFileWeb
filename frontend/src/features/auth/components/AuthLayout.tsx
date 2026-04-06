@@ -14,10 +14,16 @@ export function AuthLayout({
   children,
   title,
   subtitle,
+  actionLink,
 }: {
   children: React.ReactNode;
   title: string;
   subtitle: string;
+  actionLink?: {
+    text: string;
+    href: string;
+    linkText: string;
+  };
 }) {
   return (
     <main className="min-h-screen grid lg:grid-cols-2 bg-background">
@@ -50,6 +56,18 @@ export function AuthLayout({
           </div>
 
           {children}
+
+          {actionLink && (
+            <p className="text-center text-sm text-muted-foreground mt-6">
+              {actionLink.text}{" "}
+              <Link
+                href={actionLink.href}
+                className="font-semibold text-primary hover:underline"
+              >
+                {actionLink.linkText}
+              </Link>
+            </p>
+          )}
         </div>
       </div>
 

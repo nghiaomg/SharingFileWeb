@@ -1,19 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { Eye, EyeOff, Loader, Github, Dribbble } from "lucide-react";
+import { Github, Loader } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { useLogin } from "@/features/auth/mutations";
-import { getApiErrorMessage } from "@/types/api";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-
 export function LoginForm() {
-  const [formData, setFormData] = useState({ username: "", password: "" });
-  const [showPassword, setShowPassword] = useState(false);
-  const [isSocialOpen, setIsSocialOpen] = useState(false);
-  const loginMutation = useLogin();
+  const router = useRouter();
 
   const handleGithubLogin = () => {
     const githubClientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
@@ -21,9 +14,11 @@ export function LoginForm() {
       toast.error("Tính năng này đang bảo trì do thiếu cấu hình.");
       return;
     }
-    const redirectUri = typeof window !== "undefined"
-      ? window.location.origin + "/auth/github/callback"
-      : process.env.NEXT_PUBLIC_GITHUB_CALLBACK_URL || "https://sharingfile.nghiaomg.xyz/auth/github/callback";
+    const redirectUri =
+      typeof window !== "undefined"
+        ? window.location.origin + "/auth/github/callback"
+        : process.env.NEXT_PUBLIC_GITHUB_CALLBACK_URL ||
+          "https://sharingfile.nghiaomg.xyz/auth/github/callback";
     window.location.href = `https://github.com/login/oauth/authorize?client_id=${githubClientId}&redirect_uri=${redirectUri}&scope=user:email`;
   };
 
@@ -33,9 +28,11 @@ export function LoginForm() {
       toast.error("Tính năng này đang bảo trì do thiếu cấu hình.");
       return;
     }
-    const redirectUri = typeof window !== "undefined"
-      ? window.location.origin + "/auth/dribbble/callback"
-      : process.env.NEXT_PUBLIC_DRIBBBLE_CALLBACK_URL || "https://sharingfile.nghiaomg.xyz/auth/dribbble/callback";
+    const redirectUri =
+      typeof window !== "undefined"
+        ? window.location.origin + "/auth/dribbble/callback"
+        : process.env.NEXT_PUBLIC_DRIBBBLE_CALLBACK_URL ||
+          "https://sharingfile.nghiaomg.xyz/auth/dribbble/callback";
     window.location.href = `https://dribbble.com/oauth/authorize?client_id=${dribbbleClientId}&redirect_uri=${redirectUri}&scope=public`;
   };
 
@@ -45,10 +42,15 @@ export function LoginForm() {
       toast.error("Tính năng này đang bảo trì do thiếu cấu hình.");
       return;
     }
-    const redirectUri = typeof window !== "undefined"
-      ? window.location.origin + "/auth/zalo/callback"
-      : process.env.NEXT_PUBLIC_ZALO_CALLBACK_URL || "https://sharingfile.nghiaomg.xyz/auth/zalo/callback";
-    const state = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : "zalo_secure_state_12345";
+    const redirectUri =
+      typeof window !== "undefined"
+        ? window.location.origin + "/auth/zalo/callback"
+        : process.env.NEXT_PUBLIC_ZALO_CALLBACK_URL ||
+          "https://sharingfile.nghiaomg.xyz/auth/zalo/callback";
+    const state =
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : "zalo_secure_state_12345";
     window.location.href = `https://oauth.zaloapp.com/v4/permission?app_id=${zaloAppId}&redirect_uri=${redirectUri}&state=${state}`;
   };
 
@@ -58,118 +60,28 @@ export function LoginForm() {
       toast.error("Tính năng này đang bảo trì do thiếu cấu hình.");
       return;
     }
-    const redirectUri = typeof window !== "undefined"
-      ? window.location.origin + "/auth/google/callback"
-      : process.env.NEXT_PUBLIC_GOOGLE_CALLBACK_URL || "https://sharingfile.nghiaomg.xyz/auth/google/callback";
+    const redirectUri =
+      typeof window !== "undefined"
+        ? window.location.origin + "/auth/google/callback"
+        : process.env.NEXT_PUBLIC_GOOGLE_CALLBACK_URL ||
+          "https://sharingfile.nghiaomg.xyz/auth/google/callback";
     window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${redirectUri}&response_type=code&scope=email profile`;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    loginMutation.mutate(formData);
-  };
-
-  const errorMessage = loginMutation.isError
-    ? getApiErrorMessage(
-      loginMutation.error,
-      "Sai tên đăng nhập hoặc mật khẩu!",
-    )
-    : "";
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
-      {errorMessage && (
-        <div className="bg-rose-500/10 border border-rose-500/30 text-rose-500 text-sm p-4 rounded-2xl font-medium">
-          {errorMessage}
-        </div>
-      )}
-
-      <div className="space-y-2">
-        <label className="text-sm font-bold text-muted-foreground block">
-          Tên đăng nhập
-        </label>
-        <input
-          type="text"
-          value={formData.username}
-          onChange={(e) =>
-            setFormData({ ...formData, username: e.target.value })
-          }
-          className="w-full px-4 py-3 bg-secondary/60 border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all text-foreground placeholder:text-muted-foreground/50"
-          placeholder="Nhập tên đăng nhập..."
-          required
-        />
-      </div>
-
-      <div className="space-y-2">
-        <div className="flex justify-between items-center">
-          <label className="text-sm font-bold text-muted-foreground block">
-            Mật khẩu
-          </label>
-          <Link
-            href="/forgot-password"
-            className="text-sm text-primary font-bold hover:underline"
-          >
-            Quên mật khẩu?
-          </Link>
-        </div>
-        <div className="relative">
-          <input
-            type={showPassword ? "text" : "password"}
-            value={formData.password}
-            onChange={(e) =>
-              setFormData({ ...formData, password: e.target.value })
-            }
-            className="w-full px-4 py-3 bg-secondary/60 border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all text-foreground pr-12 placeholder:text-muted-foreground/50"
-            placeholder="••••••••"
-            required
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {showPassword ? (
-              <EyeOff className="w-5 h-5" />
-            ) : (
-              <Eye className="w-5 h-5" />
-            )}
-          </button>
-        </div>
-      </div>
-
-      <button
-        type="submit"
-        disabled={loginMutation.isPending}
-        className="w-full py-3.5 bg-primary text-white font-bold rounded-xl transition-colors hover:bg-primary/90 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 border border-primary/40 hover:border-primary"
-      >
-        {loginMutation.isPending ? (
-          <>
-            <Loader className="w-5 h-5 animate-spin" /> Đang xác thực...
-          </>
-        ) : (
-          "Đăng nhập"
-        )}
-      </button>
-
-      <div className="relative my-6">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-border"></span>
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-card px-2 text-muted-foreground font-semibold">
-            Hoặc đăng nhập bằng
-          </span>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <p className="text-center text-sm text-muted-foreground">
+        Đăng nhập bằng tài khoản mạng xã hội
+      </p>
 
       <div className="flex flex-col gap-3 pb-8">
-        <Dialog.Root open={isSocialOpen} onOpenChange={setIsSocialOpen}>
+        <Dialog.Root>
           <Dialog.Trigger asChild>
             <button
               type="button"
               className="w-full py-3.5 bg-secondary text-foreground font-bold rounded-xl transition-colors hover:bg-secondary/80 cursor-pointer flex items-center justify-center gap-2 border border-border hover:border-border/80"
             >
-              Continue with Social
+              Đăng nhập bằng Social
             </button>
           </Dialog.Trigger>
           <Dialog.Portal>
@@ -235,6 +147,6 @@ export function LoginForm() {
           </Dialog.Portal>
         </Dialog.Root>
       </div>
-    </form>
+    </div>
   );
 }
