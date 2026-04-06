@@ -2,16 +2,12 @@
 
 import { useState } from "react";
 import { useAdminSubscriptions } from "../../hooks/useSubscriptionsQuery";
-import {
-  useDeletePlan,
-  useInitDefaultPlans,
-} from "../../hooks/useSubscriptionsMutation";
+import { useDeletePlan } from "../../hooks/useSubscriptionsMutation";
 import {
   Loader2,
   Trash2,
   Edit,
   CreditCard,
-  AlertTriangle,
   Plus,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -23,7 +19,6 @@ import { Button } from "@radix-ui/themes";
 export function SubscriptionsList() {
   const { data: pageData, isLoading, isError } = useAdminSubscriptions();
   const { mutate: deletePlan, isPending: isDeleting } = useDeletePlan();
-  const { mutate: initPlans, isPending: isInit } = useInitDefaultPlans();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] =
@@ -50,18 +45,7 @@ export function SubscriptionsList() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-end gap-3 flex-wrap">
-        {plans.length === 0 && (
-          <Button
-            variant="outline"
-            color="orange"
-            size="3"
-            onClick={() => initPlans()}
-            disabled={isInit}
-          >
-            <AlertTriangle className="w-4 h-4 mr-2" /> Khởi tạo Gói Mặc định
-            (Init Default)
-          </Button>
-        )}
+
         <Button
           size="3"
           onClick={() => {

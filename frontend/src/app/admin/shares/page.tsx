@@ -7,7 +7,7 @@ export default function AdminSharesPage() {
     <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
       <div>
         <h1 className="text-2xl font-bold text-foreground mb-1">
-          Kiểm soát Share Links Công khai
+          Kiểm soát Share Links (tất cả)
         </h1>
         <p className="text-sm text-muted-foreground max-w-3xl">
           Quản lý toàn bộ các đường liên kết (URL) được người dùng chia sẻ công

@@ -10,6 +10,7 @@ export async function getAllStorageFiles(
   page: number = 0,
   size: number = 15,
 ): Promise<AdminPaginatedFilesResponse> {
+  console.log(`[AdminFilesAPI] Fetching storage files... page=${page}, size=${size}`);
   const response = await apiClient.get(`/files/all?page=${page}&size=${size}`);
   return response.data as AdminPaginatedFilesResponse;
 }
