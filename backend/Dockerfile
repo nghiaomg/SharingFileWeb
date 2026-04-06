@@ -14,4 +14,7 @@ WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 COPY .env ./
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar", "--env-file=.env"]
+# Pass MongoDB URI directly as a JVM argument so Spring Boot's auto-config
+# picks it up before anything else runs (before @PropertySource, etc.).
+# The -D flag takes highest precedence over all other property sources.
+ENTRYPOINT ["sh", "-c", "java -Dspring.data.mongodb.uri=mongodb://mongodb:27017/ -Dspring.data.mongodb.database=sharingfileweb -jar app.jar"]
