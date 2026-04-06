@@ -12,10 +12,7 @@ import {
 } from "./api";
 import { fileKeys } from "./queries";
 import { authKeys } from "../auth/queries";
-import type {
-  CreateFolderInput,
-  UpdateFolderInput,
-} from "./schemas";
+import type { CreateFolderInput, UpdateFolderInput } from "./schemas";
 
 // ─── Create Folder ───────────────────────────────────────────────────────────
 export function useCreateFolder() {

@@ -33,7 +33,10 @@ export default function SettingsPage() {
     >
       {/* Page Header */}
       <Flex align="center" gap="3" mb="8">
-        <Settings className="w-7 h-7" style={{ color: "var(--icon-storage)" }} />
+        <Settings
+          className="w-7 h-7"
+          style={{ color: "var(--icon-storage)" }}
+        />
         <Heading size="8" style={{ color: "var(--card-heading)" }}>
           Cài đặt
         </Heading>

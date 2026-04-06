@@ -7,13 +7,7 @@ import { determineFileType } from "@/lib/file-utils";
 import { formatBytes } from "@/lib/format";
 import { downloadFile } from "@/features/files/api";
 import { toast } from "sonner";
-import {
-  Flex,
-  Box,
-  Text,
-  IconButton,
-  DropdownMenu,
-} from "@radix-ui/themes";
+import { Flex, Box, Text, IconButton, DropdownMenu } from "@radix-ui/themes";
 import type { SharedAccessItem } from "@/features/files/schemas";
 
 function getColorName(fileType: string | null | undefined) {
@@ -86,11 +80,7 @@ export function SharedItemRow({
 
       {/* Shared by/to */}
       <Box style={{ flex: 3 }}>
-        <Text
-          size="2"
-          truncate
-          style={{ color: "var(--muted-foreground)" }}
-        >
+        <Text size="2" truncate style={{ color: "var(--muted-foreground)" }}>
           {tab === "with-me" ? item.ownerEmail : item.recipientEmail}
         </Text>
       </Box>

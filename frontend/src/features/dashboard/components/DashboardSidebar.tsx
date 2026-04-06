@@ -140,11 +140,11 @@ export function DashboardSidebar({ isOpen, onClose }: DashboardSidebarProps) {
                   style={
                     isActive
                       ? {
-                        background: "var(--gray-a3)",
-                        color: "var(--color-foreground)",
-                        boxShadow:
-                          "inset 3px 0 0 0 var(--gray-11), 0 2px 8px rgba(0,0,0,0.06)",
-                      }
+                          background: "var(--gray-a3)",
+                          color: "var(--color-foreground)",
+                          boxShadow:
+                            "inset 3px 0 0 0 var(--gray-11), 0 2px 8px rgba(0,0,0,0.06)",
+                        }
                       : {}
                   }
                 >
@@ -158,11 +158,7 @@ export function DashboardSidebar({ isOpen, onClose }: DashboardSidebarProps) {
                   )}
                   <item.icon
                     className="w-5 h-5 transition-transform duration-200 group-hover:scale-110"
-                    style={
-                      isActive
-                        ? { color: "var(--color-foreground)" }
-                        : {}
-                    }
+                    style={isActive ? { color: "var(--color-foreground)" } : {}}
                   />
                   {item.label}
                 </Link>
@@ -246,7 +242,8 @@ export function DashboardSidebar({ isOpen, onClose }: DashboardSidebarProps) {
                   width: "100%",
                   padding: "6px 16px",
                   borderRadius: "var(--radius-3)",
-                  background: "linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)",
+                  background:
+                    "linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)",
                   color: "#ffffff",
                   fontSize: "13px",
                   fontWeight: 700,
@@ -257,16 +254,19 @@ export function DashboardSidebar({ isOpen, onClose }: DashboardSidebarProps) {
                   gap: "6px",
                   cursor: "pointer",
                   transition: "all 0.2s ease",
-                  boxShadow: "0 1px 3px rgba(245, 158, 11, 0.3), inset 0 1px 0 rgba(255,255,255,0.15)",
+                  boxShadow:
+                    "0 1px 3px rgba(245, 158, 11, 0.3), inset 0 1px 0 rgba(255,255,255,0.15)",
                   border: "1px solid rgba(255,255,255,0.1)",
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = "translateY(-1px)";
-                  e.currentTarget.style.boxShadow = "0 4px 12px rgba(245, 158, 11, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)";
+                  e.currentTarget.style.boxShadow =
+                    "0 4px 12px rgba(245, 158, 11, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)";
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.boxShadow = "0 1px 3px rgba(245, 158, 11, 0.3), inset 0 1px 0 rgba(255,255,255,0.15)";
+                  e.currentTarget.style.boxShadow =
+                    "0 1px 3px rgba(245, 158, 11, 0.3), inset 0 1px 0 rgba(255,255,255,0.15)";
                 }}
               >
                 <Crown
@@ -292,11 +292,11 @@ export function DashboardSidebar({ isOpen, onClose }: DashboardSidebarProps) {
                   style={
                     isActive
                       ? {
-                        background: "var(--gray-a3)",
-                        color: "var(--color-foreground)",
-                        boxShadow:
-                          "inset 3px 0 0 0 var(--gray-11), 0 2px 8px rgba(0,0,0,0.06)",
-                      }
+                          background: "var(--gray-a3)",
+                          color: "var(--color-foreground)",
+                          boxShadow:
+                            "inset 3px 0 0 0 var(--gray-11), 0 2px 8px rgba(0,0,0,0.06)",
+                        }
                       : {}
                   }
                 >
@@ -310,11 +310,7 @@ export function DashboardSidebar({ isOpen, onClose }: DashboardSidebarProps) {
                   )}
                   <item.icon
                     className="w-5 h-5 transition-transform duration-200 group-hover:scale-110"
-                    style={
-                      isActive
-                        ? { color: "var(--color-foreground)" }
-                        : {}
-                    }
+                    style={isActive ? { color: "var(--color-foreground)" } : {}}
                   />
                   {item.label}
                 </Link>

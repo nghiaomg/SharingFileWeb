@@ -30,14 +30,17 @@ export default function SharedPage() {
 
   // Preview state
   const [previewItem, setPreviewItem] = useState<
-    | (SharedAccessItem & { previewType?: "pdf" | "xlsx" | "folder" | "unknown" })
+    | (SharedAccessItem & {
+        previewType?: "pdf" | "xlsx" | "folder" | "unknown";
+      })
     | null
   >(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
 
-  const { data: folderContent, isLoading: isFolderLoading } = useSharedFolderContent(
-    previewItem?.fileType === "folder" ? previewItem.id : null,
-  );
+  const { data: folderContent, isLoading: isFolderLoading } =
+    useSharedFolderContent(
+      previewItem?.fileType === "folder" ? previewItem.id : null,
+    );
 
   // ── Handlers ────────────────────────────────────────────────────────────────
 
@@ -57,7 +60,9 @@ export default function SharedPage() {
 
     if (type === "pdf" || type === "xlsx") {
       try {
-        toast.loading("Đang chuẩn bị file xem trước...", { id: "preview-load" });
+        toast.loading("Đang chuẩn bị file xem trước...", {
+          id: "preview-load",
+        });
         const url = await getFileBlobUrl(item.fileId);
         setPreviewUrl(url);
         toast.dismiss("preview-load");
@@ -84,8 +89,15 @@ export default function SharedPage() {
 
   if (isLoading) {
     return (
-      <Flex align="center" justify="center" style={{ flex: 1, padding: "3rem", height: "calc(100vh - 4rem)" }}>
-        <Loader2 className="w-8 h-8 animate-spin" style={{ color: "var(--gray-12)" }} />
+      <Flex
+        align="center"
+        justify="center"
+        style={{ flex: 1, padding: "3rem", height: "calc(100vh - 4rem)" }}
+      >
+        <Loader2
+          className="w-8 h-8 animate-spin"
+          style={{ color: "var(--gray-12)" }}
+        />
       </Flex>
     );
   }
@@ -116,9 +128,17 @@ export default function SharedPage() {
         ) : (
           <Flex direction="column" gap="4">
             {viewMode === "grid" ? (
-              <SharedItemGrid items={items} tab={tab} onPreview={handlePreview} />
+              <SharedItemGrid
+                items={items}
+                tab={tab}
+                onPreview={handlePreview}
+              />
             ) : (
-              <SharedItemList items={items} tab={tab} onPreview={handlePreview} />
+              <SharedItemList
+                items={items}
+                tab={tab}
+                onPreview={handlePreview}
+              />
             )}
           </Flex>
         )}

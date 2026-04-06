@@ -109,10 +109,7 @@ export function SharedItemCard({ item, tab, onPreview }: SharedItemCardProps) {
         }}
       >
         <Flex align="center" gap="1">
-          <PermIcon
-            className="w-3 h-3"
-            style={{ color: "var(--gray-10)" }}
-          />
+          <PermIcon className="w-3 h-3" style={{ color: "var(--gray-10)" }} />
           <Text size="1" style={{ color: "var(--muted-foreground)" }}>
             {formatBytes(item.fileSize)}
           </Text>

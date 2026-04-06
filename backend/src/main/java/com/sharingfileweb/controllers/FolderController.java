@@ -127,12 +127,20 @@ public class FolderController {
   }
 
   // GET /api/folders/all  → Admin: lấy toàn bộ folder hệ thống
-  @Operation(summary = "Lấy tất cả thư mục (Quyền Admin)", description = "Lấy danh sách tất cả thư mục trong hệ thống.")
+  @Operation(summary = "Lấy tất cả thư mục (Quyền Admin)", description = "Lấy danh sách tất cả thư mục trong hệ thống dưới dạng phân trang.")
   @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
   @GetMapping("/all")
-  public ResponseEntity<?> getAllFoldersForAdmin() {
-      List<Folder> folders = folderRepository.findAll();
-      return ResponseEntity.ok(StandardResponse.success("Fetched all folders", folders));
+  public ResponseEntity<?> getAllFoldersForAdmin(
+          @RequestParam(defaultValue = "0") int page,
+          @RequestParam(defaultValue = "15") int size) {
+      org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt"));
+      org.springframework.data.domain.Page<Folder> pageResult = folderRepository.findAll(pageable);
+      java.util.Map<String, Object> responseData = new java.util.HashMap<>();
+      responseData.put("content", pageResult.getContent());
+      responseData.put("currentPage", pageResult.getNumber());
+      responseData.put("totalItems", pageResult.getTotalElements());
+      responseData.put("totalPages", pageResult.getTotalPages());
+      return ResponseEntity.ok(StandardResponse.success("Fetched all folders", responseData));
   }
 
   // DELETE /api/folders/{id}/permanent  → Admin: xóa cứng
@@ -143,7 +151,7 @@ public class FolderController {
       if (!folderRepository.existsById(id)) {
           return ResponseEntity.notFound().build();
       }
-      folderRepository.deleteById(id);
+      folderService.deleteFolderPermanentlyByAdmin(id);
       return ResponseEntity.ok(StandardResponse.success("Folder deleted permanently", null));
   }
 }

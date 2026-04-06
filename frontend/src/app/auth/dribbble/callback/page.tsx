@@ -16,9 +16,11 @@ function DribbbleCallbackComponent() {
   useEffect(() => {
     if (code && !processedCodes.has(code)) {
       processedCodes.add(code);
-      const redirectUri = typeof window !== "undefined"
-        ? window.location.origin + window.location.pathname
-        : process.env.NEXT_PUBLIC_DRIBBBLE_CALLBACK_URL || "https://sharingfile.nghiaomg.xyz/auth/dribbble/callback";
+      const redirectUri =
+        typeof window !== "undefined"
+          ? window.location.origin + window.location.pathname
+          : process.env.NEXT_PUBLIC_DRIBBBLE_CALLBACK_URL ||
+            "https://sharingfile.nghiaomg.xyz/auth/dribbble/callback";
       loginWithDribbble(code, redirectUri)
         .then(() => {
           toast.success("Đăng nhập Dribbble thành công!");

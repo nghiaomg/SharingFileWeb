@@ -26,19 +26,14 @@ export function RecentPageEmptyState() {
       >
         <Clock style={{ width: 64, height: 64, color: "var(--gray-a5)" }} />
       </Box>
-      <Heading
-        size="6"
-        mb="3"
-        style={{ color: "var(--color-foreground)" }}
-      >
+      <Heading size="6" mb="3" style={{ color: "var(--color-foreground)" }}>
         Không có tệp gần đây
       </Heading>
       <Text
         size="3"
         style={{ maxWidth: "24rem", color: "var(--muted-foreground)" }}
       >
-        Những tệp bạn vừa mở, tải lên hoặc làm việc gần đây sẽ hiển thị ở
-        đây.
+        Những tệp bạn vừa mở, tải lên hoặc làm việc gần đây sẽ hiển thị ở đây.
       </Text>
     </Flex>
   );

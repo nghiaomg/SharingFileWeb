@@ -27,27 +27,47 @@ function ListHeader() {
       }}
     >
       <Box style={{ flex: 5 }}>
-        <Text size="2" weight="medium" style={{ color: "var(--muted-foreground)" }}>
+        <Text
+          size="2"
+          weight="medium"
+          style={{ color: "var(--muted-foreground)" }}
+        >
           Tên tệp
         </Text>
       </Box>
       <Box style={{ flex: 2 }}>
-        <Text size="2" weight="medium" style={{ color: "var(--muted-foreground)" }}>
+        <Text
+          size="2"
+          weight="medium"
+          style={{ color: "var(--muted-foreground)" }}
+        >
           Loại
         </Text>
       </Box>
       <Box style={{ flex: 2, textAlign: "right" }}>
-        <Text size="2" weight="medium" style={{ color: "var(--muted-foreground)" }}>
+        <Text
+          size="2"
+          weight="medium"
+          style={{ color: "var(--muted-foreground)" }}
+        >
           Dung lượng
         </Text>
       </Box>
       <Box style={{ flex: 2 }} className="ml-4">
-        <Text size="2" weight="medium" style={{ color: "var(--muted-foreground)" }}>
+        <Text
+          size="2"
+          weight="medium"
+          style={{ color: "var(--muted-foreground)" }}
+        >
           Thời gian
         </Text>
       </Box>
       <Box style={{ flex: 1, textAlign: "right" }}>
-        <Text size="2" weight="medium" style={{ color: "var(--muted-foreground)" }}>
+        <Text
+          size="2"
+          weight="medium"
+          style={{ color: "var(--muted-foreground)" }}
+        >
           Thao tác
         </Text>
       </Box>

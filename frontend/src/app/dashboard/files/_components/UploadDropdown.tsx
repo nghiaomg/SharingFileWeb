@@ -36,7 +36,7 @@ export function UploadDropdown({ isUploading, onUpload }: UploadDropdownProps) {
         className="hidden"
         multiple
       />
-      { }
+      {}
       <input
         type="file"
         ref={folderInputRef}
@@ -87,10 +87,18 @@ export function UploadDropdown({ isUploading, onUpload }: UploadDropdownProps) {
             }}
             className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors cursor-pointer"
             style={{ color: "var(--color-foreground)" }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--gray-a3)")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.background = "var(--gray-a3)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.background = "transparent")
+            }
           >
-            <FileText className="w-4 h-4" style={{ color: "var(--icon-blue)" }} /> Tải tệp lên
+            <FileText
+              className="w-4 h-4"
+              style={{ color: "var(--icon-blue)" }}
+            />{" "}
+            Tải tệp lên
           </button>
           <button
             onClick={() => {
@@ -99,10 +107,18 @@ export function UploadDropdown({ isUploading, onUpload }: UploadDropdownProps) {
             }}
             className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors cursor-pointer"
             style={{ color: "var(--color-foreground)" }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--gray-a3)")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.background = "var(--gray-a3)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.background = "transparent")
+            }
           >
-            <FolderUp className="w-4 h-4" style={{ color: "var(--amber-11)" }} /> Tải thư mục lên
+            <FolderUp
+              className="w-4 h-4"
+              style={{ color: "var(--amber-11)" }}
+            />{" "}
+            Tải thư mục lên
           </button>
         </div>
       )}

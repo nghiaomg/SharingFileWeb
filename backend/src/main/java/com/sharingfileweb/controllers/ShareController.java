@@ -173,11 +173,18 @@ public class ShareController {
 
     @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/links")
-    public ResponseEntity<?> getAllShareLinksForAdmin() {
-        List<com.sharingfileweb.models.ShareLink> shareLinks =
-                shareLinkRepository.findAll();
-        shareLinks.forEach(link -> link.setPassword(null));
-        return ResponseEntity.ok(StandardResponse.success("Fetched all share links", shareLinks));
+    public ResponseEntity<?> getAllShareLinksForAdmin(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "15") int size) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt"));
+        org.springframework.data.domain.Page<com.sharingfileweb.models.ShareLink> pageResult = shareLinkRepository.findAll(pageable);
+        pageResult.getContent().forEach(link -> link.setPassword(null));
+        java.util.Map<String, Object> responseData = new java.util.HashMap<>();
+        responseData.put("content", pageResult.getContent());
+        responseData.put("currentPage", pageResult.getNumber());
+        responseData.put("totalItems", pageResult.getTotalElements());
+        responseData.put("totalPages", pageResult.getTotalPages());
+        return ResponseEntity.ok(StandardResponse.success("Fetched all share links", responseData));
     }
 
     @Operation(summary = "Thu hồi link chia sẻ (Quyền Admin)")

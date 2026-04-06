@@ -72,13 +72,21 @@ public class UserController {
   private com.sharingfileweb.repository.RoleRepository roleRepository;
 
   // GET /api/users → Admin: lấy toàn bộ người dùng
-  @Operation(summary = "Lấy tất cả người dùng (Quyền Admin)", description = "Lấy danh sách người dùng trên hệ thống.")
+  @Operation(summary = "Lấy tất cả người dùng (Quyền Admin)", description = "Lấy danh sách người dùng phân trang trên hệ thống.")
   @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
   @GetMapping("/users")
-  public ResponseEntity<?> getAllUsers() {
-      List<User> users = userRepository.findAll();
-      users.forEach(u -> u.setPassword(null));
-      return ResponseEntity.ok(StandardResponse.success("Fetched all users", users));
+  public ResponseEntity<?> getAllUsers(
+          @RequestParam(defaultValue = "0") int page,
+          @RequestParam(defaultValue = "15") int size) {
+      org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt"));
+      org.springframework.data.domain.Page<User> usersPage = userRepository.findAll(pageable);
+      usersPage.getContent().forEach(u -> u.setPassword(null));
+      java.util.Map<String, Object> responseData = new java.util.HashMap<>();
+      responseData.put("content", usersPage.getContent());
+      responseData.put("currentPage", usersPage.getNumber());
+      responseData.put("totalItems", usersPage.getTotalElements());
+      responseData.put("totalPages", usersPage.getTotalPages());
+      return ResponseEntity.ok(StandardResponse.success("Fetched all users", responseData));
   }
 
   // GET /api/users/{id} → Admin: lấy người dùng theo id

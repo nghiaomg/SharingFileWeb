@@ -33,7 +33,10 @@ export function SecuritySection({
           <Heading size="5" style={{ color: "var(--card-heading)" }}>
             Bảo mật
           </Heading>
-          <Box as="div" style={{ color: "var(--muted-foreground)", fontSize: "14px" }}>
+          <Box
+            as="div"
+            style={{ color: "var(--muted-foreground)", fontSize: "14px" }}
+          >
             Quản lý bảo vệ tài khoản
           </Box>
         </Box>
@@ -94,8 +97,10 @@ export function SecuritySection({
               as="div"
               mt="1"
               style={{
-                color: is2FAEnabled ? "var(--jade-11)" : "var(--muted-foreground)",
-                fontSize: "14px"
+                color: is2FAEnabled
+                  ? "var(--jade-11)"
+                  : "var(--muted-foreground)",
+                fontSize: "14px",
               }}
             >
               {is2FAEnabled ? "Đang kích hoạt - Bảo mật cao" : "Chưa kích hoạt"}

@@ -261,9 +261,17 @@ public class FileController {
     @Operation(summary = "Lấy tất cả tệp (Admin)")
     @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/all")
-    public ResponseEntity<?> getAllFilesForAdmin() {
-        List<StorageFile> files = fileRepository.findAll();
-        return ResponseEntity.ok(StandardResponse.success("Fetched all files", files));
+    public ResponseEntity<?> getAllFilesForAdmin(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "15") int size) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt"));
+        org.springframework.data.domain.Page<StorageFile> pageResult = fileRepository.findAll(pageable);
+        java.util.Map<String, Object> responseData = new java.util.HashMap<>();
+        responseData.put("content", pageResult.getContent());
+        responseData.put("currentPage", pageResult.getNumber());
+        responseData.put("totalItems", pageResult.getTotalElements());
+        responseData.put("totalPages", pageResult.getTotalPages());
+        return ResponseEntity.ok(StandardResponse.success("Fetched all files", responseData));
     }
 
     @Operation(summary = "Xóa vĩnh viễn tệp (Admin)")

@@ -105,10 +105,9 @@ export default function SharedFilePage() {
       setError(null);
 
       const query = pwd ? `?password=${encodeURIComponent(pwd)}` : "";
-      const res = await fetch(
-        `${API_BASE_URL}/public/share/${token}${query}`,
-        { cache: "no-store" }
-      );
+      const res = await fetch(`${API_BASE_URL}/public/share/${token}${query}`, {
+        cache: "no-store",
+      });
       const data = await res.json();
 
       if (!res.ok) {
@@ -151,12 +150,10 @@ export default function SharedFilePage() {
   const handleDownload = async () => {
     if (!fileData) return;
     try {
-      const query = password
-        ? `?password=${encodeURIComponent(password)}`
-        : "";
+      const query = password ? `?password=${encodeURIComponent(password)}` : "";
       const res = await fetch(
         `${API_BASE_URL}/public/share/${token}/download${query}`,
-        { cache: "no-store" }
+        { cache: "no-store" },
       );
 
       if (!res.ok) {
@@ -196,12 +193,10 @@ export default function SharedFilePage() {
   const handlePreview = async () => {
     if (!fileData) return;
     try {
-      const query = password
-        ? `?password=${encodeURIComponent(password)}`
-        : "";
+      const query = password ? `?password=${encodeURIComponent(password)}` : "";
       const res = await fetch(
         `${API_BASE_URL}/public/share/${token}/preview${query}`,
-        { cache: "no-store" }
+        { cache: "no-store" },
       );
       if (res.ok) {
         const data = await res.json();
@@ -258,9 +253,7 @@ export default function SharedFilePage() {
             disabled={submittingPassword || !password.trim()}
             className="w-full px-6 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            {submittingPassword && (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            )}
+            {submittingPassword && <Loader2 className="w-4 h-4 animate-spin" />}
             Mở khóa
           </button>
         </div>

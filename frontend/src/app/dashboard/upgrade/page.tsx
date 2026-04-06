@@ -8,7 +8,11 @@ import { usePaymentStatusQuery } from "@/features/payment/queries";
 import { useCurrentUser } from "@/features/auth/queries";
 import { getApiErrorMessage } from "@/types/api";
 import { toast } from "sonner";
-import { PLANS, Plan, getPlanIdFromSubscription } from "@/features/plans/plans.config";
+import {
+  PLANS,
+  Plan,
+  getPlanIdFromSubscription,
+} from "@/features/plans/plans.config";
 
 // ============================================================================
 // Sub-components
@@ -35,7 +39,10 @@ function PlanCard({
       className="flex flex-col rounded-2xl p-5"
       style={
         plan.recommended
-          ? { background: "var(--color-foreground)", color: "var(--color-background)" }
+          ? {
+              background: "var(--color-foreground)",
+              color: "var(--color-background)",
+            }
           : { background: "var(--gray-a2)" }
       }
     >
@@ -45,13 +52,19 @@ function PlanCard({
           <Box
             p="2"
             style={{
-              background: plan.recommended ? "rgba(255,255,255,0.2)" : "var(--gray-a3)",
+              background: plan.recommended
+                ? "rgba(255,255,255,0.2)"
+                : "var(--gray-a3)",
               borderRadius: "var(--radius-3)",
             }}
           >
             <PlanIcon planId={plan.id} />
           </Box>
-          <Text weight="bold" size="4" style={plan.recommended ? { color: "var(--color-background)" } : {}}>
+          <Text
+            weight="bold"
+            size="4"
+            style={plan.recommended ? { color: "var(--color-background)" } : {}}
+          >
             {plan.name}
           </Text>
         </Flex>
@@ -68,22 +81,40 @@ function PlanCard({
         {isCurrentPlan && (
           <Flex align="center" gap="1" style={{ color: "var(--emerald-11)" }}>
             <CheckCircle2 className="w-4 h-4" />
-            <Text size="1" weight="bold" style={{ color: "var(--emerald-11)" }}>ĐANG DÙNG</Text>
+            <Text size="1" weight="bold" style={{ color: "var(--emerald-11)" }}>
+              ĐANG DÙNG
+            </Text>
           </Flex>
         )}
       </Flex>
 
       {/* Storage + Price */}
       <Flex align="baseline" justify="between" mb="4">
-        <Text size="2" style={plan.recommended ? { color: "rgba(255,255,255,0.7)" } : { color: "var(--muted-foreground)" }}>
+        <Text
+          size="2"
+          style={
+            plan.recommended
+              ? { color: "rgba(255,255,255,0.7)" }
+              : { color: "var(--muted-foreground)" }
+          }
+        >
           {plan.storage}
         </Text>
         <Flex align="baseline" gap="1">
-          <Text weight="bold" size="7" style={plan.recommended ? { color: "var(--color-background)" } : {}}>
+          <Text
+            weight="bold"
+            size="7"
+            style={plan.recommended ? { color: "var(--color-background)" } : {}}
+          >
             {plan.priceDisplay}
           </Text>
           {plan.price > 0 && (
-            <Text size="2" style={plan.recommended ? { color: "rgba(255,255,255,0.7)" } : {}}>/tháng</Text>
+            <Text
+              size="2"
+              style={plan.recommended ? { color: "rgba(255,255,255,0.7)" } : {}}
+            >
+              /tháng
+            </Text>
           )}
         </Flex>
       </Flex>
@@ -95,9 +126,16 @@ function PlanCard({
             <Flex key={i} align="center" gap="2">
               <CheckCircle2
                 className="w-3.5 h-3.5 shrink-0"
-                style={{ color: plan.recommended ? "#86efac" : "var(--emerald-11)" }}
+                style={{
+                  color: plan.recommended ? "#86efac" : "var(--emerald-11)",
+                }}
               />
-              <Text size="2" style={plan.recommended ? { color: "rgba(255,255,255,0.9)" } : {}}>
+              <Text
+                size="2"
+                style={
+                  plan.recommended ? { color: "rgba(255,255,255,0.9)" } : {}
+                }
+              >
                 {feature}
               </Text>
             </Flex>
@@ -107,11 +145,23 @@ function PlanCard({
 
       {/* CTA */}
       {isCurrentPlan ? (
-        <Button variant="soft" color="gray" size="3" disabled className="w-full">
+        <Button
+          variant="soft"
+          color="gray"
+          size="3"
+          disabled
+          className="w-full"
+        >
           <CheckCircle2 className="w-4 h-4" /> Đang sử dụng
         </Button>
       ) : plan.id === "FREE" ? (
-        <Button variant="outline" color="gray" size="3" disabled className="w-full">
+        <Button
+          variant="outline"
+          color="gray"
+          size="3"
+          disabled
+          className="w-full"
+        >
           Miễn phí
         </Button>
       ) : (
@@ -141,7 +191,8 @@ export default function UpgradePage() {
   const createPaymentMutation = useCreatePaymentMutation();
 
   const currentPlanId = getPlanIdFromSubscription(user?.subscriptionPlan);
-  const pendingOrder = paymentStatus?.status === "PENDING" ? paymentStatus : null;
+  const pendingOrder =
+    paymentStatus?.status === "PENDING" ? paymentStatus : null;
 
   const handleProceedToPayment = async () => {
     if (pendingOrder) {
@@ -149,7 +200,9 @@ export default function UpgradePage() {
       return;
     }
     try {
-      const result = await createPaymentMutation.mutateAsync({ planName: "PRO" });
+      const result = await createPaymentMutation.mutateAsync({
+        planName: "PRO",
+      });
       if (result?.orderCode) {
         router.push(`/payment/checkout/${result.orderCode}`);
       }
@@ -163,7 +216,10 @@ export default function UpgradePage() {
   };
 
   return (
-    <Box p={{ initial: "4", sm: "6" }} style={{ height: "100%", overflowY: "auto" }}>
+    <Box
+      p={{ initial: "4", sm: "6" }}
+      style={{ height: "100%", overflowY: "auto" }}
+    >
       {/* Header */}
       <Flex align="center" gap="2" mb="5">
         <QrCode className="w-6 h-6" style={{ color: "var(--icon-storage)" }} />
@@ -181,17 +237,25 @@ export default function UpgradePage() {
         >
           <Flex align="center" justify="between" gap="3">
             <Text size="2" style={{ color: "var(--amber-11)" }}>
-              Đơn hàng <strong>#{pendingOrder.orderCode}</strong> đang chờ thanh toán
+              Đơn hàng <strong>#{pendingOrder.orderCode}</strong> đang chờ thanh
+              toán
             </Text>
             <Flex gap="2">
-              <Button variant="soft" color="red" size="1" onClick={handleCancelPending}>
+              <Button
+                variant="soft"
+                color="red"
+                size="1"
+                onClick={handleCancelPending}
+              >
                 Hủy
               </Button>
               <Button
                 variant="solid"
                 color="amber"
                 size="1"
-                onClick={() => router.push(`/payment/checkout/${pendingOrder.orderCode}`)}
+                onClick={() =>
+                  router.push(`/payment/checkout/${pendingOrder.orderCode}`)
+                }
               >
                 Thanh toán
               </Button>
@@ -222,12 +286,22 @@ export default function UpgradePage() {
       {/* Footer note */}
       <Flex align="center" justify="center" mt="5" gap="6">
         <Flex align="center" gap="1">
-          <CheckCircle2 className="w-4 h-4" style={{ color: "var(--emerald-11)" }} />
-          <Text size="2" style={{ color: "var(--muted-foreground)" }}>Thanh toán bảo mật</Text>
+          <CheckCircle2
+            className="w-4 h-4"
+            style={{ color: "var(--emerald-11)" }}
+          />
+          <Text size="2" style={{ color: "var(--muted-foreground)" }}>
+            Thanh toán bảo mật
+          </Text>
         </Flex>
         <Flex align="center" gap="1">
-          <CheckCircle2 className="w-4 h-4" style={{ color: "var(--emerald-11)" }} />
-          <Text size="2" style={{ color: "var(--muted-foreground)" }}>Xác nhận tự động</Text>
+          <CheckCircle2
+            className="w-4 h-4"
+            style={{ color: "var(--emerald-11)" }}
+          />
+          <Text size="2" style={{ color: "var(--muted-foreground)" }}>
+            Xác nhận tự động
+          </Text>
         </Flex>
       </Flex>
     </Box>

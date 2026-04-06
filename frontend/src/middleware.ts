@@ -5,8 +5,7 @@ export function middleware(request: NextRequest) {
   // Lấy giá trị cookie access_token
   const token = request.cookies.get("access_token")?.value;
 
-  const isAuthPage =
-    request.nextUrl.pathname.startsWith("/login");
+  const isAuthPage = request.nextUrl.pathname.startsWith("/login");
   const isDashboardPage = request.nextUrl.pathname.startsWith("/dashboard");
 
   // Nếu người dùng chưa đăng nhập, muốn vào dashboard -> Redirect sang login

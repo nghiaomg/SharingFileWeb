@@ -309,7 +309,7 @@ export default function TrashPage() {
                                   handleRestore("folder", folder.id);
                                 }}
                                 className="cursor-pointer"
-                                  style={{ color: "var(--gray-11)" }}
+                                style={{ color: "var(--gray-11)" }}
                               >
                                 <RotateCcw className="w-4 h-4 mr-2" /> Khôi phục
                               </DropdownMenu.Item>
@@ -762,7 +762,7 @@ export default function TrashPage() {
                                       handleRestore("file", file.id);
                                     }}
                                     className="cursor-pointer"
-                                  style={{ color: "var(--gray-11)" }}
+                                    style={{ color: "var(--gray-11)" }}
                                   >
                                     <RotateCcw className="w-4 h-4 mr-2" /> Khôi
                                     phục

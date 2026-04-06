@@ -11,6 +11,7 @@ import java.util.Optional;
 @Repository
 public interface FolderRepository extends MongoRepository<Folder, String> {
   List<Folder> findByOwnerIdAndParentIdAndIsDeletedFalse(String ownerId, String parentId);
+  List<Folder> findByParentId(String parentId);
   List<Folder> findByOwnerIdAndIsDeletedFalse(String ownerId);
   Optional<Folder> findByIdAndOwnerIdAndIsDeletedFalse(String id, String ownerId);
   Optional<Folder> findByNameAndOwnerIdAndParentIdAndIsDeletedFalse(String name, String ownerId, String parentId);

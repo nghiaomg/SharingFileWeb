@@ -14,6 +14,7 @@ import java.util.Optional;
 public interface FileRepository extends MongoRepository<StorageFile, String> {
   List<StorageFile> findByOwnerIdAndFolderIdAndIsDeletedFalse(String ownerId, String folderId);
   List<StorageFile> findByFolderIdAndIsDeletedFalse(String folderId);
+  List<StorageFile> findByFolderId(String folderId);
   List<StorageFile> findByOwnerIdAndIsDeletedFalse(String ownerId);
 
   @Query("{ 'ownerId': ?0, 'isDeleted': false, $or: [ { 'isPublic': true }, { 'accessMode': { $ne: 'PRIVATE' } } ] }")

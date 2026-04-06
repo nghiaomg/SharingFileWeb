@@ -41,7 +41,7 @@ export function LoginForm() {
     window.location.href = `https://dribbble.com/oauth/authorize?client_id=${dribbbleClientId}&redirect_uri=${redirectUri}&scope=public`;
   };
 
-  const handleZaloLogin = (): void => {
+  /* const handleZaloLogin = (): void => {
     const zaloAppId = process.env.NEXT_PUBLIC_ZALO_APP_ID;
     if (!zaloAppId) {
       toast.error("Tính năng này đang bảo trì do thiếu cấu hình.");
@@ -57,7 +57,7 @@ export function LoginForm() {
         ? crypto.randomUUID()
         : "zalo_secure_state_12345";
     window.location.href = `https://oauth.zaloapp.com/v4/permission?app_id=${zaloAppId}&redirect_uri=${redirectUri}&state=${state}`;
-  };
+  }; */
 
   const handleGoogleLogin = (): void => {
     const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
@@ -86,7 +86,7 @@ export function LoginForm() {
           const err = error as AxiosError<{ message?: string }>;
           toast.error(err.response?.data?.message || "Đăng nhập thất bại");
         },
-      }
+      },
     );
   };
 
@@ -94,7 +94,9 @@ export function LoginForm() {
     <div className="space-y-6">
       <form onSubmit={handleCredentialsLogin} className="space-y-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">Tài khoản</label>
+          <label className="text-sm font-medium text-foreground">
+            Tài khoản
+          </label>
           <input
             type="text"
             value={username}
@@ -106,8 +108,15 @@ export function LoginForm() {
         </div>
         <div className="space-y-2 relative">
           <div className="flex items-center justify-between">
-            <label className="text-sm font-medium text-foreground">Mật khẩu</label>
-            <a href="#" className="text-sm text-primary hover:underline font-medium">Quên mật khẩu?</a>
+            <label className="text-sm font-medium text-foreground">
+              Mật khẩu
+            </label>
+            <a
+              href="#"
+              className="text-sm text-primary hover:underline font-medium"
+            >
+              Quên mật khẩu?
+            </a>
           </div>
           <div className="relative">
             <input
@@ -124,7 +133,11 @@ export function LoginForm() {
               className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               disabled={isPending}
             >
-              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              {showPassword ? (
+                <EyeOff className="w-5 h-5" />
+              ) : (
+                <Eye className="w-5 h-5" />
+              )}
             </button>
           </div>
         </div>
@@ -133,7 +146,11 @@ export function LoginForm() {
           className="w-full py-3.5 bg-primary text-primary-foreground font-bold rounded-xl transition-colors hover:bg-primary/90 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
           disabled={isPending}
         >
-          {isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : "Đăng nhập"}
+          {isPending ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            "Đăng nhập"
+          )}
         </button>
       </form>
 
@@ -142,7 +159,9 @@ export function LoginForm() {
           <span className="w-full border-t border-border" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground font-medium">Hoặc đăng nhập bằng</span>
+          <span className="bg-background px-2 text-muted-foreground font-medium">
+            Hoặc đăng nhập bằng
+          </span>
         </div>
       </div>
 
@@ -204,7 +223,7 @@ export function LoginForm() {
                   <Dribbble className="w-5 h-5 text-[#ea4c89]" />
                   Continue with Dribbble
                 </button>
-                <button
+                {/* <button
                   type="button"
                   onClick={handleZaloLogin}
                   className="w-[340px] flex items-center justify-center gap-2 py-2 border border-[#0068FF] rounded bg-[#0068FF]/5 hover:bg-[#0068FF]/10 transition-colors font-medium text-[#0068FF] relative"
@@ -213,8 +232,7 @@ export function LoginForm() {
                     Zalo
                   </span>
                   Continue with Zalo
-                </button>
-              </div>
+                </button> */}              </div>
             </Dialog.Content>
           </Dialog.Portal>
         </Dialog.Root>

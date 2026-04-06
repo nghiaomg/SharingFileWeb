@@ -26,15 +26,9 @@ export function SharedEmptyState({ tab }: SharedEmptyStateProps) {
           backgroundColor: "var(--gray-a3)",
         }}
       >
-        <Users
-          style={{ width: 64, height: 64, color: "var(--gray-a5)" }}
-        />
+        <Users style={{ width: 64, height: 64, color: "var(--gray-a5)" }} />
       </Box>
-      <Heading
-        size="6"
-        mb="3"
-        style={{ color: "var(--color-foreground)" }}
-      >
+      <Heading size="6" mb="3" style={{ color: "var(--color-foreground)" }}>
         {tab === "with-me"
           ? "Chưa có ai chia sẻ tệp cho bạn"
           : "Bạn chưa chia sẻ tệp nào"}

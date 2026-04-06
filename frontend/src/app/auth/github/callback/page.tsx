@@ -16,9 +16,11 @@ function GithubCallbackComponent() {
   useEffect(() => {
     if (code && !processedCodes.has(code)) {
       processedCodes.add(code);
-      const redirectUri = typeof window !== "undefined"
-        ? window.location.origin + window.location.pathname
-        : process.env.NEXT_PUBLIC_GITHUB_CALLBACK_URL || "https://sharingfile.nghiaomg.xyz/auth/github/callback";
+      const redirectUri =
+        typeof window !== "undefined"
+          ? window.location.origin + window.location.pathname
+          : process.env.NEXT_PUBLIC_GITHUB_CALLBACK_URL ||
+            "https://sharingfile.nghiaomg.xyz/auth/github/callback";
       loginWithGithub(code, redirectUri)
         .then(() => {
           toast.success("Đăng nhập GitHub thành công!");

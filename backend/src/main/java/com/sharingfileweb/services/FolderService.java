@@ -28,6 +28,9 @@ public class FolderService {
     @Autowired
     FileRepository fileRepository;
 
+    @Autowired
+    private B2StorageService b2StorageService;
+
     private String getCurrentUserId() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return userDetails.getId();
@@ -168,5 +171,28 @@ public class FolderService {
             folder.setDeletedAt(nowInstant);
             folderRepository.save(folder);
         }
+    }
+
+    public void deleteFolderPermanentlyByAdmin(String folderId) {
+        // Find all files in this folder (including soft-deleted)
+        List<StorageFile> filesInFolder = fileRepository.findByFolderId(folderId);
+        for (StorageFile file : filesInFolder) {
+            if (file.getB2FileId() != null && !file.getB2FileId().isEmpty()) {
+                try {
+                    b2StorageService.deleteFile(file.getB2FileId(), file.getB2FileName());
+                } catch (Exception e) {
+                    System.err.println("Failed to delete B2 file: " + e.getMessage());
+                }
+            }
+            fileRepository.delete(file);
+        }
+
+        // Find subfolders
+        List<Folder> children = folderRepository.findByParentId(folderId);
+        for (Folder child : children) {
+            deleteFolderPermanentlyByAdmin(child.getId());
+        }
+
+        folderRepository.deleteById(folderId);
     }
 }

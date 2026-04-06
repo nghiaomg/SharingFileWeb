@@ -30,9 +30,7 @@ function TabButton({
         borderRadius: "var(--radius-2)",
         border: "none",
         background: isActive ? "var(--gray-a4)" : "transparent",
-        color: isActive
-          ? "var(--color-foreground)"
-          : "var(--muted-foreground)",
+        color: isActive ? "var(--color-foreground)" : "var(--muted-foreground)",
         fontSize: "13px",
         fontWeight: 500,
         fontFamily: "inherit",

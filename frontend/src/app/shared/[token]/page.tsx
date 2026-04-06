@@ -122,7 +122,7 @@ export default function SharedTokenPage() {
       if (type === "folder") {
         const res = await fetch(
           `${API_BASE_URL}/public/share/${token}/folder${query}`,
-          { cache: "no-store" }
+          { cache: "no-store" },
         );
         const data = await res.json();
         if (res.ok) {
@@ -153,7 +153,9 @@ export default function SharedTokenPage() {
       setError(null);
 
       const query = pwd ? `?password=${encodeURIComponent(pwd)}` : "";
-      const res = await fetch(`${API_BASE_URL}/public/share/${token}${query}`, { cache: "no-store" });
+      const res = await fetch(`${API_BASE_URL}/public/share/${token}${query}`, {
+        cache: "no-store",
+      });
       const data = await res.json();
 
       if (!res.ok) {
@@ -198,7 +200,7 @@ export default function SharedTokenPage() {
       const query = password ? `?password=${encodeURIComponent(password)}` : "";
       const res = await fetch(
         `${API_BASE_URL}/public/share/${token}/download${query}`,
-        { cache: "no-store" }
+        { cache: "no-store" },
       );
 
       if (!res.ok) {
@@ -209,23 +211,15 @@ export default function SharedTokenPage() {
 
       const resJSON = await res.json();
       if (resJSON?.data?.url) {
-        // Fetch file as Blob to force a reliable local download and evade cross-origin inline viewers
-        const fileRes = await fetch(resJSON.data.url);
-        if (!fileRes.ok) throw new Error("Downloading file failed.");
-        const blob = await fileRes.blob();
-        const objectUrl = window.URL.createObjectURL(blob);
-
         const link = document.createElement("a");
-        link.href = objectUrl;
-        link.setAttribute("download", fileData.fileName || "unknown_file");
+        link.href = resJSON.data.url;
+        link.target = "_blank";
+        link.download = fileData.fileName || "download";
         document.body.appendChild(link);
         link.click();
         link.remove();
-
-        // Free up memory immediately after download starts
-        setTimeout(() => window.URL.revokeObjectURL(objectUrl), 1000);
       } else {
-        alert("Không lấy được đường dẫn URL");
+        alert("Không lấy được đường dẫn URL từ máy chủ.");
       }
     } catch {
       alert("Lỗi khi tải xuống");

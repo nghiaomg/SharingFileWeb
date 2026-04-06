@@ -15,14 +15,7 @@ import {
   useDashboardRecentFiles,
 } from "@/features/dashboard/queries";
 import { formatBytes } from "@/lib/format";
-import {
-  Box,
-  Flex,
-  Grid,
-  Card,
-  Heading,
-  Text,
-} from "@radix-ui/themes";
+import { Box, Flex, Grid, Card, Heading, Text } from "@radix-ui/themes";
 import { FileCard } from "@/features/files/components/FileCard";
 import type { FileItem } from "@/features/files/schemas";
 
@@ -176,71 +169,69 @@ export default function DashboardPage() {
               );
             })
           : // Mặc định tĩnh nếu chưa có data
-            ["Tài liệu", "Hình ảnh", "Video", "Khác"].map(
-              (defaultType, i) => {
-                const defaultKeys = ["document", "image", "video", "other"];
-                const uiKey = defaultKeys[i];
-                const meta = categoryIcons[uiKey];
-                const Icon = meta.icon;
-                return (
-                  <Card
-                    key={i}
-                    size="3"
-                    variant="ghost"
-                    style={{
-                      opacity: 0.7,
-                      filter: "grayscale(30%)",
-                      border: "none",
-                    }}
-                  >
-                    <Flex align="start" justify="between" mb="4">
-                      <Box
-                        p="3"
-                        style={{
-                          borderRadius: "var(--radius-3)",
-                          backgroundColor: `var(--${meta.colorName}-a3)`,
-                        }}
-                      >
-                        <Icon
-                          style={{
-                            width: 24,
-                            height: 24,
-                            color: `var(--${meta.colorName}-11)`,
-                          }}
-                        />
-                      </Box>
-                    </Flex>
-                    <Heading
-                      size="7"
-                      mb="1"
-                      weight="bold"
-                      style={{ color: "var(--card-heading)" }}
-                    >
-                      0
-                    </Heading>
-                    <Text
-                      as="div"
-                      size="2"
-                      weight="medium"
-                      style={{ color: "var(--muted-foreground)" }}
-                    >
-                      {defaultType}
-                    </Text>
-                    <Text
-                      as="div"
-                      size="1"
-                      mt="1"
+            ["Tài liệu", "Hình ảnh", "Video", "Khác"].map((defaultType, i) => {
+              const defaultKeys = ["document", "image", "video", "other"];
+              const uiKey = defaultKeys[i];
+              const meta = categoryIcons[uiKey];
+              const Icon = meta.icon;
+              return (
+                <Card
+                  key={i}
+                  size="3"
+                  variant="ghost"
+                  style={{
+                    opacity: 0.7,
+                    filter: "grayscale(30%)",
+                    border: "none",
+                  }}
+                >
+                  <Flex align="start" justify="between" mb="4">
+                    <Box
+                      p="3"
                       style={{
-                        color: "var(--muted-foreground)",
-                        fontFamily: "var(--font-geist-mono)",
+                        borderRadius: "var(--radius-3)",
+                        backgroundColor: `var(--${meta.colorName}-a3)`,
                       }}
                     >
-                      0 B
-                    </Text>
-                  </Card>
-                );
-              },
-            )}
+                      <Icon
+                        style={{
+                          width: 24,
+                          height: 24,
+                          color: `var(--${meta.colorName}-11)`,
+                        }}
+                      />
+                    </Box>
+                  </Flex>
+                  <Heading
+                    size="7"
+                    mb="1"
+                    weight="bold"
+                    style={{ color: "var(--card-heading)" }}
+                  >
+                    0
+                  </Heading>
+                  <Text
+                    as="div"
+                    size="2"
+                    weight="medium"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
+                    {defaultType}
+                  </Text>
+                  <Text
+                    as="div"
+                    size="1"
+                    mt="1"
+                    style={{
+                      color: "var(--muted-foreground)",
+                      fontFamily: "var(--font-geist-mono)",
+                    }}
+                  >
+                    0 B
+                  </Text>
+                </Card>
+              );
+            })}
       </Grid>
 
       {/* Recent Files */}

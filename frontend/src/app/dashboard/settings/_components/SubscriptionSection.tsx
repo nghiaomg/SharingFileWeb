@@ -43,7 +43,11 @@ export function SubscriptionSection() {
         }}
       >
         <Flex align="center" gap="2" mb="2">
-          <Heading size="5" weight="bold" style={{ color: "var(--card-heading)" }}>
+          <Heading
+            size="5"
+            weight="bold"
+            style={{ color: "var(--card-heading)" }}
+          >
             {currentPlan.name}
           </Heading>
           {currentPlan.badge && (
@@ -54,11 +58,19 @@ export function SubscriptionSection() {
         </Flex>
 
         <Flex align="baseline" gap="1" mb="4">
-          <Heading size="8" weight="bold" style={{ color: "var(--card-heading)" }}>
+          <Heading
+            size="8"
+            weight="bold"
+            style={{ color: "var(--card-heading)" }}
+          >
             {currentPlan.price === 0 ? "Miễn phí" : currentPlan.priceDisplay}
           </Heading>
           {currentPlan.price > 0 && (
-            <Text size="3" weight="medium" style={{ color: "var(--muted-foreground)" }}>
+            <Text
+              size="3"
+              weight="medium"
+              style={{ color: "var(--muted-foreground)" }}
+            >
               /tháng
             </Text>
           )}
@@ -66,7 +78,10 @@ export function SubscriptionSection() {
 
         {/* Storage info */}
         <Text size="2" mb="5" style={{ color: "var(--muted-foreground)" }}>
-          Dung lượng: <strong style={{ color: "var(--color-foreground)" }}>{currentPlan.storage}</strong>
+          Dung lượng:{" "}
+          <strong style={{ color: "var(--color-foreground)" }}>
+            {currentPlan.storage}
+          </strong>
         </Text>
 
         <Flex direction="column" gap="2">
@@ -80,7 +95,14 @@ export function SubscriptionSection() {
               </Button>
             </>
           ) : (
-            <Button asChild size="3" style={{ background: "linear-gradient(135deg, #f59e0b, #d97706)", color: "#fff" }}>
+            <Button
+              asChild
+              size="3"
+              style={{
+                background: "linear-gradient(135deg, #f59e0b, #d97706)",
+                color: "#fff",
+              }}
+            >
               <Link href="/dashboard/upgrade">Nâng cấp ngay</Link>
             </Button>
           )}

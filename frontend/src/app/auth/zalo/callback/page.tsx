@@ -16,9 +16,11 @@ function ZaloCallbackComponent() {
   useEffect(() => {
     if (code && !processedCodes.has(code)) {
       processedCodes.add(code);
-      const redirectUri = typeof window !== "undefined"
-        ? window.location.origin + window.location.pathname
-        : process.env.NEXT_PUBLIC_ZALO_CALLBACK_URL || "https://sharingfile.nghiaomg.xyz/auth/zalo/callback";
+      const redirectUri =
+        typeof window !== "undefined"
+          ? window.location.origin + window.location.pathname
+          : process.env.NEXT_PUBLIC_ZALO_CALLBACK_URL ||
+            "https://sharingfile.nghiaomg.xyz/auth/zalo/callback";
       loginWithZalo(code, redirectUri)
         .then(() => {
           toast.success("Đăng nhập Zalo thành công!");

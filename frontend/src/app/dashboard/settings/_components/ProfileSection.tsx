@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { User } from "lucide-react";
 import {
   Box,
@@ -80,7 +79,8 @@ export function ProfileSection({ isSaving, onSave }: ProfileSectionProps) {
             style={{
               padding: "3px",
               borderRadius: "100%",
-              background: "linear-gradient(to top right, var(--gray-12), var(--gray-11))",
+              background:
+                "linear-gradient(to top right, var(--gray-12), var(--gray-11))",
             }}
           >
             <Flex
@@ -130,13 +130,25 @@ export function ProfileSection({ isSaving, onSave }: ProfileSectionProps) {
       <Flex direction="column" gap="5">
         <Grid columns={{ initial: "1", sm: "2" }} gap="4">
           <Box>
-            <Text as="label" size="2" weight="medium" mb="2" style={{ display: "block", color: "var(--muted-foreground)" }}>
+            <Text
+              as="label"
+              size="2"
+              weight="medium"
+              mb="2"
+              style={{ display: "block", color: "var(--muted-foreground)" }}
+            >
               Tên hiển thị
             </Text>
             <TextField.Root size="3" defaultValue="Trung Nghĩa" />
           </Box>
           <Box>
-            <Text as="label" size="2" weight="medium" mb="2" style={{ display: "block", color: "var(--muted-foreground)" }}>
+            <Text
+              as="label"
+              size="2"
+              weight="medium"
+              mb="2"
+              style={{ display: "block", color: "var(--muted-foreground)" }}
+            >
               Số điện thoại
             </Text>
             <TextField.Root size="3" type="tel" placeholder="+84 ..." />
@@ -145,13 +157,25 @@ export function ProfileSection({ isSaving, onSave }: ProfileSectionProps) {
 
         <Grid columns={{ initial: "1", sm: "2" }} gap="4">
           <Box>
-            <Text as="label" size="2" weight="medium" mb="2" style={{ display: "block", color: "var(--muted-foreground)" }}>
+            <Text
+              as="label"
+              size="2"
+              weight="medium"
+              mb="2"
+              style={{ display: "block", color: "var(--muted-foreground)" }}
+            >
               Quốc gia
             </Text>
             <TextField.Root size="3" defaultValue="Việt Nam" />
           </Box>
           <Box>
-            <Text as="label" size="2" weight="medium" mb="2" style={{ display: "block", color: "var(--muted-foreground)" }}>
+            <Text
+              as="label"
+              size="2"
+              weight="medium"
+              mb="2"
+              style={{ display: "block", color: "var(--muted-foreground)" }}
+            >
               Công ty / Tổ chức
             </Text>
             <TextField.Root size="3" placeholder="Nhập tên tổ chức..." />
