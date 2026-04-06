@@ -4,14 +4,17 @@ import { AdminStorageFile, AdminPaginatedFilesResponse } from "../types/files.ty
 export const adminFilesKeys = {
   all: ["admin-files"] as const,
   lists: () => [...adminFilesKeys.all, "list"] as const,
+  list: (folderId?: string | null) => [...adminFilesKeys.lists(), folderId] as const,
 };
 
 export async function getAllStorageFiles(
+  folderId?: string | null,
   page: number = 0,
   size: number = 15,
 ): Promise<AdminPaginatedFilesResponse> {
-  console.log(`[AdminFilesAPI] Fetching storage files... page=${page}, size=${size}`);
-  const response = await apiClient.get(`/files/all?page=${page}&size=${size}`);
+  let url = `/files/all?page=${page}&size=${size}`;
+  if (folderId) url += `&folderId=${folderId}`;
+  const response = await apiClient.get(url);
   return response.data as AdminPaginatedFilesResponse;
 }
 

@@ -138,6 +138,31 @@ public class FolderService {
         
         return mapToResponse(currentFolder);
     }
+    
+    // ─── ADMIN CRUD ────────────────────────────────────────────────────────
+
+    public FolderResponse adminCreateFolder(CreateFolderRequest request) {
+        String parentId = request.getParentId();
+        if (parentId != null && (parentId.trim().isEmpty() || "root".equals(parentId))) {
+            parentId = null;
+        }
+
+        // Determine ownerId: if parent exists, inherit. Else admin's ID
+        String ownerId = getCurrentUserId();
+        if (parentId != null) {
+            Folder parent = folderRepository.findById(parentId).orElseThrow(() -> new RuntimeException("Parent folder not found"));
+            ownerId = parent.getOwnerId();
+        }
+
+        Folder folder = new Folder(request.getName(), ownerId, parentId);
+        return mapToResponse(folderRepository.save(folder));
+    }
+
+    public FolderResponse adminUpdateFolder(String id, UpdateFolderRequest request) {
+        Folder folder = folderRepository.findById(id).orElseThrow(() -> new RuntimeException("Folder not found"));
+        folder.setName(request.getName());
+        return mapToResponse(folderRepository.save(folder));
+    }
 
     public void deleteFolder(String id) {
         String userId = getCurrentUserId();

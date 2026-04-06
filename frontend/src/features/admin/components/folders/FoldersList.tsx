@@ -10,7 +10,7 @@ import { Button } from "@radix-ui/themes";
 
 export function FoldersList() {
   const [page, setPage] = useState(0);
-  const { data: pageData, isLoading, isError } = useAdminFolders(page, 15);
+  const { data: pageData, isLoading, isError } = useAdminFolders(undefined, page, 15);
   const { mutate: deleteFolder, isPending: isDeleting } = useDeleteAdminFolder();
 
   if (isLoading) {

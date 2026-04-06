@@ -1,6 +1,6 @@
 "use client";
 
-import { FilesList } from "@/features/admin/components/files/FilesList";
+import { AdminStorageExplorer } from "@/features/admin/components/storage/AdminStorageExplorer";
 
 export default function AdminFilesPage() {
   return (
@@ -17,7 +17,7 @@ export default function AdminFilesPage() {
         </p>
       </div>
 
-      <FilesList />
+      <AdminStorageExplorer />
     </div>
   );
 }

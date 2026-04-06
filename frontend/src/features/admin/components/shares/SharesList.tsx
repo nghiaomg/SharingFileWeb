@@ -49,7 +49,7 @@ export function SharesList() {
         {shares.map((share) => (
           <div
             key={share.id}
-            className="bg-card rounded-xl border border-border p-4 shadow-sm space-y-3"
+            className="bg-transparent border-b border-border/50 py-4 space-y-3"
           >
             <div className="flex items-start gap-3">
               <div className="p-2 bg-blue-500/10 rounded-lg shrink-0 mt-1">
@@ -145,7 +145,7 @@ export function SharesList() {
       </div>
 
       {/* Desktop Table View (hidden on Mobile) */}
-      <div className="hidden md:block bg-card rounded-xl border border-border shadow-sm overflow-hidden animate-in fade-in zoom-in-95 duration-500">
+      <div className="hidden md:block bg-transparent overflow-hidden animate-in fade-in zoom-in-95 duration-500">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="text-xs text-muted-foreground uppercase bg-secondary/50">
@@ -270,7 +270,7 @@ export function SharesList() {
 
       {/* Pagination Controls */}
       {pageData && pageData.totalPages > 0 && (
-        <div className="p-4 border border-border rounded-xl flex items-center justify-between bg-card shadow-sm text-sm">
+        <div className="py-4 flex items-center justify-between bg-transparent text-sm">
           <span className="text-muted-foreground font-medium flex gap-1">
             Trang <b>{pageData.currentPage + 1}</b> /{" "}
             <b>{pageData.totalPages}</b>

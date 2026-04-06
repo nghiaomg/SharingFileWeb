@@ -24,4 +24,8 @@ public interface FolderRepository extends MongoRepository<Folder, String> {
 
   // Lấy danh sách folder rác quá ngày để xóa tự động
   List<Folder> findByIsDeletedTrueAndDeletedAtBefore(java.time.Instant thresholdDate);
+
+  // Cho admin dashboard duyệt thư mục
+  org.springframework.data.domain.Page<Folder> findByParentIdIsNullAndIsDeletedFalse(org.springframework.data.domain.Pageable pageable);
+  org.springframework.data.domain.Page<Folder> findByParentIdAndIsDeletedFalse(String parentId, org.springframework.data.domain.Pageable pageable);
 }

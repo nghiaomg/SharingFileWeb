@@ -41,6 +41,10 @@ public interface FileRepository extends MongoRepository<StorageFile, String> {
   @Aggregation(pipeline = { "{ '$match': { 'ownerId' : ?0 } }", "{ '$group': { '_id': null, 'totalSize': { $sum: '$size' } } }" })
   Long sumSizeByOwnerId(String ownerId);
 
+  // Cho admin dashboard duyệt tệp
+  org.springframework.data.domain.Page<StorageFile> findByFolderIdIsNullAndIsDeletedFalseOrderByCreatedAtDesc(org.springframework.data.domain.Pageable pageable);
+  org.springframework.data.domain.Page<StorageFile> findByFolderIdAndIsDeletedFalseOrderByCreatedAtDesc(String folderId, org.springframework.data.domain.Pageable pageable);
+
   // Lấy toàn bộ file đã từng có b2FileId (cho mục đích đồng bộ sync job)
   List<StorageFile> findByB2FileIdIsNotNull();
 }

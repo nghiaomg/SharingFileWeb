@@ -262,16 +262,24 @@ public class FileController {
     @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/all")
     public ResponseEntity<?> getAllFilesForAdmin(
+            @RequestParam(required = false) String folderId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "15") int size) {
         org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt"));
-        org.springframework.data.domain.Page<StorageFile> pageResult = fileRepository.findAll(pageable);
+        org.springframework.data.domain.Page<StorageFile> pageResult;
+        
+        if (folderId == null || folderId.trim().isEmpty() || "root".equals(folderId)) {
+            pageResult = fileRepository.findByFolderIdIsNullAndIsDeletedFalseOrderByCreatedAtDesc(pageable);
+        } else {
+            pageResult = fileRepository.findByFolderIdAndIsDeletedFalseOrderByCreatedAtDesc(folderId, pageable);
+        }
+
         java.util.Map<String, Object> responseData = new java.util.HashMap<>();
         responseData.put("content", pageResult.getContent());
         responseData.put("currentPage", pageResult.getNumber());
         responseData.put("totalItems", pageResult.getTotalElements());
         responseData.put("totalPages", pageResult.getTotalPages());
-        return ResponseEntity.ok(StandardResponse.success("Fetched all files", responseData));
+        return ResponseEntity.ok(StandardResponse.success("Fetched files hierarchically", responseData));
     }
 
     @Operation(summary = "Xóa vĩnh viễn tệp (Admin)")
@@ -287,6 +295,18 @@ public class FileController {
         }
         fileRepository.deleteById(id);
         return ResponseEntity.ok(StandardResponse.success("File deleted permanently", null));
+    }
+
+    @Operation(summary = "Đổi tên tệp (Admin)")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/admin/{id}")
+    public ResponseEntity<?> renameFileByAdmin(@PathVariable String id, @RequestBody RenameFileRequest request) {
+        try {
+            FileResponse response = fileService.adminRenameFile(id, request);
+            return ResponseEntity.ok(StandardResponse.success("File renamed by admin", response));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
+        }
     }
 
     @Autowired

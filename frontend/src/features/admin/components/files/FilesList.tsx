@@ -21,7 +21,7 @@ import { Button } from "@radix-ui/themes";
 
 export function FilesList() {
   const [page, setPage] = useState(0);
-  const { data: pageData, isLoading, isError } = useAdminFiles(page, 15);
+  const { data: pageData, isLoading, isError } = useAdminFiles(undefined, page, 15);
   const { mutate: deleteFile, isPending: isDeleting } = useDeleteAdminFile();
 
   if (isLoading) {

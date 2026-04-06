@@ -1,6 +1,6 @@
 "use client";
 
-import { FoldersList } from "@/features/admin/components/folders/FoldersList";
+import { AdminStorageExplorer } from "@/features/admin/components/storage/AdminStorageExplorer";
 
 export default function AdminFoldersPage() {
   return (
@@ -17,7 +17,7 @@ export default function AdminFoldersPage() {
         </p>
       </div>
 
-      <FoldersList />
+      <AdminStorageExplorer />
     </div>
   );
 }

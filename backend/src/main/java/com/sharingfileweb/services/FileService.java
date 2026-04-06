@@ -318,6 +318,18 @@ public class FileService {
         return mapToResponse(fileRepository.save(file));
     }
 
+    public FileResponse adminRenameFile(String id, RenameFileRequest request) {
+        StorageFile file = fileRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("File not found"));
+        String newName = request.getName();
+        if (newName == null || newName.trim().isEmpty()) {
+            throw new RuntimeException("Name cannot be empty");
+        }
+        newName = newName.replaceAll("[<>\"'&]", "_");
+        file.setName(newName);
+        return mapToResponse(fileRepository.save(file));
+    }
+
     /**
      * @deprecated Dùng ShareLink/SharedAccess thay thế. Giữ lại cho backward compatibility.
      */

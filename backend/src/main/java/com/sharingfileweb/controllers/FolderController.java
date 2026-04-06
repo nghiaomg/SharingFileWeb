@@ -131,16 +131,24 @@ public class FolderController {
   @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
   @GetMapping("/all")
   public ResponseEntity<?> getAllFoldersForAdmin(
+          @RequestParam(required = false) String folderId,
           @RequestParam(defaultValue = "0") int page,
           @RequestParam(defaultValue = "15") int size) {
       org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt"));
-      org.springframework.data.domain.Page<Folder> pageResult = folderRepository.findAll(pageable);
+      org.springframework.data.domain.Page<Folder> pageResult;
+      
+      if (folderId == null || folderId.trim().isEmpty() || "root".equals(folderId)) {
+          pageResult = folderRepository.findByParentIdIsNullAndIsDeletedFalse(pageable);
+      } else {
+          pageResult = folderRepository.findByParentIdAndIsDeletedFalse(folderId, pageable);
+      }
+      
       java.util.Map<String, Object> responseData = new java.util.HashMap<>();
       responseData.put("content", pageResult.getContent());
       responseData.put("currentPage", pageResult.getNumber());
       responseData.put("totalItems", pageResult.getTotalElements());
       responseData.put("totalPages", pageResult.getTotalPages());
-      return ResponseEntity.ok(StandardResponse.success("Fetched all folders", responseData));
+      return ResponseEntity.ok(StandardResponse.success("Fetched folders hierarchically", responseData));
   }
 
   // DELETE /api/folders/{id}/permanent  → Admin: xóa cứng
@@ -153,6 +161,30 @@ public class FolderController {
       }
       folderService.deleteFolderPermanentlyByAdmin(id);
       return ResponseEntity.ok(StandardResponse.success("Folder deleted permanently", null));
+  }
+
+  @Operation(summary = "Tạo thư mục (Admin)", description = "Admin tạo thư mục. Nếu có parentId, thư mục sẽ được assign cho owner của parentId.")
+  @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+  @PostMapping("/admin")
+  public ResponseEntity<?> createFolderByAdmin(@Valid @RequestBody CreateFolderRequest request) {
+      try {
+          FolderResponse response = folderService.adminCreateFolder(request);
+          return ResponseEntity.ok(StandardResponse.success("Admin folder created", response));
+      } catch (RuntimeException e) {
+          return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
+      }
+  }
+
+  @Operation(summary = "Đổi tên thư mục (Admin)", description = "Admin đổi tên thư mục của bất kỳ người dùng nào.")
+  @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+  @PutMapping("/admin/{id}")
+  public ResponseEntity<?> updateFolderByAdmin(@PathVariable String id, @Valid @RequestBody UpdateFolderRequest request) {
+      try {
+          FolderResponse response = folderService.adminUpdateFolder(id, request);
+          return ResponseEntity.ok(StandardResponse.success("Admin folder updated", response));
+      } catch (RuntimeException e) {
+          return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
+      }
   }
 }
 
