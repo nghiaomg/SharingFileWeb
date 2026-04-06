@@ -17,7 +17,7 @@ import {
   QrCode,
   ShieldAlert,
 } from "lucide-react";
-import { useStorageUsage } from "@/features/auth/queries";
+import { useStorageUsage, useCurrentUser } from "@/features/auth/queries";
 import { getCurrentUser } from "@/features/auth/api";
 import { formatBytes } from "@/lib/format";
 import { Box, Flex, Text, IconButton } from "@radix-ui/themes";
@@ -43,7 +43,9 @@ const bottomItems = [
 export function DashboardSidebar({ isOpen, onClose }: DashboardSidebarProps) {
   const pathname = usePathname();
   const { data: storageData } = useStorageUsage();
-  const user = getCurrentUser();
+  const { data: queryUser } = useCurrentUser();
+  const cookieUser = getCurrentUser();
+  const user = queryUser || cookieUser;
 
   const usedStorage = storageData?.usedStorage || 0;
   const MAX_STORAGE = user?.maxStorage || 5 * 1024 * 1024 * 1024; // Mặc định 5GB nếu ko có
@@ -140,11 +142,11 @@ export function DashboardSidebar({ isOpen, onClose }: DashboardSidebarProps) {
                   style={
                     isActive
                       ? {
-                          background: "var(--gray-a3)",
-                          color: "var(--color-foreground)",
-                          boxShadow:
-                            "inset 3px 0 0 0 var(--gray-11), 0 2px 8px rgba(0,0,0,0.06)",
-                        }
+                        background: "var(--gray-a3)",
+                        color: "var(--color-foreground)",
+                        boxShadow:
+                          "inset 3px 0 0 0 var(--gray-11), 0 2px 8px rgba(0,0,0,0.06)",
+                      }
                       : {}
                   }
                 >
@@ -236,45 +238,47 @@ export function DashboardSidebar({ isOpen, onClose }: DashboardSidebarProps) {
                 }}
               />
             </Box>
-            <Link href="/dashboard/upgrade" style={{ textDecoration: "none" }}>
-              <Box
-                style={{
-                  width: "100%",
-                  padding: "6px 16px",
-                  borderRadius: "var(--radius-3)",
-                  background:
-                    "linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)",
-                  color: "#ffffff",
-                  fontSize: "13px",
-                  fontWeight: 700,
-                  letterSpacing: "0.01em",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "6px",
-                  cursor: "pointer",
-                  transition: "all 0.2s ease",
-                  boxShadow:
-                    "0 1px 3px rgba(245, 158, 11, 0.3), inset 0 1px 0 rgba(255,255,255,0.15)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateY(-1px)";
-                  e.currentTarget.style.boxShadow =
-                    "0 4px 12px rgba(245, 158, 11, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.boxShadow =
-                    "0 1px 3px rgba(245, 158, 11, 0.3), inset 0 1px 0 rgba(255,255,255,0.15)";
-                }}
-              >
-                <Crown
-                  style={{ width: "14px", height: "14px", flexShrink: 0 }}
-                />
-                Nâng cấp Pro
-              </Box>
-            </Link>
+            {user?.subscriptionPlan !== "PRO" && (
+              <Link href="/dashboard/upgrade" style={{ textDecoration: "none" }}>
+                <Box
+                  style={{
+                    width: "100%",
+                    padding: "6px 16px",
+                    borderRadius: "var(--radius-3)",
+                    background:
+                      "linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)",
+                    color: "#ffffff",
+                    fontSize: "13px",
+                    fontWeight: 700,
+                    letterSpacing: "0.01em",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "6px",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                    boxShadow:
+                      "0 1px 3px rgba(245, 158, 11, 0.3), inset 0 1px 0 rgba(255,255,255,0.15)",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-1px)";
+                    e.currentTarget.style.boxShadow =
+                      "0 4px 12px rgba(245, 158, 11, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow =
+                      "0 1px 3px rgba(245, 158, 11, 0.3), inset 0 1px 0 rgba(255,255,255,0.15)";
+                  }}
+                >
+                  <Crown
+                    style={{ width: "14px", height: "14px", flexShrink: 0 }}
+                  />
+                  Nâng cấp Pro
+                </Box>
+              </Link>
+            )}
           </Box>
 
           <Flex direction="column" gap="1">
@@ -292,11 +296,11 @@ export function DashboardSidebar({ isOpen, onClose }: DashboardSidebarProps) {
                   style={
                     isActive
                       ? {
-                          background: "var(--gray-a3)",
-                          color: "var(--color-foreground)",
-                          boxShadow:
-                            "inset 3px 0 0 0 var(--gray-11), 0 2px 8px rgba(0,0,0,0.06)",
-                        }
+                        background: "var(--gray-a3)",
+                        color: "var(--color-foreground)",
+                        boxShadow:
+                          "inset 3px 0 0 0 var(--gray-11), 0 2px 8px rgba(0,0,0,0.06)",
+                      }
                       : {}
                   }
                 >

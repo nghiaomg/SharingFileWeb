@@ -98,32 +98,10 @@ public class B2StorageService {
     public String getPresignedDownloadUrl(String b2FileName, String originalFileName,
                                           boolean inline, java.time.Duration expiresIn) {
         try {
-            int expirationSeconds = expiresIn != null
-                    ? (int) expiresIn.toSeconds()
-                    : b2Config.getDownloadUrlExpirationSeconds();
-
-            // Lấy base URL
+            // Lấy base URL (friendly link)
             String baseUrl = b2Client.getDownloadByNameUrl(b2Config.getBucketName(), b2FileName);
 
-            // Lấy auth token
-            B2GetDownloadAuthorizationRequest authRequest = B2GetDownloadAuthorizationRequest.builder(
-                    b2Config.getBucketId(),
-                    b2FileName,
-                    expirationSeconds
-            ).build();
-            String authToken = b2Client.getDownloadAuthorization(authRequest).getAuthorizationToken();
-
-            // Build URL với auth
-            StringBuilder url = new StringBuilder(baseUrl);
-            url.append("?Authorization=").append(java.net.URLEncoder.encode(authToken, java.nio.charset.StandardCharsets.UTF_8));
-
-            // Thêm Content-Disposition nếu là attachment
-            if (!inline && originalFileName != null && !originalFileName.isEmpty()) {
-                String disposition = "attachment; filename=\"" + originalFileName + "\"";
-                url.append("&b2ContentDisposition=").append(java.net.URLEncoder.encode(disposition, java.nio.charset.StandardCharsets.UTF_8));
-            }
-
-            return url.toString();
+            return baseUrl;
 
         } catch (B2Exception e) {
             System.err.println("[B2] Failed to generate download URL for: " + b2FileName + " — " + e.getMessage());
@@ -190,19 +168,8 @@ public class B2StorageService {
      */
     public org.springframework.core.io.Resource downloadFile(String b2FileName, String originalFileName) {
         try {
-            // Tạo presigned URL ngắn hạn (60 giây) để download
-            String presignedUrl = b2Client.getDownloadByNameUrl(b2Config.getBucketName(), b2FileName);
-
-            // Thêm auth token nếu bucket là private
-            B2GetDownloadAuthorizationRequest authRequest = B2GetDownloadAuthorizationRequest.builder(
-                    b2Config.getBucketId(),
-                    b2FileName,
-                    60
-            ).build();
-            String authToken = b2Client.getDownloadAuthorization(authRequest).getAuthorizationToken();
-
-            // Build URL với auth
-            String downloadUrl = presignedUrl + "?Authorization=" + java.net.URLEncoder.encode(authToken, java.nio.charset.StandardCharsets.UTF_8);
+            // Lấy URL friendly
+            String downloadUrl = b2Client.getDownloadByNameUrl(b2Config.getBucketName(), b2FileName);
 
             // Download nội dung
             java.net.URL url = new java.net.URL(downloadUrl);
