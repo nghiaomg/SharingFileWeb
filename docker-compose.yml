@@ -29,18 +29,6 @@ services:
     expose:
       - "3000"
 
-  admin:
-    build:
-      context: ./admin
-      args:
-        VITE_API_URL: https://sharingfile-be.nghiaomg.xyz
-    container_name: sharingfile-admin
-    restart: unless-stopped
-    networks:
-      - sharingfile-network
-    expose:
-      - "80"
-
   nginx-proxy:
     image: nginx:alpine
     container_name: nginx-proxy
@@ -54,7 +42,6 @@ services:
     depends_on:
       - backend
       - frontend
-      - admin
     networks:
       - sharingfile-network
 
