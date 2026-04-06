@@ -49,9 +49,9 @@ services:
     image: mongo:latest
     container_name: sharingfile-mongodb
     restart: unless-stopped
-    command: mongod --port 27018
+    command: mongod --port 27017
     ports:
-      - "27018:27018"
+      - "27017:27017"
     volumes:
       - mongodb_data:/data/db
     networks:
