@@ -5,7 +5,7 @@ import { AdminSidebar } from "@/features/admin/components/AdminSidebar";
 import { Menu } from "lucide-react";
 import { IconButton } from "@radix-ui/themes";
 import { getCurrentUser } from "@/features/auth/api";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname, notFound } from "next/navigation";
 
 export default function AdminLayout({
     children,
@@ -13,15 +13,25 @@ export default function AdminLayout({
     children: React.ReactNode;
 }) {
     const [isSidebarOpen, setSidebarOpen] = useState(false);
-    const router = useRouter();
+    const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
     const pathname = usePathname();
 
     useEffect(() => {
         const user = getCurrentUser();
-        if (!user || !user.roles?.includes("ROLE_ADMIN")) {
-            router.push("/dashboard");
+        if (user && user.roles?.includes("ROLE_ADMIN")) {
+            setIsAdmin(true);
+        } else {
+            setIsAdmin(false);
         }
-    }, [router, pathname]);
+    }, [pathname]);
+
+    if (isAdmin === null) {
+        return <div className="flex-1 flex h-screen bg-background" />;
+    }
+
+    if (isAdmin === false) {
+        notFound();
+    }
 
     return (
         <div className="flex h-screen bg-background text-foreground antialiased selection:bg-primary/20">
