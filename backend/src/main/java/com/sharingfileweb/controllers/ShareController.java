@@ -23,7 +23,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@CrossOrigin(origins = "*", maxAge = 3600)
+
 @RestController
 @RequestMapping("/api/share")
 @Tag(name = "Sharing", description = "Các API chia sẻ tệp/thư mục nội bộ và tạo link chia sẻ công khai.")

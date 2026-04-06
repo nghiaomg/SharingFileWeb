@@ -25,7 +25,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@CrossOrigin(origins = "*", maxAge = 3600)
+
 @RestController
 @RequestMapping("/api/trash")
 @Tag(name = "Trash Management", description = "Các API quản lý thùng rác: xem, khôi phục, dọn sạch và xóa vĩnh viễn tệp/thư mục.")

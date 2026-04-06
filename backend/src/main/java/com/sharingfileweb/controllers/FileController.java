@@ -21,7 +21,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@CrossOrigin(origins = "*", maxAge = 3600)
+
 @RestController
 @RequestMapping("/api/files")
 @Tag(name = "File Management", description = "Các API quản lý tập tin: tải lên, tải xuống, chia sẻ, đổi tên, xóa.")

@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@CrossOrigin(origins = "*", maxAge = 3600)
+
 @RestController
 @RequestMapping("/api/dashboard")
 @Tag(name = "Dashboard", description = "Các API thống kê, phân tích dữ liệu cho Dashboard.")

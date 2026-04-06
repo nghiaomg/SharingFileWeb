@@ -24,7 +24,7 @@ import com.sharingfileweb.services.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@CrossOrigin(origins = "*", maxAge = 3600)
+
 @RestController
 @RequestMapping("/api/auth")
 @Tag(name = "Authentication", description = "Các API xác thực và đăng nhập người dùng")

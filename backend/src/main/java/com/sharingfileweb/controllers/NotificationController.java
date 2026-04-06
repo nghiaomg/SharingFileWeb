@@ -13,7 +13,7 @@ import com.sharingfileweb.services.NotificationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@CrossOrigin(origins = "*", maxAge = 3600)
+
 @RestController
 @RequestMapping("/api/notifications")
 @Tag(name = "Notifications", description = "Các API quản lý thông báo của người dùng.")

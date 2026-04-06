@@ -19,7 +19,7 @@ import jakarta.validation.Valid;
 
 import java.util.Optional;
 
-@CrossOrigin(origins = "*", maxAge = 3600)
+
 @RestController
 @RequestMapping("/api/payment")
 @Tag(name = "Payment", description = "Quản lý thanh toán tích hợp SePay")

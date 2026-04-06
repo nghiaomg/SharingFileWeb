@@ -17,7 +17,7 @@ import com.sharingfileweb.services.PaymentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@CrossOrigin(origins = "*", maxAge = 3600)
+
 @RestController
 @RequestMapping("/api/admin/orders")
 @Tag(name = "Admin Orders", description = "Quản lý đơn hàng dành cho Admin")
