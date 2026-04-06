@@ -15,9 +15,9 @@ export const paymentHistoryQueryOptions = queryOptions({
   staleTime: 30 * 1000,
 });
 
-export const paymentStatusQueryOptions = queryOptions({
-  queryKey: paymentKeys.status(),
-  queryFn: checkPaymentStatus,
+export const paymentStatusQueryOptions = (orderCode?: string) => queryOptions({
+  queryKey: orderCode ? [...paymentKeys.status(), orderCode] : paymentKeys.status(),
+  queryFn: () => checkPaymentStatus(orderCode),
   staleTime: 0, // Always fetch latest
   // react-query v5 syntax for refetchInterval function
   refetchInterval: (query) => {
@@ -30,8 +30,8 @@ export const paymentStatusQueryOptions = queryOptions({
 });
 
 // ─── Hooks ───────────────────────────────────────────────────────────────────
-export function usePaymentStatusQuery() {
-  return useQuery(paymentStatusQueryOptions);
+export function usePaymentStatusQuery(orderCode?: string) {
+  return useQuery(paymentStatusQueryOptions(orderCode));
 }
 
 export function usePaymentHistory() {

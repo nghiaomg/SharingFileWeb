@@ -22,7 +22,7 @@ export default function CheckoutPage() {
   const queryClient = useQueryClient();
   const orderCode = params.orderCode as string;
 
-  const { data: paymentStatus } = usePaymentStatusQuery();
+  const { data: paymentStatus } = usePaymentStatusQuery(orderCode);
   const [timeLeft, setTimeLeft] = useState<string>("");
 
   // Ensure what we are checking is actually the order from the URL

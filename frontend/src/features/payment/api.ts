@@ -10,8 +10,9 @@ export async function createQRPayment(
 }
 
 // ─── Check Payment Status ────────────────────────────────────────────────────
-export async function checkPaymentStatus(): Promise<PaymentResult | null> {
-  const response = await apiClient.get<PaymentResult | null>("/payment/status");
+export async function checkPaymentStatus(orderCode?: string): Promise<PaymentResult | null> {
+  const url = orderCode ? `/payment/status/${orderCode}` : "/payment/status";
+  const response = await apiClient.get<PaymentResult | null>(url);
   return response.data;
 }
 

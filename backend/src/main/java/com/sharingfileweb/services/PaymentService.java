@@ -79,6 +79,18 @@ public class PaymentService {
                 });
     }
 
+    public Optional<PaymentOrderResponse> getOrderDetailsByCode(String userId, String orderCode) {
+        return paymentOrderRepository.findByOrderCode(orderCode)
+            .filter(order -> order.getUserId().equals(userId))
+            .map(order -> {
+                if ("PENDING".equals(order.getStatus()) && order.getExpiredAt().isBefore(Instant.now())) {
+                    order.setStatus("EXPIRED");
+                    paymentOrderRepository.save(order);
+                }
+                return new PaymentOrderResponse(order, generateQrUrl(order.getOrderCode(), order.getAmount()));
+            });
+    }
+
     public void cancelActiveOrder(String userId) {
         Optional<PaymentOrder> existingOpt = paymentOrderRepository.findByUserIdAndStatus(userId, "PENDING");
         if (existingOpt.isPresent()) {

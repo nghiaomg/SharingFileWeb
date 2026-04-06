@@ -59,6 +59,24 @@ public class PaymentController {
         }
     }
 
+    @Operation(summary = "Kiểm tra trạng thái đơn hàng theo mã", description = "Trả về thông tin đơn hàng cụ thể theo orderCode của user")
+    @GetMapping("/status/{orderCode}")
+    @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
+    public ResponseEntity<?> getPaymentStatusByCode(@PathVariable String orderCode) {
+        try {
+            UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            Optional<PaymentOrderResponse> optOrder = paymentService.getOrderDetailsByCode(userDetails.getId(), orderCode);
+            
+            if (optOrder.isPresent()) {
+                return ResponseEntity.ok(StandardResponse.success("Lấy thông tin đơn hàng thành công", optOrder.get()));
+            } else {
+                return ResponseEntity.ok(StandardResponse.success("Không tìm thấy đơn hàng", null));
+            }
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
+        }
+    }
+
     @Operation(summary = "Hủy đơn thanh toán", description = "Hủy đơn hàng PENDING hiện tại")
     @PostMapping("/cancel")
     @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
