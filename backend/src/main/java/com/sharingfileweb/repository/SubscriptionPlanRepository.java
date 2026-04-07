@@ -15,6 +15,8 @@ public interface SubscriptionPlanRepository extends MongoRepository<Subscription
 
     List<SubscriptionPlan> findByActiveTrueOrderBySortOrderAsc();
 
+    List<SubscriptionPlan> findByActiveTrueAndIsDeletedFalseOrderBySortOrderAsc();
+
     List<SubscriptionPlan> findAllByOrderBySortOrderAsc();
 
     boolean existsByName(String name);

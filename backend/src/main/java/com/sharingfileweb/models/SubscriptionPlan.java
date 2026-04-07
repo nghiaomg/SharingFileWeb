@@ -5,6 +5,8 @@ import java.time.Instant;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 @Document(collection = "subscription_plans")
 public class SubscriptionPlan {
 
@@ -20,6 +22,7 @@ public class SubscriptionPlan {
     private int durationDays;     // Số ngày hiệu lực (0 = vĩnh viễn)
     private boolean active = true;
     private int sortOrder = 0;
+    private boolean isDeleted = false;
     private Instant createdAt = Instant.now();
     private Instant updatedAt;
 
@@ -90,12 +93,22 @@ public class SubscriptionPlan {
         this.durationDays = durationDays;
     }
 
+    @JsonProperty("isActive")
     public boolean isActive() {
         return active;
     }
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    @JsonProperty("isDeleted")
+    public boolean isDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        isDeleted = deleted;
     }
 
     public int getSortOrder() {

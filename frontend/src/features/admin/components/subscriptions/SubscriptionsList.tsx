@@ -71,7 +71,11 @@ export function SubscriptionsList() {
                   </p>
                 </div>
               </div>
-              {plan.isActive ? (
+              {plan.isDeleted ? (
+                <span className="px-2 py-1 bg-red-500/10 text-red-500 font-bold text-[9px] rounded uppercase shrink-0">
+                  Đã xóa
+                </span>
+              ) : plan.isActive ? (
                 <span className="px-2 py-1 bg-emerald-500/10 text-emerald-500 font-bold text-[9px] rounded uppercase shrink-0">
                   Hoạt động
                 </span>
@@ -87,9 +91,9 @@ export function SubscriptionsList() {
                 {plan.price === 0
                   ? "MIỄN PHÍ"
                   : new Intl.NumberFormat("vi-VN", {
-                      style: "currency",
-                      currency: "VND",
-                    }).format(plan.price)}
+                    style: "currency",
+                    currency: "VND",
+                  }).format(plan.price)}
               </p>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
@@ -132,7 +136,8 @@ export function SubscriptionsList() {
                   setSelectedPlan(plan);
                   setModalOpen(true);
                 }}
-                className="py-2 flex justify-center items-center gap-1.5 bg-blue-500 text-white hover:bg-blue-600 rounded-lg transition-colors text-xs font-semibold"
+                disabled={plan.isDeleted}
+                className="py-2 flex justify-center items-center gap-1.5 bg-blue-500 text-white hover:bg-blue-600 rounded-lg transition-colors text-xs font-semibold disabled:opacity-50"
               >
                 <Edit className="w-3.5 h-3.5" /> Sửa gói
               </button>
@@ -140,7 +145,7 @@ export function SubscriptionsList() {
                 onClick={() => {
                   if (
                     confirm(
-                      `CẢNH BÁO: Xóa gói "${plan.name}" có thể gây lỗi. Chọn hủy (Ngừng bán) an toàn hơn. CHẮC CHẮN MỐN XÓA CỨNG?`,
+                      `Xác nhận xóa gói cước "${plan.name}"? Tùy chọn này sẽ ẩn gói cước khỏi danh sách trên hệ thống.`,
                     )
                   ) {
                     deletePlan(plan.id, {
@@ -149,10 +154,10 @@ export function SubscriptionsList() {
                     });
                   }
                 }}
-                disabled={isDeleting}
+                disabled={isDeleting || plan.isDeleted}
                 className="py-2 flex justify-center items-center gap-1.5 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors text-xs font-semibold disabled:opacity-50"
               >
-                <Trash2 className="w-3.5 h-3.5" /> Xóa cứng
+                <Trash2 className="w-3.5 h-3.5" /> Xóa gói
               </button>
             </div>
           </div>
@@ -198,9 +203,9 @@ export function SubscriptionsList() {
                     {plan.price === 0
                       ? "MIỄN PHÍ"
                       : new Intl.NumberFormat("vi-VN", {
-                          style: "currency",
-                          currency: "VND",
-                        }).format(plan.price)}
+                        style: "currency",
+                        currency: "VND",
+                      }).format(plan.price)}
                   </td>
                   <td className="px-6 py-4">
                     <p className="text-sm">
@@ -232,7 +237,11 @@ export function SubscriptionsList() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    {plan.isActive ? (
+                    {plan.isDeleted ? (
+                      <span className="px-2 py-1 bg-red-500/10 text-red-500 font-bold text-[11px] rounded uppercase">
+                        Đã xóa
+                      </span>
+                    ) : plan.isActive ? (
                       <span className="px-2 py-1 bg-emerald-500/10 text-emerald-500 font-bold text-[11px] rounded uppercase">
                         Hoạt động
                       </span>
@@ -248,7 +257,8 @@ export function SubscriptionsList() {
                         setSelectedPlan(plan);
                         setModalOpen(true);
                       }}
-                      className="px-3 py-1.5 flex items-center gap-1.5 bg-blue-500 text-white hover:bg-blue-600 rounded-lg transition-colors text-xs font-semibold"
+                      disabled={plan.isDeleted}
+                      className="px-3 py-1.5 flex items-center gap-1.5 bg-blue-500 text-white hover:bg-blue-600 rounded-lg transition-colors text-xs font-semibold disabled:opacity-50"
                       title="Sửa cấu hình"
                     >
                       <Edit className="w-3.5 h-3.5" /> <span>Sửa gói</span>
@@ -257,7 +267,7 @@ export function SubscriptionsList() {
                       onClick={() => {
                         if (
                           confirm(
-                            `CẢNH BÁO: Xóa gói "${plan.name}" (ID: ${plan.id}) sẽ khiến các User đang sở hữu gói này bị lỗi logic khi hết hạn. Lời khuyên là nên Chuyển trạng thái sang Ngừng Bán (isActive = false) thay vì XÓA CỨNG. Bạn có CHẮC CHẮN MUỐN XÓA CỨNG?`,
+                            `Xác nhận xóa gói cước "${plan.name}"? Tùy chọn này sẽ ẩn gói cước khỏi danh sách trên hệ thống.`,
                           )
                         ) {
                           deletePlan(plan.id, {
@@ -266,11 +276,11 @@ export function SubscriptionsList() {
                           });
                         }
                       }}
-                      disabled={isDeleting}
+                      disabled={isDeleting || plan.isDeleted}
                       className="px-3 py-1.5 flex items-center gap-1.5 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors text-xs font-semibold disabled:opacity-50"
-                      title="Xóa vĩnh viễn"
+                      title="Xóa mềm"
                     >
-                      <Trash2 className="w-3.5 h-3.5" /> <span>Xóa cứng</span>
+                      <Trash2 className="w-3.5 h-3.5" /> <span>Xóa gói</span>
                     </button>
                   </td>
                 </tr>

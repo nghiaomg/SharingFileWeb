@@ -39,8 +39,8 @@ public class SubscriptionPlanService {
         SubscriptionPlan plan = subscriptionPlanRepository.findByName(planName)
                 .orElseThrow(() -> new RuntimeException("Plan not found"));
 
-        if (!plan.isActive()) {
-            throw new RuntimeException("Plan is not available");
+        if (!plan.isActive() || plan.isDeleted()) {
+            throw new RuntimeException("Gói cước không còn khả dụng hoặc đã bị xoá");
         }
 
         user.setSubscriptionPlan(plan.getName());
@@ -50,7 +50,7 @@ public class SubscriptionPlanService {
     }
 
     public List<SubscriptionPlan> getActivePlans() {
-        return subscriptionPlanRepository.findByActiveTrueOrderBySortOrderAsc();
+        return subscriptionPlanRepository.findByActiveTrueAndIsDeletedFalseOrderBySortOrderAsc();
     }
 
     // === ADMIN CRUD ===
@@ -128,7 +128,8 @@ public class SubscriptionPlanService {
     public void deletePlan(String id) {
         SubscriptionPlan plan = subscriptionPlanRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Plan not found"));
-        subscriptionPlanRepository.delete(plan);
+        plan.setDeleted(true);
+        subscriptionPlanRepository.save(plan);
     }
 
     public void initializeDefaultPlans() {

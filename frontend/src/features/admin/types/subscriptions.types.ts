@@ -6,6 +6,7 @@ export interface AdminSubscriptionPlan {
   price: number;
   durationDays: number;
   isActive: boolean;
+  isDeleted?: boolean;
   features: string[];
   sortOrder: number;
   description: string;
