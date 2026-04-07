@@ -2,6 +2,7 @@
 
 import { AdminFolder } from "../../types/folders.types";
 import { AdminStorageFile } from "../../types/files.types";
+import Cookies from "js-cookie";
 
 import { useState, useEffect } from "react";
 import { useAdminFolders } from "../../hooks/useFoldersQuery";
@@ -149,7 +150,8 @@ export function AdminStorageExplorer() {
   };
 
   const handlePreview = (id: string) => {
-    window.open(`/api/files/${id}/preview`, "_blank");
+    const token = Cookies.get("access_token");
+    window.open(`/api/files/${id}/preview${token ? `?token=${token}` : ""}`, "_blank");
   };
 
   const getFileIcon = (mimeType: string | undefined) => {
