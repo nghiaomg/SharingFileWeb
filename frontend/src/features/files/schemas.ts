@@ -71,7 +71,7 @@ export const ShareLinkSchema = z.object({
   permission: z.string(),
   hasPassword: z.boolean(),
   expiresAt: z.string().nullable().optional(),
-  isRevoked: z.boolean(),
+  revoked: z.boolean(),
   createdAt: z.string(),
   // Extra fields from ShareLinkDetailResponse
   viewCount: z.number().optional(),

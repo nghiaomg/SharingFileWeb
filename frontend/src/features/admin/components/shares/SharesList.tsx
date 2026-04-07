@@ -107,7 +107,7 @@ export function SharesList() {
 
             <div className="flex justify-between items-center text-xs">
               <div>
-                {share.isRevoked ? (
+                {share.revoked ? (
                   <span className="text-[10px] text-destructive font-bold uppercase bg-destructive/10 px-2 py-1 rounded">
                     Đã thu hồi (Banned)
                   </span>
@@ -138,7 +138,7 @@ export function SharesList() {
                   revokeShare(share.id, {
                     onSuccess: () =>
                       toast.success(
-                        share.isRevoked
+                        share.revoked
                           ? "Đã bỏ thu hồi link chia sẻ"
                           : "Đã thu hồi link chia sẻ",
                       ),
@@ -147,9 +147,9 @@ export function SharesList() {
                   });
                 }}
                 disabled={isRevoking}
-                className={`w-full py-2 flex justify-center items-center gap-1.5 rounded-lg transition-colors font-medium text-xs disabled:opacity-50 ${share.isRevoked ? "bg-secondary text-foreground hover:bg-secondary/80" : "bg-orange-500 text-white hover:bg-orange-600"}`}
+                className={`w-full py-2 flex justify-center items-center gap-1.5 rounded-lg transition-colors font-medium text-xs disabled:opacity-50 ${share.revoked ? "bg-secondary text-foreground hover:bg-secondary/80" : "bg-orange-500 text-white hover:bg-orange-600"}`}
               >
-                {share.isRevoked ? (
+                {share.revoked ? (
                   <>
                     <RotateCcw className="w-3.5 h-3.5" /> Bỏ thu hồi
                   </>
@@ -232,7 +232,7 @@ export function SharesList() {
                     </p>
                   </td>
                   <td className="px-6 py-4">
-                    {share.isRevoked ? (
+                    {share.revoked ? (
                       <span className="text-[11px] text-destructive font-bold uppercase bg-destructive/10 px-2 py-1 rounded">
                         Đã thu hồi (Banned)
                       </span>
@@ -262,7 +262,7 @@ export function SharesList() {
                         revokeShare(share.id, {
                           onSuccess: () =>
                             toast.success(
-                              share.isRevoked
+                              share.revoked
                                 ? "Đã bỏ thu hồi link chia sẻ"
                                 : "Đã thu hồi link chia sẻ",
                             ),
@@ -271,14 +271,14 @@ export function SharesList() {
                         });
                       }}
                       disabled={isRevoking}
-                      className={`px-3 py-1.5 flex items-center gap-1.5 rounded-lg transition-colors text-xs font-semibold disabled:opacity-50 ${share.isRevoked ? "bg-secondary text-foreground hover:bg-secondary/80" : "bg-orange-500 text-white hover:bg-orange-600"}`}
+                      className={`px-3 py-1.5 flex items-center gap-1.5 rounded-lg transition-colors text-xs font-semibold disabled:opacity-50 ${share.revoked ? "bg-secondary text-foreground hover:bg-secondary/80" : "bg-orange-500 text-white hover:bg-orange-600"}`}
                       title={
-                        share.isRevoked
+                        share.revoked
                           ? "Khôi phục trạng thái Link"
                           : "Cấm truy cập Link"
                       }
                     >
-                      {share.isRevoked ? (
+                      {share.revoked ? (
                         <>
                           <RotateCcw className="w-3.5 h-3.5" />{" "}
                           <span>Bỏ thu hồi</span>
