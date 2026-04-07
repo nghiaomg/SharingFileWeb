@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateUser, deleteUser, adminUsersKeys } from "../api/users.api";
+import { updateUser, deleteUser, restoreUser, adminUsersKeys } from "../api/users.api";
 
 export function useUpdateUser() {
   const queryClient = useQueryClient();
@@ -26,6 +26,17 @@ export function useDeleteUser() {
 
   return useMutation({
     mutationFn: (id: string) => deleteUser(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminUsersKeys.lists() });
+    },
+  });
+}
+
+export function useRestoreUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => restoreUser(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminUsersKeys.lists() });
     },

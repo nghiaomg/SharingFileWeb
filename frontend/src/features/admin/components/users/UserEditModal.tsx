@@ -18,6 +18,7 @@ export function UserEditModal({ user, isOpen, onClose }: UserEditModalProps) {
   const [roles, setRoles] = useState(user.roles?.map((r) => r.name) || []);
   const [plan, setPlan] = useState(user.subscriptionPlan || "");
   const [maxStorage, setMaxStorage] = useState(user.maxStorage || 0);
+  const [isLocked, setIsLocked] = useState(user.locked || false);
 
   const isAdmin = roles.includes("ROLE_ADMIN");
 
@@ -27,6 +28,7 @@ export function UserEditModal({ user, isOpen, onClose }: UserEditModalProps) {
       roles: roles.length > 0 ? roles : ["ROLE_USER"],
       subscriptionPlan: plan || undefined,
       maxStorage: Number(maxStorage) > 0 ? Number(maxStorage) : undefined,
+      locked: isLocked,
     };
 
     updateUser(
@@ -128,6 +130,27 @@ export function UserEditModal({ user, isOpen, onClose }: UserEditModalProps) {
                 Sét giới hạn dung lượng lưu trữ cứng cho User. Nhập 0 để dùng
                 mặc định.
               </p>
+            </div>
+
+            <div className="pt-2">
+              <label className="flex items-start gap-3 p-4 border border-border rounded-xl cursor-pointer hover:bg-secondary/30 transition-colors">
+                <div className="flex items-center h-5 mt-0.5">
+                  <input
+                    type="checkbox"
+                    checked={isLocked}
+                    onChange={(e) => setIsLocked(e.target.checked)}
+                    className="w-4 h-4 rounded text-destructive focus:ring-destructive border-border"
+                  />
+                </div>
+                <div className="flex-1">
+                  <span className="text-sm font-bold text-destructive">
+                    Khóa tài khoản
+                  </span>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Vô hiệu hóa quyền đăng nhập của người dùng vào hệ thống.
+                  </p>
+                </div>
+              </label>
             </div>
 
             <div className="pt-6 flex justify-end gap-3">

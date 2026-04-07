@@ -35,3 +35,7 @@ export async function updateUser(
 export async function deleteUser(id: string): Promise<void> {
   await apiClient.delete(`/users/${id}`);
 }
+
+export async function restoreUser(id: string): Promise<void> {
+  await apiClient.post(`/users/${id}/restore`);
+}

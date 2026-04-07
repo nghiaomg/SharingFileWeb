@@ -1,8 +1,9 @@
 "use client";
 
 import { useAdminUsers } from "../../hooks/useUsersQuery";
-import { useDeleteUser } from "../../hooks/useUsersMutation";
-import { Loader2, Trash2, Edit, ChevronLeft, ChevronRight } from "lucide-react";
+import { useDeleteUser, useRestoreUser } from "../../hooks/useUsersMutation";
+import { useCurrentUser } from "@/features/auth/queries";
+import { Loader2, Trash2, Edit, ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 import { AdminUser } from "../../types/users.types";
@@ -12,7 +13,9 @@ import { Button } from "@radix-ui/themes";
 export function UsersList() {
   const [page, setPage] = useState(0);
   const { data: pageData, isLoading, isError } = useAdminUsers(page, 15);
+  const { data: currentUser } = useCurrentUser();
   const { mutate: deleteUser, isPending: isDeleting } = useDeleteUser();
+  const { mutate: restoreUser, isPending: isRestoring } = useRestoreUser();
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
 
   if (isLoading) {
@@ -51,6 +54,13 @@ export function UsersList() {
               </div>
             </div>
             <div className="flex gap-2 flex-wrap">
+              {user.deleted ? (
+                <span className="px-2 py-0.5 text-[10px] font-bold bg-destructive/10 text-destructive rounded-md">Đã xóa</span>
+              ) : user.locked ? (
+                <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-500/10 text-amber-600 rounded-md">Khóa</span>
+              ) : (
+                <span className="px-2 py-0.5 text-[10px] font-bold bg-emerald-500/10 text-emerald-600 rounded-md">Hoạt động</span>
+              )}
               {user.roles?.map((r) => (
                 <span
                   key={r.id}
@@ -68,30 +78,48 @@ export function UsersList() {
             <div className="flex items-center gap-2 pt-3 border-t border-border mt-2">
               <button
                 onClick={() => setEditingUser(user)}
-                className="flex-1 py-2 flex justify-center items-center gap-1.5 bg-blue-500 text-white hover:bg-blue-600 rounded-lg transition-colors font-medium text-xs "
+                disabled={user.deleted}
+                className="flex-1 py-2 flex justify-center items-center gap-1.5 bg-blue-500 text-white hover:bg-blue-600 rounded-lg transition-colors font-medium text-xs disabled:opacity-50"
               >
                 <Edit className="w-3.5 h-3.5" /> Sửa
               </button>
-              <button
-                onClick={() => {
-                  if (
-                    confirm(
-                      `Bạn có chắc chắn muốn xóa tài khoản ${user.username}? Dữ liệu không thể khôi phục!`,
-                    )
-                  ) {
-                    deleteUser(user.id, {
-                      onSuccess: () =>
-                        toast.success("Xóa người dùng thành công"),
-                      onError: () =>
-                        toast.error("Có lỗi xảy ra hoặc bạn không đủ quyền"),
+              {user.deleted ? (
+                <button
+                  onClick={() => {
+                    restoreUser(user.id, {
+                      onSuccess: () => toast.success("Khôi phục tài khoản thành công"),
+                      onError: () => toast.error("Có lỗi xảy ra hoặc bạn không đủ quyền"),
                     });
-                  }
-                }}
-                disabled={isDeleting}
-                className="flex-1 py-2 flex justify-center items-center gap-1.5 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors font-medium text-xs disabled:opacity-50"
-              >
-                <Trash2 className="w-3.5 h-3.5" /> Xóa
-              </button>
+                  }}
+                  disabled={isRestoring}
+                  className="flex-1 py-2 flex justify-center items-center gap-1.5 bg-amber-500 text-white hover:bg-amber-600 rounded-lg transition-colors font-medium text-xs disabled:opacity-50"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" /> Khôi phục
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    if (
+                      confirm(
+                        `Bạn có chắc chắn muốn xóa tài khoản ${user.username}? Dữ liệu sẽ chuyển vào chế độ bị xóa (soft delete).`,
+                      )
+                    ) {
+                      deleteUser(user.id, {
+                        onSuccess: () =>
+                          toast.success("Xóa tài khoản thành công"),
+                        onError: (error) => {
+                          const err = error as { response?: { data?: { message?: string } } };
+                          toast.error(err?.response?.data?.message || "Có lỗi xảy ra hoặc bạn không đủ quyền");
+                        }
+                      });
+                    }
+                  }}
+                  disabled={isDeleting || currentUser?.id === user.id}
+                  className="flex-1 py-2 flex justify-center items-center gap-1.5 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors font-medium text-xs disabled:opacity-50"
+                >
+                  <Trash2 className="w-3.5 h-3.5" /> Xóa
+                </button>
+              )}
             </div>
           </div>
         ))}
@@ -128,6 +156,13 @@ export function UsersList() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex gap-2 flex-wrap items-center">
+                      {user.deleted ? (
+                        <span className="px-2 py-1 text-[10px] font-bold bg-destructive/10 text-destructive rounded-md">Đã xóa</span>
+                      ) : user.locked ? (
+                        <span className="px-2 py-1 text-[10px] font-bold bg-amber-500/10 text-amber-600 rounded-md">Khóa</span>
+                      ) : (
+                        <span className="px-2 py-1 text-[10px] font-bold bg-emerald-500/10 text-emerald-600 rounded-md">Hoạt động</span>
+                      )}
                       {user.roles?.map((r) => (
                         <span
                           key={r.id}
@@ -146,34 +181,51 @@ export function UsersList() {
                   <td className="px-6 py-4 flex items-center justify-end gap-3">
                     <button
                       onClick={() => setEditingUser(user)}
-                      className="px-3 py-1.5 flex items-center gap-1.5 bg-blue-500 text-white hover:bg-blue-600 rounded-lg transition-colors text-xs font-semibold"
+                      disabled={user.deleted}
+                      className="px-3 py-1.5 flex items-center gap-1.5 bg-blue-500 text-white hover:bg-blue-600 rounded-lg transition-colors text-xs font-semibold disabled:opacity-50"
                       title="Chỉnh sửa User"
                     >
                       <Edit className="w-3.5 h-3.5" /> <span>Sửa</span>
                     </button>
-                    <button
-                      onClick={() => {
-                        if (
-                          confirm(
-                            `Bạn có chắc chắn muốn xóa tài khoản ${user.username}? Dữ liệu không thể khôi phục!`,
-                          )
-                        ) {
-                          deleteUser(user.id, {
-                            onSuccess: () =>
-                              toast.success("Xóa người dùng thành công"),
-                            onError: () =>
-                              toast.error(
-                                "Có lỗi xảy ra hoặc bạn không đủ quyền",
-                              ),
+                    {user.deleted ? (
+                      <button
+                        onClick={() => {
+                          restoreUser(user.id, {
+                            onSuccess: () => toast.success("Khôi phục tài khoản thành công"),
+                            onError: () => toast.error("Có lỗi xảy ra hoặc bạn không đủ quyền"),
                           });
-                        }
-                      }}
-                      disabled={isDeleting}
-                      title="Xóa người dùng"
-                      className="px-3 py-1.5 flex items-center gap-1.5 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors text-xs font-semibold disabled:opacity-50"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" /> <span>Xóa</span>
-                    </button>
+                        }}
+                        disabled={isRestoring}
+                        title="Khôi phục người dùng"
+                        className="px-3 py-1.5 flex items-center gap-1.5 bg-amber-500 text-white hover:bg-amber-600 rounded-lg transition-colors text-xs font-semibold disabled:opacity-50"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" /> <span>Khôi phục</span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          if (
+                            confirm(
+                              `Bạn có chắc chắn muốn xóa tài khoản ${user.username}? Dữ liệu sẽ chuyển về Đã xóa (soft delete).`,
+                            )
+                          ) {
+                            deleteUser(user.id, {
+                              onSuccess: () =>
+                                toast.success("Xóa tài khoản thành công"),
+                              onError: (error) => {
+                                const err = error as { response?: { data?: { message?: string } } };
+                                toast.error(err?.response?.data?.message || "Có lỗi xảy ra hoặc bạn không đủ quyền");
+                              }
+                            });
+                          }
+                        }}
+                        disabled={isDeleting || currentUser?.id === user.id}
+                        title={currentUser?.id === user.id ? "Không thể tự xóa mình" : "Xóa người dùng"}
+                        className="px-3 py-1.5 flex items-center gap-1.5 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors text-xs font-semibold disabled:opacity-50"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" /> <span>Xóa</span>
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

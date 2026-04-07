@@ -25,11 +25,15 @@ public class UserDetailsImpl implements UserDetails {
   private String subscriptionPlan;
   private long maxStorage;
   private long maxFileSize;
+  
+  private boolean locked;
+  private boolean deleted;
 
   private Collection<? extends GrantedAuthority> authorities;
 
   public UserDetailsImpl(String id, String username, String email, String password,
       String subscriptionPlan, long maxStorage, long maxFileSize,
+      boolean locked, boolean deleted,
       Collection<? extends GrantedAuthority> authorities) {
     this.id = id;
     this.username = username;
@@ -38,6 +42,8 @@ public class UserDetailsImpl implements UserDetails {
     this.subscriptionPlan = subscriptionPlan;
     this.maxStorage = maxStorage;
     this.maxFileSize = maxFileSize;
+    this.locked = locked;
+    this.deleted = deleted;
     this.authorities = authorities;
   }
 
@@ -54,6 +60,8 @@ public class UserDetailsImpl implements UserDetails {
         user.getSubscriptionPlan(),
         user.getMaxStorage(),
         user.getMaxFileSize(),
+        user.isLocked(),
+        user.isDeleted(),
         authorities);
   }
 
@@ -99,7 +107,7 @@ public class UserDetailsImpl implements UserDetails {
 
   @Override
   public boolean isAccountNonLocked() {
-    return true;
+    return !locked;
   }
 
   @Override
@@ -109,7 +117,7 @@ public class UserDetailsImpl implements UserDetails {
 
   @Override
   public boolean isEnabled() {
-    return true;
+    return !deleted;
   }
 
   @Override

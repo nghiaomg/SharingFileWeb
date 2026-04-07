@@ -16,6 +16,8 @@ export const AdminUserSchema = z.object({
   createdAt: z.string().optional(),
   lastLogin: z.string().optional(),
   twoFactorEnabled: z.boolean().optional(),
+  locked: z.boolean().optional(),
+  deleted: z.boolean().optional(),
 });
 
 export type AdminUser = z.infer<typeof AdminUserSchema>;
@@ -25,6 +27,7 @@ export const UpdateAdminUserSchema = z.object({
   subscriptionPlan: z.string().optional(),
   maxStorage: z.number().optional(),
   maxFileSize: z.number().optional(),
+  locked: z.boolean().optional(),
 });
 
 export type UpdateAdminUser = z.infer<typeof UpdateAdminUserSchema>;

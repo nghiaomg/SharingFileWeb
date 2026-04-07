@@ -45,6 +45,9 @@ public class User {
   private Integer failedLoginAttempts = 0;
   private Instant lockoutEnd;
 
+  private boolean locked = false;
+  private boolean deleted = false;
+
   public User() {
   }
 
@@ -164,5 +167,21 @@ public class User {
 
   public void setAuthProvider(String authProvider) {
     this.authProvider = authProvider;
+  }
+
+  public boolean isLocked() {
+    return locked;
+  }
+
+  public void setLocked(boolean locked) {
+    this.locked = locked;
+  }
+
+  public boolean isDeleted() {
+    return deleted;
+  }
+
+  public void setDeleted(boolean deleted) {
+    this.deleted = deleted;
   }
 }

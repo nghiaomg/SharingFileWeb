@@ -127,6 +127,9 @@ public class UserController {
           if (updates.containsKey("maxFileSize")) {
               user.setMaxFileSize(((Number) updates.get("maxFileSize")).longValue());
           }
+          if (updates.containsKey("locked")) {
+              user.setLocked((Boolean) updates.get("locked"));
+          }
           userRepository.save(user);
           user.setPassword(null);
           return ResponseEntity.ok(StandardResponse.success("User updated", user));
@@ -138,10 +141,27 @@ public class UserController {
   @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
   @DeleteMapping("/users/{id}")
   public ResponseEntity<?> deleteUser(@Parameter(description = "ID người dùng cần xóa") @PathVariable String id) {
-      if (!userRepository.existsById(id)) {
-          return ResponseEntity.notFound().build();
+      org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+      com.sharingfileweb.security.services.UserDetailsImpl currentUser = (com.sharingfileweb.security.services.UserDetailsImpl) auth.getPrincipal();
+      
+      if (id.equals(currentUser.getId())) {
+          return ResponseEntity.badRequest().body(StandardResponse.error("Không thể xóa chính tài khoản của bạn!", null));
       }
-      userRepository.deleteById(id);
-      return ResponseEntity.ok(StandardResponse.success("User deleted", null));
+      return userRepository.findById(id).map(user -> {
+          user.setDeleted(true);
+          userRepository.save(user);
+          return ResponseEntity.ok(StandardResponse.success("User deleted", null));
+      }).orElse(ResponseEntity.notFound().build());
+  }
+
+  @Operation(summary = "Khôi phục người dùng (Quyền Admin)", description = "Phục hồi tài khoản người dùng đã bị xóa.")
+  @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+  @PostMapping("/users/{id}/restore")
+  public ResponseEntity<?> restoreUser(@Parameter(description = "ID người dùng cần khôi phục") @PathVariable String id) {
+      return userRepository.findById(id).map(user -> {
+          user.setDeleted(false);
+          userRepository.save(user);
+          return ResponseEntity.ok(StandardResponse.success("User restored", null));
+      }).orElse(ResponseEntity.notFound().build());
   }
 }
