@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { Zap, HardDrive, CheckCircle2, QrCode } from "lucide-react";
 import { Flex, Box, Text, Button } from "@radix-ui/themes";
-import { useCreatePaymentMutation } from "@/features/payment/mutations";
+import { useCreatePaymentMutation, useCancelPaymentMutation } from "@/features/payment/mutations";
 import { usePaymentStatusQuery } from "@/features/payment/queries";
 import { useCurrentUser } from "@/features/auth/queries";
 import { getApiErrorMessage } from "@/types/api";
@@ -40,9 +40,9 @@ function PlanCard({
       style={
         plan.recommended
           ? {
-              background: "var(--color-foreground)",
-              color: "var(--color-background)",
-            }
+            background: "var(--color-foreground)",
+            color: "var(--color-background)",
+          }
           : { background: "var(--gray-a2)" }
       }
     >
@@ -189,6 +189,7 @@ export default function UpgradePage() {
   const { data: user } = useCurrentUser();
   const { data: paymentStatus } = usePaymentStatusQuery();
   const createPaymentMutation = useCreatePaymentMutation();
+  const cancelPaymentMutation = useCancelPaymentMutation();
 
   const currentPlanId = getPlanIdFromSubscription(user?.subscriptionPlan);
   const pendingOrder =
@@ -212,7 +213,7 @@ export default function UpgradePage() {
   };
 
   const handleCancelPending = () => {
-    toast.info("Tính năng hủy đơn đang được phát triển");
+    cancelPaymentMutation.mutate();
   };
 
   return (
@@ -246,6 +247,8 @@ export default function UpgradePage() {
                 color="red"
                 size="1"
                 onClick={handleCancelPending}
+                loading={cancelPaymentMutation.isPending}
+                disabled={cancelPaymentMutation.isPending}
               >
                 Hủy
               </Button>

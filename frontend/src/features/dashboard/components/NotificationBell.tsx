@@ -9,6 +9,7 @@ import {
 import { useMarkNotificationRead } from "@/features/files/share-mutations";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
+import Link from "next/link";
 
 export function NotificationBell() {
   const { data: notifications = [], isLoading } = useNotifications();
@@ -66,7 +67,7 @@ export function NotificationBell() {
                 Không có thông báo
               </div>
             ) : (
-              notifications.map((n) => (
+              notifications.slice(0, 5).map((n) => (
                 <button
                   key={n.id}
                   onClick={() => {
@@ -101,6 +102,16 @@ export function NotificationBell() {
                 </button>
               ))
             )}
+          </div>
+
+          <div className="p-2 border-t border-border/50">
+            <Link
+              href="/dashboard/notifications"
+              onClick={() => setIsOpen(false)}
+              className="block w-full text-center text-sm font-medium text-primary hover:text-primary/80 py-2 rounded-lg hover:bg-primary/5 transition-colors"
+            >
+              Xem tất cả
+            </Link>
           </div>
         </div>
       )}
