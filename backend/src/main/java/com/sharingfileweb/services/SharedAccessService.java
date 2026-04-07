@@ -66,7 +66,7 @@ public class SharedAccessService {
         String userId = getCurrentUserId();
         String userEmail = getCurrentUserEmail();
 
-        fileRepository.findByIdAndOwnerIdAndIsDeletedFalse(fileId, userId)
+        StorageFile fileToShare = fileRepository.findByIdAndOwnerIdAndIsDeletedFalse(fileId, userId)
                 .orElseThrow(() -> new RuntimeException("File không tồn tại hoặc bạn không có quyền"));
 
         User owner = userRepository.findById(userId).orElseThrow();
@@ -114,12 +114,12 @@ public class SharedAccessService {
                     recipientEmail,
                     "FILE_SHARED",
                     "Có tệp được chia sẻ với bạn",
-                    owner.getUsername() + " đã chia sẻ tệp \"" + owner.getUsername() + "\" với bạn.",
+                    owner.getUsername() + " đã chia sẻ tệp \"" + fileToShare.getName() + "\" với bạn.",
                     metadata
             );
 
             emailService.sendShareInvitationEmail(recipientEmail, owner.getUsername(),
-                    fileId, fileId);
+                    fileToShare.getName(), fileId);
         }
 
         return results;

@@ -166,19 +166,34 @@ export function ShareModal({ isOpen, onClose, file }: ShareModalProps) {
   };
 
   const handleSendInvites = () => {
-    if (emails.length === 0) {
+    const currentEmails = [...emails];
+    const trimmed = emailInput.trim();
+
+    if (trimmed && trimmed.includes("@")) {
+      if (!currentEmails.includes(trimmed)) {
+        currentEmails.push(trimmed);
+        setEmails(currentEmails);
+      }
+      setEmailInput("");
+    } else if (trimmed) {
+      toast.error("Email đang nhập không hợp lệ");
+      return;
+    }
+
+    if (currentEmails.length === 0) {
       toast.error("Vui lòng thêm ít nhất một email");
       return;
     }
+
     shareInternalMutation.mutate(
       {
         fileId: file.id,
-        emails,
+        emails: currentEmails,
         permission: invitePermission as "VIEW" | "DOWNLOAD",
       },
       {
         onSuccess: () => {
-          toast.success(`Đã chia sẻ cho ${emails.length} người`);
+          toast.success(`Đã chia sẻ cho ${currentEmails.length} người`);
           setEmails([]);
           refetchAccesses();
         },
@@ -404,7 +419,7 @@ export function ShareModal({ isOpen, onClose, file }: ShareModalProps) {
                     }}
                     onClick={handleSendInvites}
                     disabled={
-                      shareInternalMutation.isPending || emails.length === 0
+                      shareInternalMutation.isPending || (emails.length === 0 && !emailInput.trim())
                     }
                     loading={shareInternalMutation.isPending}
                   >
@@ -629,10 +644,10 @@ export function ShareModal({ isOpen, onClose, file }: ShareModalProps) {
                                     </Select.Content>
                                   </Select.Root>
                                   <Select.Root
-                                    value={editLinkExpiry.toString()}
+                                    value={editLinkExpiry === "" ? "no-change" : editLinkExpiry.toString()}
                                     onValueChange={(v) =>
                                       setEditLinkExpiry(
-                                        v === "" ? "" : Number(v),
+                                        v === "no-change" ? "" : Number(v),
                                       )
                                     }
                                   >
@@ -641,7 +656,7 @@ export function ShareModal({ isOpen, onClose, file }: ShareModalProps) {
                                       style={{ flex: 1 }}
                                     />
                                     <Select.Content>
-                                      <Select.Item value="">
+                                      <Select.Item value="no-change">
                                         Không đổi
                                       </Select.Item>
                                       <Select.Item value="-1">
