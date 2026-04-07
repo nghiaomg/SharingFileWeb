@@ -194,37 +194,7 @@ export default function SharedTokenPage() {
     fetchFile(password);
   };
 
-  const handleDownload = async () => {
-    if (!fileData) return;
-    try {
-      const query = password ? `?password=${encodeURIComponent(password)}` : "";
-      const res = await fetch(
-        `${API_BASE_URL}/public/share/${token}/download${query}`,
-        { cache: "no-store" },
-      );
-
-      if (!res.ok) {
-        const errData = await res.json().catch(() => null);
-        alert(errData?.msg || errData?.message || "Tải xuống thất bại");
-        return;
-      }
-
-      const resJSON = await res.json();
-      if (resJSON?.data?.url) {
-        const link = document.createElement("a");
-        link.href = resJSON.data.url;
-        link.target = "_blank";
-        link.download = fileData.fileName || "download";
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-      } else {
-        alert("Không lấy được đường dẫn URL từ máy chủ.");
-      }
-    } catch {
-      alert("Lỗi khi tải xuống");
-    }
-  };
+  // Removed handleDownload as backend will handle download directly
 
   // ─── Loading ──────────────────────────────────────────────
   if (isLoading) {
@@ -376,13 +346,15 @@ export default function SharedTokenPage() {
               </button>
             )}
             {canDownload && fileData.fileType !== "folder" ? (
-              <button
-                onClick={handleDownload}
+              <a
+                href={`${API_BASE_URL}/public/share/${token}/download${password ? `?password=${encodeURIComponent(password)}` : ""}`}
+                target="_blank"
+                rel="noreferrer"
                 className="w-full group flex items-center justify-center gap-2 px-6 py-3.5 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all"
               >
                 <Download className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" />
                 Tải xuống tệp này
-              </button>
+              </a>
             ) : (
               !canPreview && (
                 <div className="w-full text-center p-4 bg-muted/50 border border-border/50 rounded-xl">
