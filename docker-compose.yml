@@ -6,7 +6,6 @@ services:
     restart: unless-stopped
     env_file:
       - ./backend/.env
-    environment:
     volumes:
       - ./backend/logs:/app/logs
     networks:
