@@ -15,19 +15,22 @@ export const paymentHistoryQueryOptions = queryOptions({
   staleTime: 30 * 1000,
 });
 
-export const paymentStatusQueryOptions = (orderCode?: string) => queryOptions({
-  queryKey: orderCode ? [...paymentKeys.status(), orderCode] : paymentKeys.status(),
-  queryFn: () => checkPaymentStatus(orderCode),
-  staleTime: 0, // Always fetch latest
-  // react-query v5 syntax for refetchInterval function
-  refetchInterval: (query) => {
-    // If we have an active pending order, poll every 2.5s for faster QR confirmation
-    if (query.state.data?.status === "PENDING") {
-      return 2500;
-    }
-    return false;
-  },
-});
+export const paymentStatusQueryOptions = (orderCode?: string) =>
+  queryOptions({
+    queryKey: orderCode
+      ? [...paymentKeys.status(), orderCode]
+      : paymentKeys.status(),
+    queryFn: () => checkPaymentStatus(orderCode),
+    staleTime: 0, // Always fetch latest
+    // react-query v5 syntax for refetchInterval function
+    refetchInterval: (query) => {
+      // If we have an active pending order, poll every 2.5s for faster QR confirmation
+      if (query.state.data?.status === "PENDING") {
+        return 2500;
+      }
+      return false;
+    },
+  });
 
 // ─── Hooks ───────────────────────────────────────────────────────────────────
 export function usePaymentStatusQuery(orderCode?: string) {

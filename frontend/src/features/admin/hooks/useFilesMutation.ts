@@ -23,3 +23,15 @@ export function useRevokeAdminFile() {
     },
   });
 }
+
+export function useRenameAdminFile() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, name }: { id: string; name: string }) =>
+      import("../api/files.api").then((m) => m.adminRenameFile(id, name)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminFilesKeys.lists() });
+    },
+  });
+}

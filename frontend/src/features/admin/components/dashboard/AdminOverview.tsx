@@ -223,9 +223,11 @@ export function AdminOverview() {
                   outerRadius={80}
                   paddingAngle={5}
                 >
-                  {(loginMethods || []).map((entry: PieChartDataDTO, index: number) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                  ))}
+                  {(loginMethods || []).map(
+                    (entry: PieChartDataDTO, index: number) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ),
+                  )}
                 </Pie>
                 <Tooltip
                   contentStyle={{

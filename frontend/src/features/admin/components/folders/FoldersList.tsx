@@ -21,7 +21,7 @@ export function FoldersList() {
     data: pageData,
     isLoading,
     isError,
-  } = useAdminFolders(undefined, page, 15);
+  } = useAdminFolders(undefined, undefined, undefined, page, 15);
   const { mutate: deleteFolder, isPending: isDeleting } =
     useDeleteAdminFolder();
 

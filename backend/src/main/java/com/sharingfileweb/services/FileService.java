@@ -457,4 +457,33 @@ public class FileService {
         }
         return actual;
     }
+
+    @Autowired
+    private org.springframework.data.mongodb.core.MongoTemplate mongoTemplate;
+
+    public org.springframework.data.domain.Page<StorageFile> getAllFilesForAdmin(String folderId, String keyword, Boolean isBanned, int page, int size) {
+        org.springframework.data.mongodb.core.query.Query query = new org.springframework.data.mongodb.core.query.Query();
+        query.addCriteria(org.springframework.data.mongodb.core.query.Criteria.where("isDeleted").is(false));
+
+        if (folderId == null || folderId.trim().isEmpty() || "root".equals(folderId)) {
+            query.addCriteria(org.springframework.data.mongodb.core.query.Criteria.where("folderId").isNull());
+        } else {
+            query.addCriteria(org.springframework.data.mongodb.core.query.Criteria.where("folderId").is(folderId));
+        }
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            query.addCriteria(org.springframework.data.mongodb.core.query.Criteria.where("name").regex(keyword, "i"));
+        }
+
+        if (isBanned != null) {
+            query.addCriteria(org.springframework.data.mongodb.core.query.Criteria.where("isBanned").is(isBanned));
+        }
+
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt"));
+        long total = mongoTemplate.count(org.springframework.data.mongodb.core.query.Query.of(query).limit(-1).skip(-1), StorageFile.class);
+        query.with(pageable);
+        List<StorageFile> files = mongoTemplate.find(query, StorageFile.class);
+
+        return new org.springframework.data.domain.PageImpl<>(files, pageable, total);
+    }
 }

@@ -23,3 +23,15 @@ export function useRevokeAdminFolder() {
     },
   });
 }
+
+export function useRenameAdminFolder() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, name }: { id: string; name: string }) =>
+      import("../api/folders.api").then((m) => m.adminUpdateFolder(id, name)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminFoldersKeys.lists() });
+    },
+  });
+}

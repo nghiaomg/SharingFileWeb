@@ -25,7 +25,7 @@ export function FilesList() {
     data: pageData,
     isLoading,
     isError,
-  } = useAdminFiles(undefined, page, 15);
+  } = useAdminFiles(undefined, undefined, undefined, page, 15);
   const { mutate: deleteFile, isPending: isDeleting } = useDeleteAdminFile();
 
   if (isLoading) {

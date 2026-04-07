@@ -142,11 +142,11 @@ export function DashboardSidebar({ isOpen, onClose }: DashboardSidebarProps) {
                   style={
                     isActive
                       ? {
-                        background: "var(--gray-a3)",
-                        color: "var(--color-foreground)",
-                        boxShadow:
-                          "inset 3px 0 0 0 var(--gray-11), 0 2px 8px rgba(0,0,0,0.06)",
-                      }
+                          background: "var(--gray-a3)",
+                          color: "var(--color-foreground)",
+                          boxShadow:
+                            "inset 3px 0 0 0 var(--gray-11), 0 2px 8px rgba(0,0,0,0.06)",
+                        }
                       : {}
                   }
                 >
@@ -239,7 +239,10 @@ export function DashboardSidebar({ isOpen, onClose }: DashboardSidebarProps) {
               />
             </Box>
             {user?.subscriptionPlan !== "PRO" && (
-              <Link href="/dashboard/upgrade" style={{ textDecoration: "none" }}>
+              <Link
+                href="/dashboard/upgrade"
+                style={{ textDecoration: "none" }}
+              >
                 <Box
                   style={{
                     width: "100%",
@@ -296,11 +299,11 @@ export function DashboardSidebar({ isOpen, onClose }: DashboardSidebarProps) {
                   style={
                     isActive
                       ? {
-                        background: "var(--gray-a3)",
-                        color: "var(--color-foreground)",
-                        boxShadow:
-                          "inset 3px 0 0 0 var(--gray-11), 0 2px 8px rgba(0,0,0,0.06)",
-                      }
+                          background: "var(--gray-a3)",
+                          color: "var(--color-foreground)",
+                          boxShadow:
+                            "inset 3px 0 0 0 var(--gray-11), 0 2px 8px rgba(0,0,0,0.06)",
+                        }
                       : {}
                   }
                 >

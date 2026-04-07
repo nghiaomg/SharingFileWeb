@@ -288,16 +288,12 @@ public class FileController {
     @GetMapping("/all")
     public ResponseEntity<?> getAllFilesForAdmin(
             @RequestParam(required = false) String folderId,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Boolean isBanned,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "15") int size) {
-        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt"));
-        org.springframework.data.domain.Page<StorageFile> pageResult;
         
-        if (folderId == null || folderId.trim().isEmpty() || "root".equals(folderId)) {
-            pageResult = fileRepository.findByFolderIdIsNullAndIsDeletedFalseOrderByCreatedAtDesc(pageable);
-        } else {
-            pageResult = fileRepository.findByFolderIdAndIsDeletedFalseOrderByCreatedAtDesc(folderId, pageable);
-        }
+        org.springframework.data.domain.Page<StorageFile> pageResult = fileService.getAllFilesForAdmin(folderId, keyword, isBanned, page, size);
 
         java.util.Map<String, Object> responseData = new java.util.HashMap<>();
         responseData.put("content", pageResult.getContent());
