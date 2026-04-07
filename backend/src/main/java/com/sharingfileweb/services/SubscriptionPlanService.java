@@ -132,6 +132,13 @@ public class SubscriptionPlanService {
         subscriptionPlanRepository.save(plan);
     }
 
+    public void restorePlan(String id) {
+        SubscriptionPlan plan = subscriptionPlanRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Plan not found"));
+        plan.setDeleted(false);
+        subscriptionPlanRepository.save(plan);
+    }
+
     public void initializeDefaultPlans() {
         if (subscriptionPlanRepository.count() == 0) {
             createDefaultPlan("BASIC", "Gói Cơ Bản",

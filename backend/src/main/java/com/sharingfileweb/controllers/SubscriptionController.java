@@ -120,6 +120,20 @@ public class SubscriptionController {
         }
     }
 
+    @Operation(summary = "Khôi phục gói cước đã xóa (Admin)",
+               description = "Khôi phục gói cước từ trạng thái Đã xóa (isDeleted = false).")
+    @PostMapping("/admin/plans/{id}/restore")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> restorePlan(
+            @Parameter(description = "ID gói cước cần khôi phục") @PathVariable String id) {
+        try {
+            subscriptionPlanService.restorePlan(id);
+            return ResponseEntity.ok(StandardResponse.success("Plan restored successfully", null));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(StandardResponse.error(e.getMessage(), null));
+        }
+    }
+
     @Operation(summary = "Khởi tạo gói cước mặc định (Admin)",
                description = "Tạo 3 gói mặc định: BASIC, PRO, PREMIUM. Chỉ chạy khi chưa có gói nào trong hệ thống.")
     @PostMapping("/admin/plans/init")

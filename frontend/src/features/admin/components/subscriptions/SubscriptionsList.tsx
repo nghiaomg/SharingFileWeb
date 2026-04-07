@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useAdminSubscriptions } from "../../hooks/useSubscriptionsQuery";
-import { useDeletePlan } from "../../hooks/useSubscriptionsMutation";
-import { Loader2, Trash2, Edit, CreditCard, Plus } from "lucide-react";
+import { useDeletePlan, useRestorePlan } from "../../hooks/useSubscriptionsMutation";
+import { Loader2, Trash2, Edit, CreditCard, Plus, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { formatBytes } from "@/lib/format";
 import { SubscriptionEditModal } from "./SubscriptionEditModal";
@@ -13,6 +13,7 @@ import { Button } from "@radix-ui/themes";
 export function SubscriptionsList() {
   const { data: pageData, isLoading, isError } = useAdminSubscriptions();
   const { mutate: deletePlan, isPending: isDeleting } = useDeletePlan();
+  const { mutate: restorePlan, isPending: isRestoring } = useRestorePlan();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] =
@@ -141,24 +142,39 @@ export function SubscriptionsList() {
               >
                 <Edit className="w-3.5 h-3.5" /> Sửa gói
               </button>
-              <button
-                onClick={() => {
-                  if (
-                    confirm(
-                      `Xác nhận xóa gói cước "${plan.name}"? Tùy chọn này sẽ ẩn gói cước khỏi danh sách trên hệ thống.`,
-                    )
-                  ) {
-                    deletePlan(plan.id, {
-                      onSuccess: () => toast.success("Đã xóa gói cước"),
-                      onError: () => toast.error("Không thể xóa gói"),
+              {plan.isDeleted ? (
+                <button
+                  onClick={() => {
+                    restorePlan(plan.id, {
+                      onSuccess: () => toast.success("Đã khôi phục gói cước"),
+                      onError: () => toast.error("Không thể khôi phục gói"),
                     });
-                  }
-                }}
-                disabled={isDeleting || plan.isDeleted}
-                className="py-2 flex justify-center items-center gap-1.5 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors text-xs font-semibold disabled:opacity-50"
-              >
-                <Trash2 className="w-3.5 h-3.5" /> Xóa gói
-              </button>
+                  }}
+                  disabled={isRestoring}
+                  className="py-2 flex justify-center items-center gap-1.5 bg-amber-500 text-white hover:bg-amber-600 rounded-lg transition-colors text-xs font-semibold disabled:opacity-50"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" /> Khôi phục
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    if (
+                      confirm(
+                        `Xác nhận xóa gói cước "${plan.name}"? Tùy chọn này sẽ ẩn gói cước khỏi danh sách trên hệ thống.`,
+                      )
+                    ) {
+                      deletePlan(plan.id, {
+                        onSuccess: () => toast.success("Đã xóa gói cước"),
+                        onError: () => toast.error("Không thể xóa gói"),
+                      });
+                    }
+                  }}
+                  disabled={isDeleting}
+                  className="py-2 flex justify-center items-center gap-1.5 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors text-xs font-semibold disabled:opacity-50"
+                >
+                  <Trash2 className="w-3.5 h-3.5" /> Xóa gói
+                </button>
+              )}
             </div>
           </div>
         ))}
@@ -263,25 +279,41 @@ export function SubscriptionsList() {
                     >
                       <Edit className="w-3.5 h-3.5" /> <span>Sửa gói</span>
                     </button>
-                    <button
-                      onClick={() => {
-                        if (
-                          confirm(
-                            `Xác nhận xóa gói cước "${plan.name}"? Tùy chọn này sẽ ẩn gói cước khỏi danh sách trên hệ thống.`,
-                          )
-                        ) {
-                          deletePlan(plan.id, {
-                            onSuccess: () => toast.success("Đã xóa gói cước"),
-                            onError: () => toast.error("Không thể xóa gói"),
+                    {plan.isDeleted ? (
+                      <button
+                        onClick={() => {
+                          restorePlan(plan.id, {
+                            onSuccess: () => toast.success("Đã khôi phục gói cước"),
+                            onError: () => toast.error("Không thể khôi phục gói"),
                           });
-                        }
-                      }}
-                      disabled={isDeleting || plan.isDeleted}
-                      className="px-3 py-1.5 flex items-center gap-1.5 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors text-xs font-semibold disabled:opacity-50"
-                      title="Xóa mềm"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" /> <span>Xóa gói</span>
-                    </button>
+                        }}
+                        disabled={isRestoring}
+                        className="px-3 py-1.5 flex items-center gap-1.5 bg-amber-500 text-white hover:bg-amber-600 rounded-lg transition-colors text-xs font-semibold disabled:opacity-50"
+                        title="Khôi phục gói"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" /> <span>Khôi phục</span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          if (
+                            confirm(
+                              `Xác nhận xóa gói cước "${plan.name}"? Tùy chọn này sẽ ẩn gói cước khỏi danh sách trên hệ thống.`,
+                            )
+                          ) {
+                            deletePlan(plan.id, {
+                              onSuccess: () => toast.success("Đã xóa gói cước"),
+                              onError: () => toast.error("Không thể xóa gói"),
+                            });
+                          }
+                        }}
+                        disabled={isDeleting}
+                        className="px-3 py-1.5 flex items-center gap-1.5 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors text-xs font-semibold disabled:opacity-50"
+                        title="Xóa mềm"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" /> <span>Xóa gói</span>
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

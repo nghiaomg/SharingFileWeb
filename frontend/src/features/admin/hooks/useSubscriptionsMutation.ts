@@ -3,6 +3,7 @@ import {
   createPlan,
   updatePlan,
   deletePlan,
+  restorePlan,
   initDefaultPlans,
   adminSubscriptionsKeys,
 } from "../api/subscriptions.api";
@@ -39,6 +40,17 @@ export function useDeletePlan() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: deletePlan,
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: adminSubscriptionsKeys.lists(),
+      }),
+  });
+}
+
+export function useRestorePlan() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: restorePlan,
     onSuccess: () =>
       queryClient.invalidateQueries({
         queryKey: adminSubscriptionsKeys.lists(),

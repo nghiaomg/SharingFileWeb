@@ -37,6 +37,10 @@ export async function deletePlan(id: string): Promise<void> {
   await apiClient.delete(`/subscription/admin/plans/${id}`);
 }
 
+export async function restorePlan(id: string): Promise<void> {
+  await apiClient.post(`/subscription/admin/plans/${id}/restore`);
+}
+
 export async function initDefaultPlans(): Promise<void> {
   await apiClient.post("/subscription/admin/plans/init");
 }
