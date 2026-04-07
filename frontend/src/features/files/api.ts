@@ -1,4 +1,5 @@
 import apiClient from "@/lib/api-client";
+import Cookies from "js-cookie";
 import type {
   FileItem,
   FolderItem,
@@ -103,24 +104,13 @@ export async function downloadFile(
   fileId: string,
   fileName: string,
 ): Promise<void> {
-  // Uses new endpoint: GET /files/{fileId}/download
-  // apiClient interceptor unwraps StandardResponse → data = FileDownloadResponse
-  const res = await apiClient.get<{
-    url: string;
-    fileName: string;
-    fileType: string;
-    fileSize: number;
-    expiresAt: string;
-    version: number;
-  }>(`/files/${fileId}/download`);
-
-  if (!res.data?.url) {
-    throw new Error("Không lấy được đường dẫn tải xuống");
-  }
+  const token = Cookies.get("access_token");
+  // Gọi trực tiếp đến server để server stream file về => giấu đường link gốc B2
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
+  const downloadUrl = `${API_BASE_URL}/files/${fileId}/download-content${token ? `?token=${token}` : ""}`;
 
   const link = document.createElement("a");
-  link.href = res.data.url;
-  // Note: 'download' attribute might be ignored if cross-origin, but B2 API sets Content-Disposition
+  link.href = downloadUrl;
   link.target = "_blank";
   link.setAttribute("download", fileName);
   document.body.appendChild(link);

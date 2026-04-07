@@ -7,12 +7,6 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      # Use Spring Boot's native env-to-property binding.
-      # Docker's DNS resolves "mongodb" to the container's internal IP
-      # on the sharingfile-network. The .env file is loaded first (env_file),
-      # then these explicit values override any default in application.properties.
-      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/
-      SPRING_DATA_MONGODB_DATABASE: sharingfileweb
     volumes:
       - ./backend/logs:/app/logs
     networks:
@@ -55,6 +49,8 @@ services:
     container_name: sharingfile-mongodb
     restart: unless-stopped
     command: mongod --port 27017
+    env_file:
+      - ./backend/.env
     ports:
       - "27017:27017"
     volumes:

@@ -152,6 +152,31 @@ public class FileController {
         }
     }
 
+    @Operation(summary = "Tải xuống tệp trực tiếp qua server",
+               description = "Proxy luồng tải file từ B2 qua backend để giấu link gốc.")
+    @GetMapping("/{fileId}/download-content")
+    public ResponseEntity<org.springframework.core.io.Resource> proxyDownloadFile(
+            @Parameter(description = "ID của file") @PathVariable String fileId,
+            @Parameter(description = "true = xem trình duyệt, false = tải về") @RequestParam(required = false, defaultValue = "false") boolean inline) {
+        try {
+            org.springframework.core.io.Resource resource = fileService.downloadFileStream(fileId);
+            
+            StorageFile file = fileRepository.findById(fileId).orElse(null);
+            String filename = file != null ? file.getName() : "download";
+            String fileType = file != null && file.getType() != null ? file.getType() : "application/octet-stream";
+            
+            String disposition = inline ? "inline" : "attachment";
+            String headerValue = disposition + "; filename=\"" + filename + "\"";
+            
+            return ResponseEntity.ok()
+                    .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, headerValue)
+                    .contentType(org.springframework.http.MediaType.parseMediaType(fileType))
+                    .body(resource);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     /**
      * Xem file trực tiếp — presigned URL 5 phút, inline disposition.
      * Dùng để nhúng vào PDF viewer, img tag, video tag.

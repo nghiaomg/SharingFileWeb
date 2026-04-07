@@ -190,6 +190,18 @@ public class B2StorageService {
     }
 
     /**
+     * Trả về luồng tải file trực tiếp để proxy download qua Spring Boot.
+     */
+    public org.springframework.core.io.Resource downloadFileStream(String b2FileName) {
+        try {
+            String downloadUrl = b2Client.getDownloadByNameUrl(b2Config.getBucketName(), b2FileName);
+            return new org.springframework.core.io.UrlResource(downloadUrl);
+        } catch (Exception e) {
+            throw new RuntimeException("Không thể tạo luồng tải file.", e);
+        }
+    }
+
+    /**
      * Lấy iterator danh sách toàn bộ file từ B2 để chạy đồng bộ (Sync Job)
      */
     public Iterable<B2FileVersion> listAllFiles() {

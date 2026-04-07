@@ -60,6 +60,12 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
       return headerAuth.substring(7);
     }
+    
+    // Hỗ trợ đọc từ query parameter (cho trường hợp mở link trực tiếp tab mới)
+    String queryToken = request.getParameter("token");
+    if (StringUtils.hasText(queryToken)) {
+      return queryToken;
+    }
 
     return null;
   }

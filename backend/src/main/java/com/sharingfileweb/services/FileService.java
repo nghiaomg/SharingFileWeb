@@ -255,6 +255,24 @@ public class FileService {
         );
     }
 
+    public org.springframework.core.io.Resource downloadFileStream(String fileId) {
+        String userId = getCurrentUserId();
+        String email = getCurrentUserEmail();
+
+        StorageFile file = filePermissionService.getAccessibleFile(
+                userId, email, fileId, "DOWNLOAD");
+
+        accessLogService.logFileAccess(
+                file.getId(), file.getName(), userId,
+                AccessLog.AccessType.DOWNLOAD, null, (String) null, (String) null);
+
+        if (file.getB2FileName() == null || file.getB2FileName().isEmpty()) {
+            throw new RuntimeException("File chưa được migrate lên cloud storage. Vui lòng liên hệ admin.");
+        }
+
+        return b2StorageService.downloadFileStream(file.getB2FileName());
+    }
+
     private String generateSignedUrl(StorageFile file, boolean inline, java.time.Duration duration) {
         if (file.getB2FileName() == null || file.getB2FileName().isEmpty()) {
             throw new RuntimeException("File chưa được migrate lên cloud storage. Vui lòng liên hệ admin.");
