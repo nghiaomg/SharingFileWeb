@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 import java.util.HashSet;
 import java.util.Set;
 
-@Component
+@Component("userDataSeeder")
 public class DataSeeder implements CommandLineRunner {
 
     @Autowired
